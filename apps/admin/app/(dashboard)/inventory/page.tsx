@@ -7,6 +7,7 @@
 
 import type { Metadata } from 'next';
 import { getInventoryRows } from '@mridul/database';
+import { sessionClient } from '@mridul/supabase/server';
 import { formatPaise } from '@mridul/utils';
 import { updateStock } from '../../actions/catalogue';
 import { EditForm } from '../../components/form';
@@ -17,7 +18,8 @@ export const metadata: Metadata = { title: 'Inventory | Mridul Admin' };
 const LOW = 5;
 
 export default async function InventoryPage() {
-  const rows = await getInventoryRows();
+  const db = await sessionClient();
+  const rows = await getInventoryRows(db);
 
   // Lowest first: the rows that need a decision should not be hunted for.
   const sorted = [...rows].sort((a, b) => a.stock - b.stock);

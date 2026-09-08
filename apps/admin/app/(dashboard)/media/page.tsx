@@ -11,7 +11,8 @@ import type { Metadata } from 'next';
 import { getMediaLibrary } from '@mridul/database';
 import { replaceMediaFile, updateMedia } from '../../actions/media';
 import { EditForm, Field, FileField } from '../../components/form';
-import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
+import { CropField } from '../../components/crop-field';
+import { MediaThumb, PageHead, Panel, ViewOnSite, mediaUrl } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Media | Mridul Admin' };
 
@@ -60,11 +61,9 @@ export default async function MediaPage() {
                   required
                   hint="Read aloud by screen readers"
                 />
-                <Field
-                  label="Crop"
-                  name="focal"
+                <CropField
+                  src={mediaUrl(record.url)}
                   defaultValue={record.focal}
-                  hint="e.g. 50% center, or 66% center to favour the right"
                 />
               </EditForm>
 

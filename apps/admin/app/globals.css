@@ -776,11 +776,13 @@ th.numeric {
     display: none;
   }
   .admin-main {
+    min-width: 0;
     padding: 1.25rem 1rem 3rem;
   }
   /* Let dense tables scroll sideways rather than crush every column to
      one character per line. */
   .panel {
+    min-width: 0;
     overflow-x: auto;
   }
   .panel table {

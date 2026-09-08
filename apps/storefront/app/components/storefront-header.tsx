@@ -296,14 +296,15 @@ export function StorefrontHeader({
                 {openMenu === menu.categorySlug && <MegaMenu menu={menu} />}
               </div>
             ))}
-            <div className="nav-item">
-              <Link href="/collections/new-arrivals">New in</Link>
-            </div>
-            <div className="nav-item">
-              <Link className="accent-link" href="/shop/sarees?sale=1">
-                Sale
-              </Link>
-            </div>
+            {/* The edits flagged for the nav, by their own names. These were
+                hardcoded as "New in" and a "Sale" link into a filtered saree
+                listing, so the desktop nav disagreed with the mobile one and
+                ignored the database flag that is supposed to decide this. */}
+            {collections.map((collection) => (
+              <div className="nav-item" key={collection.id}>
+                <Link href={`/collections/${collection.slug}`}>{collection.name}</Link>
+              </div>
+            ))}
           </nav>
 
           <div className="header-actions">

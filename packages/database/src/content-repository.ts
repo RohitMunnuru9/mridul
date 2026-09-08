@@ -161,11 +161,22 @@ export async function getMediaSummary(): Promise<{
   };
 }
 
-/** Collections with the number of products currently in each. */
-export async function getCollectionsWithCounts(): Promise<
+/**
+ * Collections with the number of products currently in each.
+ *
+ * Counts what the caller can see: the admin passes its client so a hidden
+ * draft is included, since it is still in the collection and will reappear on
+ * the storefront the moment it is published.
+ */
+export async function getCollectionsWithCounts(
+  client?: Client,
+): Promise<
   { id: string; slug: string; name: string; tagline: string; productCount: number }[]
 > {
-  const [collections, products] = await Promise.all([fetchCollections(), fetchProducts()]);
+  const [collections, products] = await Promise.all([
+    fetchCollections(),
+    fetchProducts(client),
+  ]);
 
   return collections.map((collection) => ({
     ...collection,

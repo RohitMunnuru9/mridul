@@ -12,21 +12,9 @@
 
 import { useActionState, useRef, useState } from "react";
 import { UploadCloud } from "lucide-react";
+import { CropPicker } from "./crop-field";
 
 type Result = { ok: boolean; message: string };
-
-/** `object-position` values, laid out the way they appear on the picture. */
-const SPOTS: { value: string; label: string }[] = [
-  { value: "left top", label: "Top left" },
-  { value: "50% top", label: "Top" },
-  { value: "right top", label: "Top right" },
-  { value: "left center", label: "Left" },
-  { value: "50% center", label: "Middle" },
-  { value: "right center", label: "Right" },
-  { value: "left bottom", label: "Bottom left" },
-  { value: "50% bottom", label: "Bottom" },
-  { value: "right bottom", label: "Bottom right" },
-];
 
 export function ImageUploadField({
   action,
@@ -76,34 +64,7 @@ export function ImageUploadField({
         />
       </label>
 
-      {preview && (
-        <div className="crop-picker">
-          <span className="field-label">
-            Keep this part in view
-            <small>Where a listing card crops to a different shape</small>
-          </span>
-          <div className="crop-frame">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" src={preview} style={{ objectPosition: focal }} />
-            <div className="crop-grid">
-              {SPOTS.map((spot) => (
-                <button
-                  aria-label={spot.label}
-                  aria-pressed={focal === spot.value}
-                  className={focal === spot.value ? "is-on" : undefined}
-                  key={spot.value}
-                  onClick={() => setFocal(spot.value)}
-                  title={spot.label}
-                  type="button"
-                />
-              ))}
-            </div>
-          </div>
-          <small className="crop-chosen">
-            {SPOTS.find((spot) => spot.value === focal)?.label}
-          </small>
-        </div>
-      )}
+      {preview && <CropPicker onChange={setFocal} src={preview} value={focal} />}
 
       <label className="field">
         <span className="field-label">

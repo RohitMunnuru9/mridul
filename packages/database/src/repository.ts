@@ -114,12 +114,19 @@ export async function getRelatedProducts(
     .map(toListItem);
 }
 
-/** Products belonging to a collection, for the homepage and shop rails. */
+/**
+ * Products belonging to a collection, for the homepage and shop rails.
+ *
+ * The storefront calls this without a client and gets the public view, which
+ * is what a rail should show. The admin passes its own, so a hidden draft
+ * still appears in the collection it belongs to.
+ */
 export async function getProductsByCollection(
   collectionSlug: string,
   limit = 8,
+  client?: Client,
 ): Promise<ProductListItem[]> {
-  const all = await fetchProducts();
+  const all = await fetchProducts(client);
   return all
     .filter((item) => item.collectionSlugs.includes(collectionSlug))
     .slice(0, limit)
@@ -345,8 +352,12 @@ export async function validateCoupon(
  * Inventory is tracked per variant rather than per product — a saree can be
  * sold out with its blouse piece and still available on its own — so the admin
  * needs the rows, not the roll-up.
+ *
+ * Takes the caller's client for the same reason `getAllProducts` does: without
+ * it this reads as the public, and RLS drops every hidden product, so a draft
+ * being prepared for launch has no stock an admin can see or set.
  */
-export async function getInventoryRows(): Promise<
+export async function getInventoryRows(client?: Client): Promise<
   {
     productId: string;
     productName: string;
@@ -359,7 +370,7 @@ export async function getInventoryRows(): Promise<
     stock: number;
   }[]
 > {
-  const products = await fetchProducts();
+  const products = await fetchProducts(client);
   return products.flatMap((product) =>
     product.variants.map((variant) => ({
       productId: product.id,
