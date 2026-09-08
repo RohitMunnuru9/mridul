@@ -9,10 +9,10 @@ import {
   Waves,
   type LucideIcon,
 } from 'lucide-react';
-import { moodTiles, type MoodTile } from '@mridul/database';
+import { getMoodTiles, type MoodTile } from '@mridul/database';
 
 /** Icon keys are stored as data, so the map lives with the markup. */
-const ICONS: Record<MoodTile['icon'], LucideIcon> = {
+const ICONS: Record<string, LucideIcon> = {
   waves: Waves,
   sparkles: Sparkles,
   scissors: Scissors,
@@ -21,8 +21,8 @@ const ICONS: Record<MoodTile['icon'], LucideIcon> = {
   gift: Gift,
 };
 
-export function CategoryRail() {
-  const tiles = [...moodTiles].sort((a, b) => a.position - b.position);
+export async function CategoryRail() {
+  const tiles = await getMoodTiles();
 
   return (
     <section
@@ -41,7 +41,7 @@ export function CategoryRail() {
       </div>
       <div className="category-grid">
         {tiles.map((tile) => {
-          const Icon = ICONS[tile.icon];
+          const Icon = ICONS[tile.icon] ?? Sparkles;
           return (
             <Link className="category-card" href={tile.href} key={tile.id}>
               <span className={`category-orbit tone-${tile.tone}`}>

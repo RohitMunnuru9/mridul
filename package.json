@@ -18,13 +18,16 @@
     "start": "npm run start --workspace apps/storefront",
     "lint": "oxlint",
     "format": "oxfmt",
-    "typecheck": "tsc --noEmit -p apps/storefront && tsc --noEmit -p apps/admin"
+    "typecheck": "tsc --noEmit -p apps/storefront && tsc --noEmit -p apps/admin",
+    "seed": "tsx scripts/seed-supabase.ts"
   },
   "devDependencies": {
     "@types/node": "22.19.19",
+    "dotenv": "^17.4.2",
     "oxfmt": "0.61.0",
     "oxlint": "1.76.0",
     "oxlint-tsgolint": "7.0.2001",
+    "tsx": "^4.23.13",
     "typescript": "5.9.3"
   }
 }
