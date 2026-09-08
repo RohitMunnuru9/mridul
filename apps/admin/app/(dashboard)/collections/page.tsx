@@ -13,7 +13,7 @@ import {
   getProductsByCollection,
 } from '@mridul/database';
 import { formatPaise } from '@mridul/utils';
-import { InternalLink, MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite } from '../components/ui';
+import { InternalLink, MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Collections | Mridul Admin' };
 

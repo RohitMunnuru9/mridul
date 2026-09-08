@@ -26,7 +26,7 @@ import {
   Pill,
   StatCard,
   ViewOnSite,
-} from './components/ui';
+} from '../components/ui';
 
 export const metadata: Metadata = { title: 'Dashboard | Mridul Admin' };
 

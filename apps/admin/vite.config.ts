@@ -14,12 +14,18 @@ const WORKSPACE_PACKAGES = [
   'validation',
 ];
 
-const workspaceAliases = Object.fromEntries(
-  WORKSPACE_PACKAGES.map((name) => [
-    `@mridul/${name}`,
-    fileURLToPath(new URL(`../../packages/${name}/src/index.ts`, import.meta.url)),
-  ]),
-);
+const workspaceAliases = {
+  ...Object.fromEntries(
+    WORKSPACE_PACKAGES.map((name) => [
+      `@mridul/${name}`,
+      fileURLToPath(new URL(`../../packages/${name}/src/index.ts`, import.meta.url)),
+    ]),
+  ),
+  // Server-only entry point: imports next/headers, never bundled for a browser.
+  '@mridul/supabase/server': fileURLToPath(
+    new URL('../../packages/supabase/src/server.ts', import.meta.url),
+  ),
+};
 
 // One .env.local at the repo root serves both apps, so the keys are not
 // duplicated per app and cannot drift apart.

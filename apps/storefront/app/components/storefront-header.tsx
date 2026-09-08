@@ -175,7 +175,9 @@ export function StorefrontHeader({
   }
 
   return (
-    <>
+    // The strip and the header stick together as one block. Sticking only the
+    // header would let the quote scroll away and leave a seam behind it.
+    <div className={`site-chrome${compact ? ' is-compact' : ''}`}>
       <AnnouncementBar quotes={quotes} utility={announcements[0]} />
       <div className={`navigation-stack${compact ? ' is-compact' : ''}`}>
         <header className="site-header">
@@ -367,6 +369,6 @@ export function StorefrontHeader({
           </form>
         )}
       </div>
-    </>
+    </div>
   );
 }

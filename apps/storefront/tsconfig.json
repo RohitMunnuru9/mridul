@@ -5,6 +5,7 @@
     "types": ["node", "@cloudflare/workers-types", "vinext/types"],
     "paths": {
       "@/*": ["./*"],
+      "@mridul/supabase/server": ["../../packages/supabase/src/server.ts"],
       "@mridul/*": ["../../packages/*/src"]
     }
   },

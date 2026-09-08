@@ -1,37 +1,23 @@
 import type { Metadata } from 'next';
-import { getSiteSettings } from '@mridul/database';
-import { AdminNav } from './components/nav';
 import './globals.css';
+
+/**
+ * Root layout. Deliberately bare: the login page renders inside it with no
+ * shell, and the gated shell lives in the (dashboard) group so the auth check
+ * happens once, in one place, and cannot be forgotten on a new page.
+ */
 
 export const metadata: Metadata = {
   title: 'Mridul by MR | Admin',
   description: 'Catalogue, content, orders and settings for Mridul by MR.',
 };
 
-export default async function AdminLayout({
+export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const settings = await getSiteSettings();
-
   return (
     <html lang="en">
-      <body>
-        <div className="admin-shell">
-          <aside className="admin-sidebar">
-            <div className="admin-brand">
-              {settings.brandName.split(' ')[0]}
-              <span>Admin</span>
-            </div>
-            <AdminNav />
-            <p className="admin-note">
-              <strong>Read-only preview.</strong> Every section reads the live
-              catalogue and content the storefront renders. Editing, roles and
-              row-level security arrive with Supabase Auth.
-            </p>
-          </aside>
-          <main className="admin-main">{children}</main>
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
