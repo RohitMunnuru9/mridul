@@ -1208,7 +1208,7 @@ th.numeric {
 .admin-choice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: start;
   gap: 1rem;
   min-height: 12rem;
   padding: 1.5rem;
@@ -1406,6 +1406,16 @@ th.numeric {
   justify-content: flex-end;
   gap: 0.5rem;
 }
+
+/* Stock sits on its own line beneath the name, indented to the text rather
+   than the thumbnail, so a product with six sizes does not squeeze the
+   buttons it shares a row with. */
+.product-admin-stock {
+  grid-column: 2 / -1;
+}
+.product-admin-stock .stock-editor {
+  max-width: 22rem;
+}
 .product-admin-actions .edit-form {
   padding: 0;
 }
@@ -1473,6 +1483,12 @@ th.numeric {
   .product-admin-actions {
     grid-column: 1 / -1;
     justify-content: flex-start;
+  }
+  .product-admin-stock {
+    grid-column: 1 / -1;
+  }
+  .product-admin-stock .stock-editor {
+    max-width: none;
   }
 }
 
