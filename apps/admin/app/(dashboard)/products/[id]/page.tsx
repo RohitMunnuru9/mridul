@@ -97,7 +97,13 @@ export default async function ProductEditPage({ params }: PageProps) {
       <Panel title="Photographs" note="The first image is the one shoppers see on a listing.">
         <div className="image-editor">
           {realImages.map((image, index) => (
-            <div className="image-editor-item" key={image.id}>
+            <article className="image-editor-item" key={image.id}>
+              <header>
+                <span className="image-role">
+                  {index === 0 ? "Thumbnail" : `Image ${index + 1}`}
+                </span>
+                {index === 0 && <small>Shown on listings</small>}
+              </header>
               <ReplaceableImage
                 action={replaceProductImage}
                 alt={image.alt}
@@ -108,8 +114,7 @@ export default async function ProductEditPage({ params }: PageProps) {
                 productSlug={product.slug}
                 url={image.url}
               />
-              <span className="image-role">{index === 0 ? "Thumbnail" : `Image ${index + 1}`}</span>
-              <EditForm action={updateMedia} submitLabel="Save image details" compact>
+              <EditForm action={updateMedia} submitLabel="Save details" compact>
                 <input name="media_id" type="hidden" value={image.id} />
                 <input name="product_id" type="hidden" value={product.id} />
                 <Field label="Alt text" name="alt" defaultValue={image.alt} required />
@@ -120,27 +125,27 @@ export default async function ProductEditPage({ params }: PageProps) {
                   hint="Example: 50% center"
                 />
               </EditForm>
-              <div className="image-order-actions">
+              <footer className="image-editor-actions">
                 {index > 0 && (
-                  <EditForm action={moveProductImage} submitLabel="Move earlier" compact>
+                  <EditForm action={moveProductImage} submitLabel="← Earlier" compact>
                     <input name="product_id" type="hidden" value={product.id} />
                     <input name="media_id" type="hidden" value={image.id} />
                     <input name="direction" type="hidden" value="up" />
                   </EditForm>
                 )}
                 {index < realImages.length - 1 && (
-                  <EditForm action={moveProductImage} submitLabel="Move later" compact>
+                  <EditForm action={moveProductImage} submitLabel="Later →" compact>
                     <input name="product_id" type="hidden" value={product.id} />
                     <input name="media_id" type="hidden" value={image.id} />
                     <input name="direction" type="hidden" value="down" />
                   </EditForm>
                 )}
-              </div>
-              <EditForm action={removeProductImage} submitLabel="Remove" compact danger>
-                <input name="image_id" type="hidden" value={image.id} />
-                <input name="product_id" type="hidden" value={product.id} />
-              </EditForm>
-            </div>
+                <EditForm action={removeProductImage} submitLabel="Remove" compact danger>
+                  <input name="image_id" type="hidden" value={image.id} />
+                  <input name="product_id" type="hidden" value={product.id} />
+                </EditForm>
+              </footer>
+            </article>
           ))}
 
           <div className="image-editor-add">

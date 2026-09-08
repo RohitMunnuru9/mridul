@@ -1012,15 +1012,69 @@ th.numeric {
 
 .image-editor {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
-  padding: 1.1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.7rem;
+  padding: 0.9rem 1.1rem;
 }
+
+/* One box per photograph, matching the option cards below it: a label, the
+   picture, its words, and the things you can do to it — in that order, so the
+   controls belong to the picture they sit under. */
 .image-editor-item {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  gap: 0.4rem;
-  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 5px;
+  background: var(--paper, #fffdfc);
+}
+.image-editor-item > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--line-soft, #efe9e3);
+}
+.image-editor-item > header small {
+  flex: none;
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.68rem;
+}
+
+/* The picture fills its box rather than sitting as a fixed square in the
+   corner of one. */
+.image-editor-item .media-thumb {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 3 / 4;
+}
+.image-editor-item .image-replace,
+.image-editor-item .image-replace-trigger {
+  width: 100%;
+}
+
+/* Reorder and remove are secondary to editing the picture, so they read as a
+   row of small controls rather than a stack of full-width buttons. */
+.image-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--line-soft, #efe9e3);
+}
+.image-editor-actions .edit-form,
+.image-editor-actions .edit-form.is-compact {
+  padding: 0;
+}
+.image-editor-actions .edit-form-foot {
+  margin: 0;
+}
+.image-editor-actions button {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.7rem;
 }
 .image-editor-item .image-alt {
   margin: 0;
@@ -1457,6 +1511,9 @@ th.numeric {
 }
 .image-editor-item > .edit-form {
   width: 100%;
+}
+.image-editor-actions > .edit-form {
+  width: auto;
 }
 .image-editor-item > .edit-form.is-compact {
   display: block;
