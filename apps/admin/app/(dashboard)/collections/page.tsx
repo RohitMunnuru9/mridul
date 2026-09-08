@@ -84,7 +84,7 @@ export default async function CollectionsPage() {
                 <th>Category</th>
                 <th className="numeric">Price</th>
                 <th className="numeric">Stock</th>
-                <th />
+                <th aria-label="Actions" />
               </tr>
             </thead>
             <tbody>

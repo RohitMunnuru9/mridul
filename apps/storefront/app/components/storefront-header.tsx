@@ -142,6 +142,15 @@ export function StorefrontHeader({
   const [compact, setCompact] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /**
+   * The drawer is mounted by a deliberate click, so focus follows it into the
+   * field. Done with a ref rather than `autoFocus`, which fires on any mount
+   * and cannot be reasoned about from the call site.
+   */
+  function focusOnOpen(node: HTMLInputElement | null) {
+    node?.focus();
+  }
+
   // Collapse the header once the page has moved, so the products get the room.
   useEffect(() => {
     const onScroll = () => setCompact(window.scrollY > 80);
@@ -150,11 +159,15 @@ export function StorefrontHeader({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Any navigation closes whatever was open.
-  useEffect(() => {
+  // Any navigation closes whatever was open. Adjusted during render rather
+  // than in an effect: an effect would paint the new page with the old menu
+  // still open for a frame.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
     setOpenMenu(null);
     setSearchOpen(false);
-  }, [pathname]);
+  }
 
   /** A small delay stops the dropdown flickering as the pointer crosses a gap. */
   function scheduleClose() {
@@ -255,6 +268,9 @@ export function StorefrontHeader({
 
           <BrandMark />
 
+          {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions --
+              closing on pointer-leave has no keyboard analogue; Escape and blur
+              already close the menu. */}
           <nav
             className="desktop-navigation"
             aria-label="Primary navigation"
@@ -346,8 +362,8 @@ export function StorefrontHeader({
             <div>
               <Search aria-hidden="true" />
               <input
-                autoFocus
                 id="site-search"
+                ref={focusOnOpen}
                 name="q"
                 onChange={(event) => setTerm(event.target.value)}
                 placeholder="Search sarees, blouses, fabrics…"
