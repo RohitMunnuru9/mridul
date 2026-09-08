@@ -1,6 +1,9 @@
+# Patterns are intentionally unanchored so they match inside apps/* and
+# packages/* as well as at the repo root.
+
 # dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -9,15 +12,21 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage/
 
-# next.js
-/.next/
-/.vinext/
-/out/
+# framework build output
+.next/
+.vinext/
+out/
+dist/
+*.tsbuildinfo
+
+# cloudflare / wrangler local state
+.wrangler/
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 
 # debug
@@ -26,17 +35,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local environment
-.env*
+# local environment — never commit secrets
+.env
+.env.*
+!.env.example
 
 # deployment and generated files
 .vercel
 next-env.d.ts
-/dist/
-/.wrangler/
-/outputs/
-/work/
+outputs/
+work/
 
 # local visual QA captures
-/mobile-*.jpg
-/desktop-*.jpg
+mobile-*.jpg
+desktop-*.jpg

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["node", "@cloudflare/workers-types", "vinext/types"],
+    "paths": {
+      "@/*": ["./*"],
+      "@mridul/*": ["../../packages/*/src"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    "../../packages/**/*.ts",
+    ".vinext/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}
