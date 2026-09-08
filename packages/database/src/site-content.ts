@@ -313,7 +313,13 @@ export const siteSettings: SiteSettings = {
     'Free shipping above ₹1,999',
     'Easy 7-day returns',
     'Cash on delivery available',
-    'Handwoven in small runs',
+  ],
+  // Kept short. A line that takes a second to read is a line nobody reads.
+  quotes: [
+    'Woven slowly, so it stays with you.',
+    'Six yards, and every one of them remembers.',
+    'Some things are worth the wait on the loom.',
+    'Not bought for a season. Kept for a life.',
   ],
   freeShippingThresholdPaise: 199900,
   flatShippingPaise: 9900,

@@ -96,35 +96,43 @@ export const categories: Category[] = [
 ];
 
 export const collections: Collection[] = [
+  // Only the first two carry a place in the navigation. The rest are reachable
+  // from the shop index, the dropdowns and their own pages — a nav that lists
+  // every edit stops being navigation.
   {
     id: 'col_new',
     slug: 'new-arrivals',
     name: 'New Arrivals',
     tagline: 'Fresh from the loom',
+    showInNav: true,
   },
   {
     id: 'col_best',
     slug: 'best-sellers',
     name: 'Best Sellers',
     tagline: 'Loved on repeat',
+    showInNav: true,
   },
   {
     id: 'col_festive',
     slug: 'festive',
     name: 'Festive Collection',
     tagline: 'For the bright days',
+    showInNav: false,
   },
   {
     id: 'col_wedding',
     slug: 'wedding',
     name: 'Wedding Collection',
     tagline: 'For the grand ones',
+    showInNav: false,
   },
   {
     id: 'col_everyday',
     slug: 'everyday',
     name: 'Everyday Edit',
     tagline: 'Easy, all week',
+    showInNav: false,
   },
 ];
 

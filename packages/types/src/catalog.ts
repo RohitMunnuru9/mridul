@@ -48,6 +48,8 @@ export type Collection = {
   slug: string;
   name: string;
   tagline: string;
+  /** Whether this edit earns a place in the header navigation. */
+  showInNav: boolean;
 };
 
 /** Maps to `product_images`. */
