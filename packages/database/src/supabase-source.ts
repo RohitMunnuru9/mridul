@@ -15,7 +15,7 @@
  * deliberately simple for now.
  */
 
-import { publicClient, storageUrl } from '@mridul/supabase';
+import { publicClient, storageUrl, type Client } from "@mridul/supabase";
 import type {
   Category,
   Collection,
@@ -30,7 +30,7 @@ import type {
   StoryPanel,
   ValueProp,
   HomepageSection,
-} from '@mridul/types';
+} from "@mridul/types";
 
 /** A media row as the queries below select it. */
 type MediaRow = {
@@ -59,16 +59,16 @@ function toAsset(media: MediaRow): MediaAsset | null {
     url: storageUrl(media.bucket, media.path),
     alt: media.alt,
     focal: media.focal,
-    bucket: media.bucket as MediaAsset['bucket'],
+    bucket: media.bucket as MediaAsset["bucket"],
   };
 }
 
 /** Placeholder used only if a row somehow has no image, so nothing crashes. */
 const MISSING_IMAGE: ProductImage = {
-  id: 'missing',
-  url: '/images/saree-homepage-hero.png',
-  alt: '',
-  focal: '50% center',
+  id: "missing",
+  url: "/images/saree-homepage-hero.png",
+  alt: "",
+  focal: "50% center",
   position: 0,
 };
 
@@ -109,7 +109,7 @@ function toProduct(row: any): Product {
     slug: row.slug,
     name: row.name,
     subtitle: row.subtitle,
-    categorySlug: row.primary_category?.slug ?? '',
+    categorySlug: row.primary_category?.slug ?? "",
     collectionSlugs: (row.product_collections ?? [])
       .map((entry: any) => entry.collections?.slug)
       .filter(Boolean),
@@ -141,47 +141,53 @@ function toProduct(row: any): Product {
  * shopper gets active products, and nothing else, without this code having to
  * remember to filter.
  */
-export async function fetchProducts(): Promise<Product[]> {
-  const { data, error } = await publicClient()
-    .from('products')
+export async function fetchProducts(client: Client = publicClient()): Promise<Product[]> {
+  const { data, error } = await client
+    .from("products")
     .select(PRODUCT_SELECT)
-    .order('published_at', { ascending: false });
+    .order("published_at", { ascending: false });
 
   if (error) throw new Error(`Loading products: ${error.message}`);
   return (data ?? []).map(toProduct);
 }
 
-export async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  const { data, error } = await publicClient()
-    .from('products')
+export async function fetchProductBySlug(
+  slug: string,
+  client: Client = publicClient(),
+): Promise<Product | null> {
+  const { data, error } = await client
+    .from("products")
     .select(PRODUCT_SELECT)
-    .eq('slug', slug)
+    .eq("slug", slug)
     .maybeSingle();
 
   if (error) throw new Error(`Loading product ${slug}: ${error.message}`);
   return data ? toProduct(data) : null;
 }
 
-export async function fetchProductById(id: string): Promise<Product | null> {
-  const { data, error } = await publicClient()
-    .from('products')
+export async function fetchProductById(
+  id: string,
+  client: Client = publicClient(),
+): Promise<Product | null> {
+  const { data, error } = await client
+    .from("products")
     .select(PRODUCT_SELECT)
-    .eq('id', id)
+    .eq("id", id)
     .maybeSingle();
 
   if (error) throw new Error(`Loading product ${id}: ${error.message}`);
   return data ? toProduct(data) : null;
 }
 
-export async function fetchCategories(): Promise<Category[]> {
-  const { data, error } = await publicClient()
-    .from('categories')
+export async function fetchCategories(client: Client = publicClient()): Promise<Category[]> {
+  const { data, error } = await client
+    .from("categories")
     .select(
-      'id, slug, name, tagline, intro, description, position, is_active, ' +
-        'size_chart, size_chart_note, ' +
-        'hero:media!categories_hero_media_id_fkey(id, bucket, path, alt, focal)',
+      "id, slug, name, tagline, intro, description, position, is_active, " +
+        "size_chart, size_chart_note, " +
+        "hero:media!categories_hero_media_id_fkey(id, bucket, path, alt, focal)",
     )
-    .order('position');
+    .order("position");
 
   if (error) throw new Error(`Loading categories: ${error.message}`);
 
@@ -194,7 +200,7 @@ export async function fetchCategories(): Promise<Category[]> {
     description: row.description,
     heroImage: toImage(row.hero) ?? MISSING_IMAGE,
     sizeChart: Array.isArray(row.size_chart) ? row.size_chart : [],
-    sizeChartNote: row.size_chart_note ?? '',
+    sizeChartNote: row.size_chart_note ?? "",
     position: row.position,
     isActive: row.is_active,
   }));
@@ -202,9 +208,9 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export async function fetchCollections(): Promise<Collection[]> {
   const { data, error } = await publicClient()
-    .from('collections')
-    .select('id, slug, name, tagline, show_in_nav')
-    .order('position');
+    .from("collections")
+    .select("id, slug, name, tagline, show_in_nav")
+    .order("position");
 
   if (error) throw new Error(`Loading collections: ${error.message}`);
   return (data ?? []).map((row: any) => ({
@@ -218,18 +224,18 @@ export async function fetchCollections(): Promise<Collection[]> {
 
 export async function fetchHeroSlides(): Promise<HeroSlide[]> {
   const { data, error } = await publicClient()
-    .from('hero_slides')
+    .from("hero_slides")
     .select(
-      'id, eyebrow, title, note, cta_label, cta_href, position, is_active, ' +
-        'media(id, bucket, path, alt, focal)',
+      "id, eyebrow, title, note, cta_label, cta_href, position, is_active, " +
+        "media(id, bucket, path, alt, focal)",
     )
-    .order('position');
+    .order("position");
 
   if (error) throw new Error(`Loading hero slides: ${error.message}`);
 
   return (data ?? []).map((row: any) => ({
     id: row.id,
-    media: toAsset(row.media) ?? { ...MISSING_IMAGE, bucket: 'banners' as const },
+    media: toAsset(row.media) ?? { ...MISSING_IMAGE, bucket: "banners" as const },
     eyebrow: row.eyebrow,
     title: row.title,
     note: row.note,
@@ -242,9 +248,9 @@ export async function fetchHeroSlides(): Promise<HeroSlide[]> {
 
 export async function fetchHomepageSections(): Promise<HomepageSection[]> {
   const { data, error } = await publicClient()
-    .from('homepage_sections')
-    .select('id, key, name, description, position, is_enabled, collection:collections(slug)')
-    .order('position');
+    .from("homepage_sections")
+    .select("id, key, name, description, position, is_enabled, collection:collections(slug)")
+    .order("position");
 
   if (error) throw new Error(`Loading homepage sections: ${error.message}`);
 
@@ -261,9 +267,9 @@ export async function fetchHomepageSections(): Promise<HomepageSection[]> {
 
 export async function fetchOccasionPanels(): Promise<OccasionPanel[]> {
   const { data, error } = await publicClient()
-    .from('occasion_panels')
-    .select('id, tone, eyebrow, title, body, cta_label, cta_href, position')
-    .order('position');
+    .from("occasion_panels")
+    .select("id, tone, eyebrow, title, body, cta_label, cta_href, position")
+    .order("position");
 
   if (error) throw new Error(`Loading curated edits: ${error.message}`);
 
@@ -281,9 +287,9 @@ export async function fetchOccasionPanels(): Promise<OccasionPanel[]> {
 
 export async function fetchValueProps(): Promise<ValueProp[]> {
   const { data, error } = await publicClient()
-    .from('value_props')
-    .select('id, icon, title, note, position')
-    .order('position');
+    .from("value_props")
+    .select("id, icon, title, note, position")
+    .order("position");
 
   if (error) throw new Error(`Loading value props: ${error.message}`);
   return (data ?? []).map((row: any) => ({
@@ -297,12 +303,11 @@ export async function fetchValueProps(): Promise<ValueProp[]> {
 
 export async function fetchJournalPosts(): Promise<JournalPost[]> {
   const { data, error } = await publicClient()
-    .from('journal_posts')
+    .from("journal_posts")
     .select(
-      'id, title, excerpt, href, position, is_published, ' +
-        'media(id, bucket, path, alt, focal)',
+      "id, title, excerpt, href, position, is_published, " + "media(id, bucket, path, alt, focal)",
     )
-    .order('position');
+    .order("position");
 
   if (error) throw new Error(`Loading journal: ${error.message}`);
 
@@ -310,7 +315,7 @@ export async function fetchJournalPosts(): Promise<JournalPost[]> {
     id: row.id,
     title: row.title,
     excerpt: row.excerpt,
-    media: toAsset(row.media) ?? { ...MISSING_IMAGE, bucket: 'homepage' as const },
+    media: toAsset(row.media) ?? { ...MISSING_IMAGE, bucket: "homepage" as const },
     href: row.href,
     position: row.position,
     isPublished: row.is_published,
@@ -319,10 +324,9 @@ export async function fetchJournalPosts(): Promise<JournalPost[]> {
 
 export async function fetchStoryPanel(): Promise<StoryPanel> {
   const { data, error } = await publicClient()
-    .from('story_panel')
+    .from("story_panel")
     .select(
-      'eyebrow, title, body, stats, cta_label, cta_href, ' +
-        'media(id, bucket, path, alt, focal)',
+      "eyebrow, title, body, stats, cta_label, cta_href, " + "media(id, bucket, path, alt, focal)",
     )
     .maybeSingle();
 
@@ -330,38 +334,35 @@ export async function fetchStoryPanel(): Promise<StoryPanel> {
 
   const row = data as any;
   return {
-    eyebrow: row?.eyebrow ?? '',
-    title: row?.title ?? '',
-    body: row?.body ?? '',
-    media: toAsset(row?.media) ?? { ...MISSING_IMAGE, bucket: 'homepage' as const },
+    eyebrow: row?.eyebrow ?? "",
+    title: row?.title ?? "",
+    body: row?.body ?? "",
+    media: toAsset(row?.media) ?? { ...MISSING_IMAGE, bucket: "homepage" as const },
     stats: row?.stats ?? [],
-    ctaLabel: row?.cta_label ?? '',
-    ctaHref: row?.cta_href ?? '/',
+    ctaLabel: row?.cta_label ?? "",
+    ctaHref: row?.cta_href ?? "/",
   };
 }
 
 export async function fetchSiteSettings(): Promise<SiteSettings> {
-  const { data, error } = await publicClient()
-    .from('settings')
-    .select('*')
-    .maybeSingle();
+  const { data, error } = await publicClient().from("settings").select("*").maybeSingle();
 
   if (error) throw new Error(`Loading settings: ${error.message}`);
 
   const row = data as any;
   return {
-    brandName: row?.brand_name ?? 'Mridul by MR',
-    tagline: row?.tagline ?? '',
+    brandName: row?.brand_name ?? "Mridul by MR",
+    tagline: row?.tagline ?? "",
     announcements: row?.announcements ?? [],
     quotes: row?.quotes ?? [],
     freeShippingThresholdPaise: row?.free_shipping_threshold_paise ?? 199900,
     flatShippingPaise: row?.flat_shipping_paise ?? 9900,
     returnWindowDays: row?.return_window_days ?? 7,
     contact: {
-      whatsapp: row?.whatsapp_number ?? '',
-      email: row?.contact_email ?? '',
-      instagram: row?.instagram_url ?? '',
-      youtube: row?.youtube_url ?? '',
+      whatsapp: row?.whatsapp_number ?? "",
+      email: row?.contact_email ?? "",
+      instagram: row?.instagram_url ?? "",
+      youtube: row?.youtube_url ?? "",
     },
     pendingPolicies: row?.pending_policies ?? [],
   };
@@ -369,9 +370,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 
 /** Named editorial prose, keyed by slug. */
 export async function fetchContentBlocks(): Promise<Record<string, string>> {
-  const { data, error } = await publicClient()
-    .from('content_blocks')
-    .select('key, body');
+  const { data, error } = await publicClient().from("content_blocks").select("key, body");
 
   if (error) throw new Error(`Loading content blocks: ${error.message}`);
 
@@ -380,9 +379,9 @@ export async function fetchContentBlocks(): Promise<Record<string, string>> {
 
 export async function fetchMoodTiles() {
   const { data, error } = await publicClient()
-    .from('mood_tiles')
-    .select('id, label, note, href, icon, tone, position')
-    .order('position');
+    .from("mood_tiles")
+    .select("id, label, note, href, icon, tone, position")
+    .order("position");
 
   if (error) throw new Error(`Loading mood tiles: ${error.message}`);
   return (data ?? []) as any[];
@@ -399,7 +398,7 @@ export async function fetchCouponValidation(
   code: string,
   subtotalPaise: number,
 ): Promise<{ ok: boolean; reason: string; discountPaise: number; description: string }> {
-  const { data, error } = await publicClient().rpc('validate_coupon', {
+  const { data, error } = await publicClient().rpc("validate_coupon", {
     p_code: code,
     p_subtotal: subtotalPaise,
   });
@@ -409,17 +408,17 @@ export async function fetchCouponValidation(
   const row = (Array.isArray(data) ? data[0] : data) as any;
   return {
     ok: Boolean(row?.ok),
-    reason: row?.reason ?? '',
+    reason: row?.reason ?? "",
     discountPaise: Number(row?.discount_paise ?? 0),
-    description: row?.description ?? '',
+    description: row?.description ?? "",
   };
 }
 
 /** Every image and where it is used, straight from the `media_usage` view. */
 export async function fetchMediaUsage() {
   const { data, error } = await publicClient()
-    .from('media_usage')
-    .select('media_id, bucket, path, alt, focal, kind, label, href');
+    .from("media_usage")
+    .select("media_id, bucket, path, alt, focal, kind, label, href");
 
   if (error) throw new Error(`Loading media usage: ${error.message}`);
   return (data ?? []) as any[];
@@ -427,3 +426,4 @@ export async function fetchMediaUsage() {
 
 /** Coupons for the admin. Kept here so the seed types stay in one place. */
 export type CouponRow = Coupon;
+
