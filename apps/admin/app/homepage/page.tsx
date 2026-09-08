@@ -15,21 +15,23 @@ import {
   getProductsByCollection,
   getStoryPanel,
   getValueProps,
-  moodTiles,
+  getMoodTiles,
 } from '@mridul/database';
 import { MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite } from '../components/ui';
 
 export const metadata: Metadata = { title: 'Homepage | Mridul Admin' };
 
 export default async function HomepagePage() {
-  const [sections, slides, occasions, story, values, journal] = await Promise.all([
-    getHomepageSections(true),
-    getHeroSlides(true),
-    getOccasionPanels(),
-    getStoryPanel(),
-    getValueProps(),
-    getJournalPosts(true),
-  ]);
+  const [sections, slides, occasions, story, values, journal, tiles] =
+    await Promise.all([
+      getHomepageSections(true),
+      getHeroSlides(true),
+      getOccasionPanels(),
+      getStoryPanel(),
+      getValueProps(),
+      getJournalPosts(true),
+      getMoodTiles(),
+    ]);
 
   const productSection = sections.find((section) => section.key === 'featured_products');
   const featured = await getProductsByCollection(
@@ -186,9 +188,7 @@ export default async function HomepagePage() {
             </tr>
           </thead>
           <tbody>
-            {[...moodTiles]
-              .sort((a, b) => a.position - b.position)
-              .map((tile) => (
+            {tiles.map((tile) => (
                 <tr key={tile.id}>
                   <td className="numeric">{tile.position}</td>
                   <td>
@@ -201,11 +201,11 @@ export default async function HomepagePage() {
                   <td>
                     <code>{tile.icon}</code>
                   </td>
-                  <td>
-                    <ViewOnSite href={tile.href} />
-                  </td>
-                </tr>
-              ))}
+                <td>
+                  <ViewOnSite href={tile.href} />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </Panel>

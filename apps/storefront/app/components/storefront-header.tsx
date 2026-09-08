@@ -172,6 +172,11 @@ export function StorefrontHeader({
               <SheetTrigger
                 render={
                   <Button
+                    // Pinned rather than generated. base-ui derives this from
+                    // useId, which resolves differently in the RSC render and
+                    // the hydration pass under vinext, producing a mismatch
+                    // React refuses to patch.
+                    id="mobile-nav-trigger"
                     variant="ghost"
                     size="icon"
                     aria-label="Open navigation"

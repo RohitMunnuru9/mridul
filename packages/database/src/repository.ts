@@ -2,19 +2,30 @@
  * Catalogue repository — the single boundary between the storefront and the
  * data store.
  *
- * Everything here is async and returns plain DTOs, so replacing the seed
- * arrays with Supabase queries changes only the bodies of these functions.
- * Components never import the seed data directly.
+ * The store is now Supabase. Everything below still returns plain DTOs, and
+ * every component above it is unchanged, because they were written against the
+ * domain types rather than against an array.
  *
- * Filtering, sorting, faceting and pagination all run here rather than in the
- * browser. That is deliberate: the result set, the price shown and the stock
- * state are decided by the server, and the client is only ever handed the
+ * Filtering, sorting, faceting and pagination still run here rather than in
+ * the browser. That is deliberate: the result set, the price shown and the
+ * stock state are decided server-side, and the client is only ever handed the
  * answer. The same rule holds at checkout, where prices must be re-read from
  * the database and never taken from the request body.
+ *
+ * Reads use the anon key, so row-level security decides what comes back. An
+ * inactive product is invisible here because Postgres says so, not because
+ * this file remembered to filter it out.
  */
 
 import { discountPercent, formatPaise } from '@mridul/utils';
-import { categories, collections, coupons, products } from './seed-data';
+import {
+  fetchCategories,
+  fetchCollections,
+  fetchCouponValidation,
+  fetchProductById,
+  fetchProductBySlug,
+  fetchProducts,
+} from './supabase-source';
 import type {
   Category,
   Collection,
@@ -31,7 +42,7 @@ import type {
   SortKey,
 } from '@mridul/types';
 
-/** Total units across every variant. Becomes a sum over `inventory` later. */
+/** Total units across every variant. */
 function stockOf(product: Product): number {
   return product.variants.reduce((total, variant) => total + variant.stock, 0);
 }
@@ -47,28 +58,68 @@ function toListItem(product: Product): ProductListItem {
   };
 }
 
-/** Every product, including inactive ones — the admin view of the catalogue. */
+/** Every product the caller may see. RLS hides drafts from the public. */
 export async function getAllProducts(): Promise<ProductListItem[]> {
-  return products.map(toListItem);
+  return (await fetchProducts()).map(toListItem);
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return categories
-    .filter((category) => category.isActive)
-    .sort((a, b) => a.position - b.position);
+  return (await fetchCategories()).filter((category) => category.isActive);
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const category = categories.find((item) => item.slug === slug && item.isActive);
-  return category ?? null;
+  const categories = await fetchCategories();
+  return categories.find((item) => item.slug === slug && item.isActive) ?? null;
 }
 
 export async function getCollections(): Promise<Collection[]> {
-  return collections;
+  return fetchCollections();
 }
 
 export async function getCollectionBySlug(slug: string): Promise<Collection | null> {
+  const collections = await fetchCollections();
   return collections.find((item) => item.slug === slug) ?? null;
+}
+
+export async function getProductBySlug(slug: string): Promise<ProductListItem | null> {
+  const product = await fetchProductBySlug(slug);
+  return product ? toListItem(product) : null;
+}
+
+/** One product by its id, for the admin detail page. */
+export async function getProductById(id: string): Promise<ProductListItem | null> {
+  const product = await fetchProductById(id);
+  return product ? toListItem(product) : null;
+}
+
+/**
+ * Products from the same category, excluding the one being viewed.
+ * Ordered by rating so the strongest sellers surface first.
+ */
+export async function getRelatedProducts(
+  product: ProductListItem,
+  limit = 4,
+): Promise<ProductListItem[]> {
+  const all = await fetchProducts();
+  return all
+    .filter(
+      (item) => item.categorySlug === product.categorySlug && item.id !== product.id,
+    )
+    .sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0))
+    .slice(0, limit)
+    .map(toListItem);
+}
+
+/** Products belonging to a collection, for the homepage and shop rails. */
+export async function getProductsByCollection(
+  collectionSlug: string,
+  limit = 8,
+): Promise<ProductListItem[]> {
+  const all = await fetchProducts();
+  return all
+    .filter((item) => item.collectionSlugs.includes(collectionSlug))
+    .slice(0, limit)
+    .map(toListItem);
 }
 
 /**
@@ -80,9 +131,8 @@ export async function getCollectionBySlug(slug: string): Promise<Collection | nu
  */
 export async function getProductsByIds(ids: string[]): Promise<ProductListItem[]> {
   const wanted = new Set(ids);
-  return products
-    .filter((product) => wanted.has(product.id) && product.isActive)
-    .map(toListItem);
+  const all = await fetchProducts();
+  return all.filter((product) => wanted.has(product.id)).map(toListItem);
 }
 
 /** Free-text match across the fields a shopper would actually type. */
@@ -106,54 +156,17 @@ function matchesTerm(product: Product, term: string): boolean {
 }
 
 /** The starting pool for a listing, before any filter is applied. */
-function poolFor(scope: ProductScope): Product[] {
-  const live = products.filter((product) => product.isActive);
+function poolFor(all: Product[], scope: ProductScope): Product[] {
   switch (scope.kind) {
     case 'category':
-      return live.filter((product) => product.categorySlug === scope.slug);
+      return all.filter((product) => product.categorySlug === scope.slug);
     case 'collection':
-      return live.filter((product) => product.collectionSlugs.includes(scope.slug));
+      return all.filter((product) => product.collectionSlugs.includes(scope.slug));
     case 'search':
       return scope.term.trim()
-        ? live.filter((product) => matchesTerm(product, scope.term))
+        ? all.filter((product) => matchesTerm(product, scope.term))
         : [];
   }
-}
-
-export async function getProductBySlug(slug: string): Promise<ProductListItem | null> {
-  const product = products.find((item) => item.slug === slug && item.isActive);
-  return product ? toListItem(product) : null;
-}
-
-/**
- * Products from the same category, excluding the one being viewed.
- * Ordered by rating so the strongest sellers surface first.
- */
-export async function getRelatedProducts(
-  product: ProductListItem,
-  limit = 4,
-): Promise<ProductListItem[]> {
-  return products
-    .filter(
-      (item) =>
-        item.isActive &&
-        item.categorySlug === product.categorySlug &&
-        item.id !== product.id,
-    )
-    .sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0))
-    .slice(0, limit)
-    .map(toListItem);
-}
-
-/** Products belonging to a collection, for the homepage rails. */
-export async function getProductsByCollection(
-  collectionSlug: string,
-  limit = 8,
-): Promise<ProductListItem[]> {
-  return products
-    .filter((item) => item.isActive && item.collectionSlugs.includes(collectionSlug))
-    .slice(0, limit)
-    .map(toListItem);
 }
 
 /** One predicate per filter group, so facet counts can skip their own group. */
@@ -230,14 +243,15 @@ const SORTERS: Record<SortKey, (a: ProductListItem, b: ProductListItem) => numbe
 };
 
 /**
- * The listing query behind every category page.
+ * The listing query behind every category, collection and search page.
  *
  * Returns the page of results plus the facets for the current filter state,
  * so the page renders complete on the server with no client round trip.
  */
 export async function listProducts(query: ProductQuery): Promise<ProductListResult> {
-  const pool = poolFor(query.scope);
+  const [all, collections] = await Promise.all([fetchProducts(), fetchCollections()]);
 
+  const pool = poolFor(all, query.scope);
   const predicates = buildPredicates(query);
   const filtered = pool.filter((product) => matches(product, predicates));
 
@@ -249,7 +263,6 @@ export async function listProducts(query: ProductQuery): Promise<ProductListResu
   const start = (page - 1) * perPage;
 
   const prices = pool.map((product) => product.pricePaise);
-
   const colourHex = new Map(pool.map((p) => [p.colour.name, p.colour.hex]));
   const collectionNames = new Map(collections.map((c) => [c.slug, c.name]));
 
@@ -300,35 +313,67 @@ export async function listProducts(query: ProductQuery): Promise<ProductListResu
 /**
  * Validates a coupon against a subtotal and returns the discount it earns.
  *
- * This runs on the server on purpose. The bag page calls it to show a figure,
- * and checkout must call it again against server-priced lines before the
- * Razorpay order is created — a discount the browser claims is worth nothing.
+ * Delegates to the `validate_coupon` database function. The `coupons` table has
+ * no read policy at all, so this is the only way a client learns anything about
+ * a code — a shopper can test one they were given but cannot enumerate the
+ * rest. Checkout must call it again against server-priced lines.
  */
 export async function validateCoupon(
   rawCode: string,
   subtotalPaise: number,
 ): Promise<CouponResult> {
-  const code = rawCode.trim().toUpperCase();
-  if (!code) return { ok: false, reason: 'Enter a code to apply.' };
+  const result = await fetchCouponValidation(rawCode, subtotalPaise);
 
-  const coupon = coupons.find((item) => item.code === code);
-  if (!coupon || !coupon.isActive) {
-    return { ok: false, reason: 'That code is not valid.' };
-  }
-  if (subtotalPaise < coupon.minSubtotalPaise) {
-    return {
-      ok: false,
-      reason: `Spend ${formatPaise(coupon.minSubtotalPaise)} to use this code.`,
-    };
+  if (!result.ok) {
+    return { ok: false, reason: result.reason || 'That code is not valid.' };
   }
 
-  // Percentage discounts round down, so a rounding error can never favour the
-  // customer over the recorded price.
-  const discountPaise = coupon.percentOff
-    ? Math.floor((subtotalPaise * coupon.percentOff) / 100)
-    : Math.min(coupon.amountOffPaise ?? 0, subtotalPaise);
+  return {
+    ok: true,
+    coupon: {
+      code: rawCode.trim().toUpperCase(),
+      description: result.description,
+      minSubtotalPaise: 0,
+      isActive: true,
+    },
+    discountPaise: result.discountPaise,
+  };
+}
 
-  return { ok: true, coupon, discountPaise };
+/**
+ * Variant-level stock, flattened for the admin inventory table.
+ *
+ * Inventory is tracked per variant rather than per product — a saree can be
+ * sold out with its blouse piece and still available on its own — so the admin
+ * needs the rows, not the roll-up.
+ */
+export async function getInventoryRows(): Promise<
+  {
+    productId: string;
+    productName: string;
+    productSlug: string;
+    categorySlug: string;
+    variantId: string;
+    sku: string;
+    variantLabel: string;
+    unitPricePaise: number;
+    stock: number;
+  }[]
+> {
+  const products = await fetchProducts();
+  return products.flatMap((product) =>
+    product.variants.map((variant) => ({
+      productId: product.id,
+      productName: product.name,
+      productSlug: product.slug,
+      categorySlug: product.categorySlug,
+      variantId: variant.id,
+      sku: variant.sku,
+      variantLabel: variant.label,
+      unitPricePaise: product.pricePaise + variant.priceDeltaPaise,
+      stock: variant.stock,
+    })),
+  );
 }
 
 /**
@@ -339,11 +384,14 @@ export async function validateCoupon(
  * link can never point at a filter that returns nothing.
  */
 export async function getNavigationMenus(): Promise<NavMenu[]> {
-  const live = products.filter((product) => product.isActive);
+  const [live, categories, collections] = await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+    fetchCollections(),
+  ]);
 
   return categories
     .filter((category) => category.isActive)
-    .sort((a, b) => a.position - b.position)
     .map((category) => {
       const pool = live.filter((product) => product.categorySlug === category.slug);
       const base = `/shop/${category.slug}`;
@@ -414,45 +462,4 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
         },
       };
     });
-}
-
-/**
- * Variant-level stock, flattened for the admin inventory table.
- *
- * Inventory is tracked per variant rather than per product — a saree can be
- * sold out with its blouse piece and still available on its own — so the admin
- * needs the rows, not the roll-up.
- */
-export async function getInventoryRows(): Promise<
-  {
-    productId: string;
-    productName: string;
-    productSlug: string;
-    categorySlug: string;
-    variantId: string;
-    sku: string;
-    variantLabel: string;
-    unitPricePaise: number;
-    stock: number;
-  }[]
-> {
-  return products.flatMap((product) =>
-    product.variants.map((variant) => ({
-      productId: product.id,
-      productName: product.name,
-      productSlug: product.slug,
-      categorySlug: product.categorySlug,
-      variantId: variant.id,
-      sku: variant.sku,
-      variantLabel: variant.label,
-      unitPricePaise: product.pricePaise + variant.priceDeltaPaise,
-      stock: variant.stock,
-    })),
-  );
-}
-
-/** One product by its id, for the admin detail page. */
-export async function getProductById(id: string): Promise<ProductListItem | null> {
-  const product = products.find((item) => item.id === id);
-  return product ? toListItem(product) : null;
 }
