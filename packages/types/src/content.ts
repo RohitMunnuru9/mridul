@@ -148,6 +148,8 @@ export type SiteSettings = {
   brandName: string;
   tagline: string;
   announcements: string[];
+  /** Rotated above the header. Brand voice, not merchandising. */
+  quotes: string[];
   /** The one free-shipping figure. Everything that quotes shipping reads it. */
   freeShippingThresholdPaise: Money;
   /** Charged below the threshold until a courier is contracted. */

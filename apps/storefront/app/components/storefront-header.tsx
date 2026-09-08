@@ -40,42 +40,45 @@ import {
 import type { Collection, NavMenu } from '@mridul/types';
 import { useStore } from '../providers/store-provider';
 
-/** Messages come from site settings, so marketing owns the strip. */
+/**
+ * The strip above the header.
+ *
+ * A rotating brand line is the point of it; the shipping promise rides along
+ * on wider screens because there is room, not because it needs to be here —
+ * it already appears on the value strip, in the bag and on every product page.
+ *
+ * Both come from settings, so marketing owns the words.
+ */
 function AnnouncementBar({
-  messages,
-  strapline,
+  quotes,
+  utility,
 }: {
-  messages: string[];
-  strapline: string;
+  quotes: string[];
+  utility?: string;
 }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (messages.length < 2) return;
+    if (quotes.length < 2) return;
     const timer = setInterval(
-      () => setIndex((current) => (current + 1) % messages.length),
-      4500,
+      () => setIndex((current) => (current + 1) % quotes.length),
+      6500,
     );
     return () => clearInterval(timer);
-  }, [messages.length]);
+  }, [quotes.length]);
 
-  if (messages.length === 0) return null;
+  if (quotes.length === 0 && !utility) return null;
 
   return (
     <div className="announcement-bar">
-      {/* Desktop shows the full set; a phone only has room for one at a time. */}
-      <span className="announcement-all">
-        {messages.slice(0, 3).map((message, position) => (
-          <span key={message}>
-            {message}
-            {position < Math.min(messages.length, 3) - 1 && <i />}
-          </span>
-        ))}
-      </span>
-      <span aria-live="polite" className="announcement-rotating">
-        {messages[index % messages.length]}
-      </span>
-      {strapline && <span className="announcement-story">{strapline}</span>}
+      {utility && <span className="announcement-utility">{utility}</span>}
+      {quotes.length > 0 && (
+        <p aria-live="polite" className="announcement-quote" key={index}>
+          <span aria-hidden="true">&#10022;</span>
+          {quotes[index % quotes.length]}
+          <span aria-hidden="true">&#10022;</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -121,12 +124,13 @@ export function StorefrontHeader({
   menus,
   collections,
   announcements,
-  strapline,
+  quotes,
 }: {
   menus: NavMenu[];
+  /** Already filtered to the edits that belong in the nav. */
   collections: Collection[];
   announcements: string[];
-  strapline: string;
+  quotes: string[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -172,7 +176,7 @@ export function StorefrontHeader({
 
   return (
     <>
-      <AnnouncementBar messages={announcements} strapline={strapline} />
+      <AnnouncementBar quotes={quotes} utility={announcements[0]} />
       <div className={`navigation-stack${compact ? ' is-compact' : ''}`}>
         <header className="site-header">
           <div className="mobile-nav">

@@ -271,6 +271,7 @@ export type Database = {
           is_active: boolean
           name: string
           position: number
+          show_in_nav: boolean
           slug: string
           tagline: string
           updated_at: string
@@ -281,6 +282,7 @@ export type Database = {
           is_active?: boolean
           name: string
           position?: number
+          show_in_nav?: boolean
           slug: string
           tagline?: string
           updated_at?: string
@@ -291,6 +293,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           position?: number
+          show_in_nav?: boolean
           slug?: string
           tagline?: string
           updated_at?: string
@@ -1262,6 +1265,7 @@ export type Database = {
           id: boolean
           instagram_url: string
           pending_policies: string[]
+          quotes: string[]
           return_window_days: number
           tagline: string
           updated_at: string
@@ -1277,6 +1281,7 @@ export type Database = {
           id?: boolean
           instagram_url?: string
           pending_policies?: string[]
+          quotes?: string[]
           return_window_days?: number
           tagline?: string
           updated_at?: string
@@ -1292,6 +1297,7 @@ export type Database = {
           id?: boolean
           instagram_url?: string
           pending_policies?: string[]
+          quotes?: string[]
           return_window_days?: number
           tagline?: string
           updated_at?: string

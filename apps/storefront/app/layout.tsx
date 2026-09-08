@@ -49,15 +49,19 @@ export default async function RootLayout({
     getContentBlocks(),
   ]);
 
+  // Which edits earn a place in the header is a flag on the row, not a slice
+  // taken here — so trimming the nav is a data change.
+  const navCollections = collections.filter((collection) => collection.showInNav);
+
   return (
     <html lang="en">
       <body className={`${manrope.variable} ${cormorant.variable} antialiased`}>
         <StoreProvider>
           <StorefrontHeader
             menus={menus}
-            collections={collections}
+            collections={navCollections}
             announcements={settings.announcements}
-            strapline={copy.header_strapline ?? ''}
+            quotes={settings.quotes}
           />
           <main id="top">{children}</main>
           <SiteFooter

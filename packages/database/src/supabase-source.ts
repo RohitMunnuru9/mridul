@@ -203,11 +203,17 @@ export async function fetchCategories(): Promise<Category[]> {
 export async function fetchCollections(): Promise<Collection[]> {
   const { data, error } = await publicClient()
     .from('collections')
-    .select('id, slug, name, tagline')
+    .select('id, slug, name, tagline, show_in_nav')
     .order('position');
 
   if (error) throw new Error(`Loading collections: ${error.message}`);
-  return (data ?? []) as Collection[];
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    tagline: row.tagline,
+    showInNav: row.show_in_nav,
+  }));
 }
 
 export async function fetchHeroSlides(): Promise<HeroSlide[]> {
@@ -347,6 +353,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
     brandName: row?.brand_name ?? 'Mridul by MR',
     tagline: row?.tagline ?? '',
     announcements: row?.announcements ?? [],
+    quotes: row?.quotes ?? [],
     freeShippingThresholdPaise: row?.free_shipping_threshold_paise ?? 199900,
     flatShippingPaise: row?.flat_shipping_paise ?? 9900,
     returnWindowDays: row?.return_window_days ?? 7,
