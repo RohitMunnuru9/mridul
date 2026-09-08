@@ -6,26 +6,21 @@
  * a new product.
  */
 
-import type { Metadata } from 'next';
-import { getAllProducts, getCategories } from '@mridul/database';
-import { formatPaise } from '@mridul/utils';
-import { createProduct, toggleProductActive } from '../../actions/catalogue';
-import { EditForm, Field, FieldRow, Select } from '../../components/form';
-import {
-  InternalLink,
-  MediaThumb,
-  PageHead,
-  Panel,
-  Pill,
-  ViewOnSite,
-} from '../../components/ui';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PackagePlus, PencilLine } from "lucide-react";
+import { getAllCategories, getAllProducts } from "@mridul/database";
+import { sessionClient } from "@mridul/supabase/server";
+import { formatPaise } from "@mridul/utils";
+import { createProduct, toggleProductActive } from "../../actions/catalogue";
+import { EditForm, Field, FieldRow, Select, TextArea } from "../../components/form";
+import { InternalLink, MediaThumb, PageHead, Panel, Pill } from "../../components/ui";
 
-export const metadata: Metadata = { title: 'Products | Mridul Admin' };
-
-const LOW_STOCK = 6;
+export const metadata: Metadata = { title: "Products | Mridul Admin" };
 
 export default async function ProductsPage() {
-  const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
+  const db = await sessionClient();
+  const [products, categories] = await Promise.all([getAllProducts(db), getAllCategories(db)]);
 
   const live = products.filter((product) => product.isActive).length;
   const outOfStock = products.filter((product) => product.stockTotal === 0).length;
@@ -33,11 +28,76 @@ export default async function ProductsPage() {
   return (
     <>
       <PageHead
-        title="Products"
-        subtitle={`${products.length} products · ${live} live · ${outOfStock} out of stock`}
+        title="Product catalogue"
+        subtitle={`${products.length} saved · ${live} live · ${products.length - live} hidden · ${outOfStock} out of stock`}
       />
 
-      <Panel title="Add a product" note="Starts as a draft so nothing appears before it has photographs.">
+      <div className="catalogue-jump" aria-label="Product actions">
+        <Link href="#existing-products">
+          <PencilLine aria-hidden="true" /> Edit existing
+        </Link>
+        <Link href="#add-product">
+          <PackagePlus aria-hidden="true" /> Add new product
+        </Link>
+      </div>
+
+      <div id="existing-products" className="anchor-target" />
+      <Panel
+        title="Edit existing products"
+        note="Hidden products stay saved here. They are faded so you can recognise and restore them."
+      >
+        <div className="product-admin-list">
+          {products.map((product) => (
+            <article
+              className={`product-admin-row${!product.isActive ? " is-unlisted" : ""}`}
+              key={product.id}
+            >
+              <div className="product-admin-image">
+                <MediaThumb
+                  url={product.images[0].url}
+                  alt={product.images[0].alt}
+                  focal={product.images[0].focal}
+                  size={86}
+                />
+              </div>
+              <div className="product-admin-info">
+                <div className="product-admin-title">
+                  <InternalLink href={`/products/${product.id}`}>{product.name}</InternalLink>
+                  <Pill tone={product.isActive ? "ok" : "muted"}>
+                    {product.isActive ? "Live" : "Hidden"}
+                  </Pill>
+                </div>
+                <span>
+                  {product.categorySlug || "No category"} · {product.fabric || "Fabric not set"}
+                </span>
+                <small>
+                  {formatPaise(product.pricePaise)} · {product.stockTotal} units
+                </small>
+              </div>
+              <div className="product-admin-actions">
+                <Link className="btn-primary product-edit-link" href={`/products/${product.id}`}>
+                  Edit everything
+                </Link>
+                <EditForm
+                  action={toggleProductActive}
+                  submitLabel={product.isActive ? "Hide from website" : "Put back on website"}
+                  compact
+                  danger={product.isActive}
+                >
+                  <input name="id" type="hidden" value={product.id} />
+                  <input name="active" type="hidden" value={String(!product.isActive)} />
+                </EditForm>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <div id="add-product" className="anchor-target" />
+      <Panel
+        title="Add a new product"
+        note="It starts hidden, so you can finish details and photographs safely before publishing."
+      >
         <EditForm action={createProduct} submitLabel="Create draft">
           <FieldRow>
             <Field label="Name" name="name" required placeholder="e.g. Saanjh Sage" />
@@ -52,11 +112,17 @@ export default async function ProductsPage() {
           </FieldRow>
           <FieldRow>
             <Field label="Price" name="price" required hint="In rupees" placeholder="4650" />
-            <Field
-              label="Subtitle"
-              name="subtitle"
-              placeholder="Saree with blouse piece"
-            />
+            <Field label="Compare-at price" name="compare_at" hint="Optional original price" />
+          </FieldRow>
+          <Field label="Subtitle" name="subtitle" placeholder="Saree with blouse piece" />
+          <TextArea label="Description" name="description" rows={3} />
+          <FieldRow>
+            <Field label="Fabric" name="fabric" placeholder="Chanderi silk" />
+            <Field label="Colour" name="colour_name" placeholder="Blush rose" />
+          </FieldRow>
+          <FieldRow>
+            <Field label="Occasion" name="occasion" placeholder="Festive" />
+            <Field label="Weave / technique" name="technique" placeholder="Handwoven" />
           </FieldRow>
           <Field
             label="First option"
@@ -64,85 +130,16 @@ export default async function ProductsPage() {
             placeholder="Saree only"
             hint="You can add more options after creating it"
           />
+          <Field
+            label="Opening stock"
+            name="initial_stock"
+            type="number"
+            defaultValue={0}
+            hint="Can be updated later"
+          />
         </EditForm>
       </Panel>
-
-      {categories.map((category) => {
-        const rows = products.filter(
-          (product) => product.categorySlug === category.slug,
-        );
-        if (rows.length === 0) return null;
-
-        return (
-          <Panel key={category.id} title={category.name} note={`${rows.length} products`}>
-            <table>
-              <thead>
-                <tr>
-                  <th />
-                  <th>Product</th>
-                  <th className="numeric">Price</th>
-                  <th className="numeric">Stock</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((product) => (
-                  <tr key={product.id}>
-                    <td>
-                      <MediaThumb
-                        url={product.images[0].url}
-                        alt={product.images[0].alt}
-                        focal={product.images[0].focal}
-                        size={44}
-                      />
-                    </td>
-                    <td>
-                      <InternalLink href={`/products/${product.id}`}>
-                        {product.name}
-                      </InternalLink>
-                      <small className="row-sub">
-                        {product.fabric} · {product.colour.name}
-                      </small>
-                    </td>
-                    <td className="numeric">{formatPaise(product.pricePaise)}</td>
-                    <td className="numeric">
-                      <Pill
-                        tone={
-                          product.stockTotal === 0
-                            ? 'out'
-                            : product.stockTotal <= LOW_STOCK
-                              ? 'low'
-                              : 'ok'
-                        }
-                      >
-                        {product.stockTotal}
-                      </Pill>
-                    </td>
-                    <td>
-                      <EditForm
-                        action={toggleProductActive}
-                        submitLabel={product.isActive ? 'Hide' : 'Make live'}
-                        compact
-                      >
-                        <input name="id" type="hidden" value={product.id} />
-                        <input
-                          name="active"
-                          type="hidden"
-                          value={String(!product.isActive)}
-                        />
-                      </EditForm>
-                    </td>
-                    <td>
-                      <ViewOnSite href={`/product/${product.slug}`} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Panel>
-        );
-      })}
     </>
   );
 }
+

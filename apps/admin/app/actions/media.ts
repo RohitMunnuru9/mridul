@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * Image upload and replacement.
@@ -9,26 +9,32 @@
  * replacing a file or fixing its alt text updates every place at once.
  */
 
-import { revalidatePath } from 'next/cache';
-import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
-import type { ActionResult } from './catalogue';
+import { revalidatePath } from "next/cache";
+import { can, currentAdmin, sessionClient } from "@mridul/supabase/server";
+import type { ActionResult } from "./catalogue";
 
 const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
 
 const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 /** Keeps uploaded names predictable and safe to put in a URL. */
 function safeName(name: string): string {
-  const dot = name.lastIndexOf('.');
+  const dot = name.lastIndexOf(".");
   const stem = (dot > 0 ? name.slice(0, dot) : name)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 60);
-  const ext = dot > 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, '') : 'jpg';
-  return `${stem || 'image'}.${ext}`;
+  const ext =
+    dot > 0
+      ? name
+          .slice(dot + 1)
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "")
+      : "jpg";
+  return `${stem || "image"}.${ext}`;
 }
 
 /**
@@ -40,113 +46,216 @@ function safeName(name: string): string {
  */
 export async function uploadProductImage(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
-  if (!can(admin, 'catalog_manager')) return FAIL('You cannot upload product images.');
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot upload product images.");
 
-  const productId = String(formData.get('product_id') ?? '');
-  const slug = String(formData.get('product_slug') ?? 'product');
-  const alt = String(formData.get('alt') ?? '').trim();
-  const file = formData.get('file');
+  const productId = String(formData.get("product_id") ?? "");
+  const slug = String(formData.get("product_slug") ?? "product");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const file = formData.get("file");
 
-  if (!(file instanceof File) || file.size === 0) return FAIL('Choose an image.');
-  if (file.size > MAX_BYTES) return FAIL('That image is larger than 10MB.');
-  if (!ALLOWED.includes(file.type)) return FAIL('Use a JPEG, PNG, WebP or AVIF.');
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
   if (!alt) {
     // Enforced here rather than left optional: alt text added later is alt
     // text never added.
-    return FAIL('Describe the image so screen readers can announce it.');
+    return FAIL("Describe the image so screen readers can announce it.");
   }
 
   const db = await sessionClient();
 
   const { count } = await db
-    .from('product_images')
-    .select('id', { count: 'exact', head: true })
-    .eq('product_id', productId);
+    .from("product_images")
+    .select("id", { count: "exact", head: true })
+    .eq("product_id", productId);
   const position = count ?? 0;
 
   const path = `${slug}/${position + 1}-${safeName(file.name)}`;
 
   const { error: uploadError } = await db.storage
-    .from('products')
+    .from("products")
     .upload(path, file, { contentType: file.type, upsert: true });
   if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
 
   const { data: media, error: mediaError } = await db
-    .from('media')
+    .from("media")
     .upsert(
       {
-        bucket: 'products',
+        bucket: "products",
         path,
         alt,
-        focal: '50% center',
+        focal: "50% center",
         mime_type: file.type,
         byte_size: file.size,
         uploaded_by: admin?.id ?? null,
       },
-      { onConflict: 'bucket,path' },
+      { onConflict: "bucket,path" },
     )
-    .select('id')
+    .select("id")
     .single();
   if (mediaError) return FAIL(mediaError.message);
 
   const { error: linkError } = await db
-    .from('product_images')
+    .from("product_images")
     .insert({ product_id: productId, media_id: media.id, position });
   if (linkError) return FAIL(linkError.message);
 
   revalidatePath(`/products/${productId}`);
-  revalidatePath('/media');
-  return OK(position === 0 ? 'Uploaded and set as the thumbnail.' : 'Image added.');
+  revalidatePath("/media");
+  return OK(position === 0 ? "Uploaded and set as the thumbnail." : "Image added.");
 }
 
 /** Removes an image from a product. The file stays in the bucket. */
 export async function removeProductImage(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
-  if (!can(admin, 'catalog_manager')) return FAIL('You cannot edit product images.');
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot edit product images.");
 
-  const imageId = String(formData.get('image_id') ?? '');
-  const productId = String(formData.get('product_id') ?? '');
+  const imageId = String(formData.get("image_id") ?? "");
+  const productId = String(formData.get("product_id") ?? "");
 
   const db = await sessionClient();
-  const { error } = await db.from('product_images').delete().eq('id', imageId);
+  const { error } = await db
+    .from("product_images")
+    .delete()
+    .eq("product_id", productId)
+    .eq("media_id", imageId);
   if (error) return FAIL(error.message);
 
   // Close the gap so positions stay 0..n-1 and the thumbnail is always first.
   const { data: remaining } = await db
-    .from('product_images')
-    .select('id, position')
-    .eq('product_id', productId)
-    .order('position');
+    .from("product_images")
+    .select("id, position")
+    .eq("product_id", productId)
+    .order("position");
 
   for (const [index, row] of (remaining ?? []).entries()) {
     if (row.position !== index) {
-      await db.from('product_images').update({ position: index }).eq('id', row.id);
+      await db.from("product_images").update({ position: index }).eq("id", row.id);
     }
   }
 
   revalidatePath(`/products/${productId}`);
-  revalidatePath('/media');
-  return OK('Image removed.');
+  revalidatePath("/media");
+  return OK("Image removed.");
+}
+
+/** Moves a product image one position left or right; position zero is the thumbnail. */
+export async function moveProductImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot reorder product images.");
+
+  const productId = String(formData.get("product_id") ?? "");
+  const mediaId = String(formData.get("media_id") ?? "");
+  const direction = String(formData.get("direction") ?? "");
+  if (!productId || !mediaId || !["up", "down"].includes(direction)) {
+    return FAIL("Missing image or direction.");
+  }
+
+  const db = await sessionClient();
+  const { data: images, error } = await db
+    .from("product_images")
+    .select("id, media_id, position")
+    .eq("product_id", productId)
+    .order("position");
+  if (error) return FAIL(error.message);
+
+  const index = (images ?? []).findIndex((image) => image.media_id === mediaId);
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (index < 0 || targetIndex < 0 || targetIndex >= (images ?? []).length) {
+    return FAIL("That image is already at the edge.");
+  }
+
+  const current = images![index];
+  const target = images![targetIndex];
+  const temporaryPosition = -1;
+  const { error: temporaryError } = await db
+    .from("product_images")
+    .update({ position: temporaryPosition })
+    .eq("id", current.id);
+  if (temporaryError) return FAIL(temporaryError.message);
+  const { error: targetError } = await db
+    .from("product_images")
+    .update({ position: current.position })
+    .eq("id", target.id);
+  if (targetError) return FAIL(targetError.message);
+  const { error: currentError } = await db
+    .from("product_images")
+    .update({ position: target.position })
+    .eq("id", current.id);
+  if (currentError) return FAIL(currentError.message);
+
+  revalidatePath(`/products/${productId}`);
+  return OK(targetIndex === 0 ? "Set as the storefront thumbnail." : "Image order updated.");
 }
 
 /** Alt text and crop, editable without re-uploading the file. */
 export async function updateMedia(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
-  if (!can(admin, 'catalog_manager', 'content_manager')) {
-    return FAIL('You cannot edit media.');
+  if (!can(admin, "catalog_manager", "content_manager")) {
+    return FAIL("You cannot edit media.");
   }
 
-  const id = String(formData.get('media_id') ?? '');
-  const alt = String(formData.get('alt') ?? '').trim();
-  const focal = String(formData.get('focal') ?? '50% center').trim();
-  if (!alt) return FAIL('Alt text cannot be empty.');
+  const id = String(formData.get("media_id") ?? "");
+  const productId = String(formData.get("product_id") ?? "");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "50% center").trim();
+  if (!alt) return FAIL("Alt text cannot be empty.");
 
   const db = await sessionClient();
-  const { error } = await db.from('media').update({ alt, focal }).eq('id', id);
+  const { error } = await db.from("media").update({ alt, focal }).eq("id", id);
   if (error) return FAIL(error.message);
 
-  revalidatePath('/media');
-  return OK('Saved.');
+  revalidatePath("/media");
+  if (productId) revalidatePath(`/products/${productId}`);
+  return OK("Saved.");
+}
+
+/** Uploads a fresh category hero and points the category at it without deleting history. */
+export async function uploadCategoryImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot change category images.");
+
+  const categoryId = String(formData.get("category_id") ?? "");
+  const slug = String(formData.get("category_slug") ?? "category");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const file = formData.get("file");
+  if (!categoryId) return FAIL("Missing category.");
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
+  if (!alt) return FAIL("Describe the image for screen readers.");
+
+  const db = await sessionClient();
+  const path = `categories/${slug}-${Date.now()}-${safeName(file.name)}`;
+  const { error: uploadError } = await db.storage
+    .from("collections")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
+
+  const { data: media, error: mediaError } = await db
+    .from("media")
+    .insert({
+      bucket: "collections",
+      path,
+      alt,
+      focal: "50% center",
+      mime_type: file.type,
+      byte_size: file.size,
+      uploaded_by: admin?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (mediaError) return FAIL(mediaError.message);
+
+  const { error: categoryError } = await db
+    .from("categories")
+    .update({ hero_media_id: media.id })
+    .eq("id", categoryId);
+  if (categoryError) return FAIL(categoryError.message);
+
+  revalidatePath("/categories");
+  revalidatePath("/");
+  return OK("Category image changed.");
 }
 
 /**
@@ -157,18 +266,18 @@ export async function updateMedia(formData: FormData): Promise<ActionResult> {
  */
 export async function replaceMediaFile(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
-  if (!can(admin, 'catalog_manager', 'content_manager')) {
-    return FAIL('You cannot replace media.');
+  if (!can(admin, "catalog_manager", "content_manager")) {
+    return FAIL("You cannot replace media.");
   }
 
-  const id = String(formData.get('media_id') ?? '');
-  const bucket = String(formData.get('bucket') ?? '');
-  const path = String(formData.get('path') ?? '');
-  const file = formData.get('file');
+  const id = String(formData.get("media_id") ?? "");
+  const bucket = String(formData.get("bucket") ?? "");
+  const path = String(formData.get("path") ?? "");
+  const file = formData.get("file");
 
-  if (!(file instanceof File) || file.size === 0) return FAIL('Choose an image.');
-  if (file.size > MAX_BYTES) return FAIL('That image is larger than 10MB.');
-  if (!ALLOWED.includes(file.type)) return FAIL('Use a JPEG, PNG, WebP or AVIF.');
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
 
   const db = await sessionClient();
   const { error: uploadError } = await db.storage
@@ -176,12 +285,10 @@ export async function replaceMediaFile(formData: FormData): Promise<ActionResult
     .upload(path, file, { contentType: file.type, upsert: true });
   if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
 
-  await db
-    .from('media')
-    .update({ mime_type: file.type, byte_size: file.size })
-    .eq('id', id);
+  await db.from("media").update({ mime_type: file.type, byte_size: file.size }).eq("id", id);
 
-  revalidatePath('/media');
-  revalidatePath('/');
-  return OK('File replaced everywhere it is used.');
+  revalidatePath("/media");
+  revalidatePath("/");
+  return OK("File replaced everywhere it is used.");
 }
+

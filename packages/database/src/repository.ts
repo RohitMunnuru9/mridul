@@ -17,7 +17,8 @@
  * this file remembered to filter it out.
  */
 
-import { discountPercent, formatPaise } from '@mridul/utils';
+import { discountPercent, formatPaise } from "@mridul/utils";
+import type { Client } from "@mridul/supabase";
 import {
   fetchCategories,
   fetchCollections,
@@ -25,7 +26,7 @@ import {
   fetchProductById,
   fetchProductBySlug,
   fetchProducts,
-} from './supabase-source';
+} from "./supabase-source";
 import type {
   Category,
   Collection,
@@ -40,7 +41,7 @@ import type {
   ProductQuery,
   ProductScope,
   SortKey,
-} from '@mridul/types';
+} from "@mridul/types";
 
 /** Total units across every variant. */
 function stockOf(product: Product): number {
@@ -59,12 +60,17 @@ function toListItem(product: Product): ProductListItem {
 }
 
 /** Every product the caller may see. RLS hides drafts from the public. */
-export async function getAllProducts(): Promise<ProductListItem[]> {
-  return (await fetchProducts()).map(toListItem);
+export async function getAllProducts(client?: Client): Promise<ProductListItem[]> {
+  return (await fetchProducts(client)).map(toListItem);
 }
 
 export async function getCategories(): Promise<Category[]> {
   return (await fetchCategories()).filter((category) => category.isActive);
+}
+
+/** Every category visible to a signed-in catalogue manager, including hidden ones. */
+export async function getAllCategories(client?: Client): Promise<Category[]> {
+  return fetchCategories(client);
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
@@ -87,8 +93,8 @@ export async function getProductBySlug(slug: string): Promise<ProductListItem | 
 }
 
 /** One product by its id, for the admin detail page. */
-export async function getProductById(id: string): Promise<ProductListItem | null> {
-  const product = await fetchProductById(id);
+export async function getProductById(id: string, client?: Client): Promise<ProductListItem | null> {
+  const product = await fetchProductById(id, client);
   return product ? toListItem(product) : null;
 }
 
@@ -102,9 +108,7 @@ export async function getRelatedProducts(
 ): Promise<ProductListItem[]> {
   const all = await fetchProducts();
   return all
-    .filter(
-      (item) => item.categorySlug === product.categorySlug && item.id !== product.id,
-    )
+    .filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id)
     .sort((a, b) => (b.rating?.average ?? 0) - (a.rating?.average ?? 0))
     .slice(0, limit)
     .map(toListItem);
@@ -146,7 +150,7 @@ function matchesTerm(product: Product, term: string): boolean {
     product.technique,
     product.description,
   ]
-    .join(' ')
+    .join(" ")
     .toLowerCase();
   return term
     .toLowerCase()
@@ -158,14 +162,12 @@ function matchesTerm(product: Product, term: string): boolean {
 /** The starting pool for a listing, before any filter is applied. */
 function poolFor(all: Product[], scope: ProductScope): Product[] {
   switch (scope.kind) {
-    case 'category':
+    case "category":
       return all.filter((product) => product.categorySlug === scope.slug);
-    case 'collection':
+    case "collection":
       return all.filter((product) => product.collectionSlugs.includes(scope.slug));
-    case 'search':
-      return scope.term.trim()
-        ? all.filter((product) => matchesTerm(product, scope.term))
-        : [];
+    case "search":
+      return scope.term.trim() ? all.filter((product) => matchesTerm(product, scope.term)) : [];
   }
 }
 
@@ -174,10 +176,8 @@ type Predicates = Record<string, (product: Product) => boolean>;
 
 function buildPredicates(query: ProductQuery): Predicates {
   return {
-    fabric: (product) =>
-      query.fabrics.length === 0 || query.fabrics.includes(product.fabric),
-    colour: (product) =>
-      query.colours.length === 0 || query.colours.includes(product.colour.name),
+    fabric: (product) => query.fabrics.length === 0 || query.fabrics.includes(product.fabric),
+    colour: (product) => query.colours.length === 0 || query.colours.includes(product.colour.name),
     occasion: (product) =>
       query.occasions.length === 0 || query.occasions.includes(product.occasion),
     collection: (product) =>
@@ -188,8 +188,7 @@ function buildPredicates(query: ProductQuery): Predicates {
       (query.maxPaise === undefined || product.pricePaise <= query.maxPaise),
     availability: (product) => !query.inStockOnly || stockOf(product) > 0,
     sale: (product) =>
-      !query.onSaleOnly ||
-      discountPercent(product.pricePaise, product.compareAtPaise) > 0,
+      !query.onSaleOnly || discountPercent(product.pricePaise, product.compareAtPaise) > 0,
   };
 }
 
@@ -268,29 +267,29 @@ export async function listProducts(query: ProductQuery): Promise<ProductListResu
 
   const facets: Facet[] = [
     {
-      key: 'fabric',
-      label: 'Fabric',
-      values: toFacetValues(countBy(pool, predicates, 'fabric', (p) => [p.fabric])),
+      key: "fabric",
+      label: "Fabric",
+      values: toFacetValues(countBy(pool, predicates, "fabric", (p) => [p.fabric])),
     },
     {
-      key: 'colour',
-      label: 'Colour',
+      key: "colour",
+      label: "Colour",
       values: toFacetValues(
-        countBy(pool, predicates, 'colour', (p) => [p.colour.name]),
+        countBy(pool, predicates, "colour", (p) => [p.colour.name]),
         undefined,
         (value) => colourHex.get(value),
       ),
     },
     {
-      key: 'occasion',
-      label: 'Occasion',
-      values: toFacetValues(countBy(pool, predicates, 'occasion', (p) => [p.occasion])),
+      key: "occasion",
+      label: "Occasion",
+      values: toFacetValues(countBy(pool, predicates, "occasion", (p) => [p.occasion])),
     },
     {
-      key: 'collection',
-      label: 'Collection',
+      key: "collection",
+      label: "Collection",
       values: toFacetValues(
-        countBy(pool, predicates, 'collection', (p) => p.collectionSlugs),
+        countBy(pool, predicates, "collection", (p) => p.collectionSlugs),
         (value) => collectionNames.get(value) ?? value,
       ),
     },
@@ -325,7 +324,7 @@ export async function validateCoupon(
   const result = await fetchCouponValidation(rawCode, subtotalPaise);
 
   if (!result.ok) {
-    return { ok: false, reason: result.reason || 'That code is not valid.' };
+    return { ok: false, reason: result.reason || "That code is not valid." };
   }
 
   return {
@@ -408,13 +407,11 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
           .map(([value]) => value);
       };
 
-      const collectionSlugs = [
-        ...new Set(pool.flatMap((product) => product.collectionSlugs)),
-      ];
+      const collectionSlugs = [...new Set(pool.flatMap((product) => product.collectionSlugs))];
 
       const groups: NavGroup[] = [
         {
-          label: 'By fabric',
+          label: "By fabric",
           links: distinct((product) => product.fabric)
             .slice(0, 6)
             .map((fabric) => ({
@@ -423,14 +420,14 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
             })),
         },
         {
-          label: 'By occasion',
+          label: "By occasion",
           links: distinct((product) => product.occasion).map((occasion) => ({
             label: occasion,
             href: `${base}?occasion=${encodeURIComponent(occasion)}`,
           })),
         },
         {
-          label: 'Edits',
+          label: "Edits",
           links: [
             ...collections
               .filter((collection) => collectionSlugs.includes(collection.slug))
@@ -438,7 +435,7 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
                 label: collection.name,
                 href: `/collections/${collection.slug}`,
               })),
-            { label: 'On offer', href: `${base}?sale=1` },
+            { label: "On offer", href: `${base}?sale=1` },
             { label: `All ${category.name.toLowerCase()}`, href: base },
           ],
         },
@@ -446,8 +443,7 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
 
       // Lead with something new, falling back to the best rated.
       const feature =
-        [...pool].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0] ??
-        pool[0];
+        [...pool].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0] ?? pool[0];
 
       return {
         categorySlug: category.slug,
@@ -463,3 +459,4 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
       };
     });
 }
+

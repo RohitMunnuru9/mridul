@@ -22,7 +22,8 @@ import type {
   SiteSettings,
   StoryPanel,
   ValueProp,
-} from '@mridul/types';
+} from "@mridul/types";
+import type { Client } from "@mridul/supabase";
 import {
   fetchCategories,
   fetchCollections,
@@ -37,18 +38,16 @@ import {
   fetchSiteSettings,
   fetchStoryPanel,
   fetchValueProps,
-} from './supabase-source';
-import { storageUrl } from '@mridul/supabase';
-import type { MoodTile } from './homepage';
+} from "./supabase-source";
+import { storageUrl } from "@mridul/supabase";
+import type { MoodTile } from "./homepage";
 
 export async function getHeroSlides(includeInactive = false): Promise<HeroSlide[]> {
   const slides = await fetchHeroSlides();
   return includeInactive ? slides : slides.filter((slide) => slide.isActive);
 }
 
-export async function getHomepageSections(
-  includeDisabled = false,
-): Promise<HomepageSection[]> {
+export async function getHomepageSections(includeDisabled = false): Promise<HomepageSection[]> {
   const sections = await fetchHomepageSections();
   return includeDisabled ? sections : sections.filter((section) => section.isEnabled);
 }
@@ -166,26 +165,22 @@ export async function getMediaSummary(): Promise<{
 export async function getCollectionsWithCounts(): Promise<
   { id: string; slug: string; name: string; tagline: string; productCount: number }[]
 > {
-  const [collections, products] = await Promise.all([
-    fetchCollections(),
-    fetchProducts(),
-  ]);
+  const [collections, products] = await Promise.all([fetchCollections(), fetchProducts()]);
 
   return collections.map((collection) => ({
     ...collection,
-    productCount: products.filter((product) =>
-      product.collectionSlugs.includes(collection.slug),
-    ).length,
+    productCount: products.filter((product) => product.collectionSlugs.includes(collection.slug))
+      .length,
   }));
 }
 
 /** Categories with product and stock totals, for the admin category list. */
-export async function getCategoriesWithCounts(): Promise<
-  (Category & { productCount: number; stockTotal: number })[]
-> {
+export async function getCategoriesWithCounts(
+  client?: Client,
+): Promise<(Category & { productCount: number; stockTotal: number })[]> {
   const [categories, products] = await Promise.all([
-    fetchCategories(),
-    fetchProducts(),
+    fetchCategories(client),
+    fetchProducts(client),
   ]);
 
   return categories.map((category) => {
@@ -201,3 +196,4 @@ export async function getCategoriesWithCounts(): Promise<
     };
   });
 }
+
