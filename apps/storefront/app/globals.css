@@ -2388,3 +2388,121 @@ img { display: block; max-width: 100%; }
   white-space: nowrap;
 }
 .product-line h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===========================================================================
+   Three fixes
+   =========================================================================== */
+
+/*
+ * 1. The rails were collapsing.
+ *
+ * `.product-row` asked for four equal columns AND horizontal scrolling at the
+ * same time. Those fight: in a container narrower than four cards, the 1fr
+ * columns resolve to `0px 0px 167px 167px` — the first two cards get no width
+ * at all and pile up on top of each other, which is exactly what was on screen.
+ *
+ * A rail should size its cards and let the row scroll, so that is what it does
+ * now. No column can collapse because none of them are sharing free space.
+ */
+.product-row,
+.product-rail .product-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(9.5rem, 44vw);
+  grid-template-columns: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: var(--gutter);
+}
+@media (width >= 720px) {
+  .product-row,
+  .product-rail .product-row {
+    grid-auto-columns: minmax(11rem, 23vw);
+  }
+}
+@media (width >= 1100px) {
+  .product-row,
+  .product-rail .product-row {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: row;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+}
+
+/*
+ * 2. The newsletter panel.
+ *
+ * It has always had its own rose ground. When the footer went dark I restyled
+ * its text for that dark ground — so the heading became near-white on pink and
+ * the eyebrow gold on pink. Both were close to unreadable. The panel keeps its
+ * rose, and the text goes back to being dark enough to read on it.
+ */
+.newsletter-panel {
+  background: linear-gradient(150deg, #f2d5d2, #e6bcbb);
+  border-bottom: 0;
+}
+.newsletter-panel span {
+  color: #8d3450;
+}
+.newsletter-panel h2 {
+  color: var(--ink);
+}
+.newsletter-panel form {
+  border-bottom: 1px solid rgb(34 26 28 / 45%);
+}
+.newsletter-panel input {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+}
+.newsletter-panel input::placeholder {
+  color: rgb(34 26 28 / 55%);
+}
+.newsletter-success {
+  color: var(--cocoa);
+  border-bottom-color: rgb(34 26 28 / 45%);
+}
+
+/*
+ * 3. The card action.
+ *
+ * A white bar on a cream card is not a button — it is a gap with a border. It
+ * now carries the brand colour so it reads as the thing you press.
+ */
+.card-action {
+  border-radius: 2px;
+  background: var(--cocoa);
+  color: #fffdfc;
+  letter-spacing: 0.09em;
+}
+.card-action:hover {
+  background: var(--berry);
+  color: #fffdfc;
+}
+@media (hover: none) {
+  .card-action {
+    border: 0;
+    background: var(--cocoa);
+    color: #fffdfc;
+  }
+}
+
+/* On a phone a card is about 150px wide, and a name beside a price leaves so
+   little room that "Gulab Mist" became "Gula…". A truncated product name is
+   worse than a taller card, so below the point where both fit they stack and
+   the name is allowed its second line. */
+@media (width <= 720px) {
+  .product-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+  .product-line h3 {
+    white-space: normal;
+    overflow: visible;
+    font-size: 1.1rem;
+    line-height: 1.15;
+  }
+  .product-price { gap: 0.4rem; }
+}
