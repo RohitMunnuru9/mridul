@@ -204,6 +204,47 @@ export async function updateProductStock(formData: FormData): Promise<ActionResu
   return OK(total === 0 ? "Saved. Now out of stock." : `Saved. ${total} in stock.`);
 }
 
+/**
+ * Removes one option from a product entirely.
+ *
+ * Unlike hiding a product, this really does delete — an option added by
+ * mistake should not linger. It is safe to do: `order_items` snapshots the
+ * name, code and price it was bought at, so past orders keep reading
+ * correctly, and the inventory row goes with it.
+ *
+ * The last option is refused. A product with no options cannot be bought, and
+ * "delete the size" is not a way anyone means to unpublish a saree.
+ */
+export async function deleteVariant(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot remove options.");
+
+  const productId = String(formData.get("product_id") ?? "");
+  const variantId = String(formData.get("variant_id") ?? "");
+  if (!productId || !variantId) return FAIL("Missing option.");
+
+  const db = await sessionClient();
+
+  const { data: siblings, error: countError } = await db
+    .from("product_variants")
+    .select("id, label")
+    .eq("product_id", productId);
+  if (countError) return FAIL(countError.message);
+  if ((siblings ?? []).length <= 1) {
+    return FAIL("This is the only option left. Hide the product instead.");
+  }
+
+  const label = siblings?.find((row) => row.id === variantId)?.label ?? "That option";
+
+  const { error } = await db.from("product_variants").delete().eq("id", variantId);
+  if (error) return FAIL(error.message);
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/products");
+  revalidatePath("/");
+  return OK(`${label} removed.`);
+}
+
 /** Show or hide a product on the storefront without deleting anything. */
 export async function toggleProductActive(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();

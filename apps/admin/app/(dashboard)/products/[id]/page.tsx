@@ -14,11 +14,16 @@ import { ChevronLeft } from "lucide-react";
 import { getAllCategories, getProductById } from "@mridul/database";
 import { sessionClient } from "@mridul/supabase/server";
 import { formatPaise } from "@mridul/utils";
-import { toggleProductActive, updateProduct, updateVariant } from "../../../actions/catalogue";
 import {
-  moveProductImage,
+  deleteVariant,
+  toggleProductActive,
+  updateProduct,
+  updateVariant,
+} from "../../../actions/catalogue";
+import {
   removeProductImage,
   replaceProductImage,
+  setThumbnail,
   updateMedia,
   uploadProductImage,
 } from "../../../actions/media";
@@ -27,7 +32,6 @@ import {
   EditForm,
   Field,
   FieldRow,
-  FileField,
   Select,
   SwatchPicker,
   TextArea,
@@ -35,6 +39,7 @@ import {
 } from "../../../components/form";
 import { PageHead, Panel, Pill, ViewOnSite } from "../../../components/ui";
 import { ReplaceableImage } from "../../../components/image-tile";
+import { ImageUploadField } from "../../../components/image-upload";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -114,30 +119,17 @@ export default async function ProductEditPage({ params }: PageProps) {
                 productSlug={product.slug}
                 url={image.url}
               />
-              <EditForm action={updateMedia} submitLabel="Save details" compact>
+              <EditForm action={updateMedia} submitLabel="Save description" compact>
                 <input name="media_id" type="hidden" value={image.id} />
                 <input name="product_id" type="hidden" value={product.id} />
+                <input name="focal" type="hidden" value={image.focal} />
                 <Field label="Alt text" name="alt" defaultValue={image.alt} required />
-                <Field
-                  label="Crop position"
-                  name="focal"
-                  defaultValue={image.focal}
-                  hint="Example: 50% center"
-                />
               </EditForm>
               <footer className="image-editor-actions">
                 {index > 0 && (
-                  <EditForm action={moveProductImage} submitLabel="← Earlier" compact>
+                  <EditForm action={setThumbnail} submitLabel="Make thumbnail" compact>
                     <input name="product_id" type="hidden" value={product.id} />
                     <input name="media_id" type="hidden" value={image.id} />
-                    <input name="direction" type="hidden" value="up" />
-                  </EditForm>
-                )}
-                {index < realImages.length - 1 && (
-                  <EditForm action={moveProductImage} submitLabel="Later →" compact>
-                    <input name="product_id" type="hidden" value={product.id} />
-                    <input name="media_id" type="hidden" value={image.id} />
-                    <input name="direction" type="hidden" value="down" />
                   </EditForm>
                 )}
                 <EditForm action={removeProductImage} submitLabel="Remove" compact danger>
@@ -149,22 +141,11 @@ export default async function ProductEditPage({ params }: PageProps) {
           ))}
 
           <div className="image-editor-add">
-            <EditForm action={uploadProductImage} submitLabel="Upload image" compact>
-              <input name="product_id" type="hidden" value={product.id} />
-              <input name="product_slug" type="hidden" value={product.slug} />
-              <FileField
-                label="Add a photograph"
-                name="file"
-                hint="JPEG, PNG or WebP, up to 10MB"
-              />
-              <Field
-                label="Describe it"
-                name="alt"
-                required
-                placeholder="e.g. Ivory chanderi saree beside a window"
-                hint="Read aloud by screen readers"
-              />
-            </EditForm>
+            <ImageUploadField
+              action={uploadProductImage}
+              productId={product.id}
+              productSlug={product.slug}
+            />
           </div>
         </div>
       </Panel>
@@ -181,6 +162,18 @@ export default async function ProductEditPage({ params }: PageProps) {
                 <span>
                   Sells at {formatPaise(product.pricePaise + variant.priceDeltaPaise)}
                 </span>
+                {product.variants.length > 1 && (
+                  <EditForm
+                    action={deleteVariant}
+                    submitLabel="−"
+                    title={`Remove the ${variant.label} option`}
+                    compact
+                    danger
+                  >
+                    <input name="product_id" type="hidden" value={product.id} />
+                    <input name="variant_id" type="hidden" value={variant.id} />
+                  </EditForm>
+                )}
               </header>
               <EditForm action={updateVariant} submitLabel="Save option" compact>
                 <input name="product_id" type="hidden" value={product.id} />
