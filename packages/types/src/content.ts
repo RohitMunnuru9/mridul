@@ -54,6 +54,8 @@ export type MediaUsage = {
  */
 export type MediaRecord = Omit<MediaAsset, 'bucket'> & {
   buckets: MediaBucket[];
+  /** Path inside the bucket. Needed to replace the file behind the row. */
+  path: string;
   usages: MediaUsage[];
 };
 

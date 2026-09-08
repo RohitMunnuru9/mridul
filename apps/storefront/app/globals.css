@@ -154,10 +154,14 @@ img { display: block; max-width: 100%; }
   .announcement-quote { animation: none; }
 }
 
-.navigation-stack {
+/* The whole chrome sticks, so the quote stays with the header rather than
+   scrolling out and leaving the nav floating on its own. */
+.site-chrome {
   position: sticky;
   z-index: 50;
   top: 0;
+}
+.navigation-stack {
   /* A hint of warmth towards the top so the header does not read as a flat
      slab against the strip above it. */
   background:
@@ -400,12 +404,21 @@ img { display: block; max-width: 100%; }
 }
 .category-card:hover .category-orbit { border-radius: 43% 57% 48% 52% / 55% 42% 58% 45%; transform: translateY(-0.25rem); }
 .category-orbit svg { width: 2rem; height: 2rem; }
-.tone-clay { background: #e9c4bd; }
-.tone-moss { background: #d2d0bd; }
-.tone-rose { background: #edd3d1; }
-.tone-sand { background: #e5d6bf; }
-.tone-ink { background: #6c4643; color: white; }
-.tone-lilac { background: #ddd0d9; }
+/*
+ * One family, not six pastels. Each tone is a tint of the site's own wine,
+ * rose or zari, with a soft inner ring so the circle has some depth against
+ * the cream ground.
+ */
+.category-orbit {
+  border: 1px solid rgb(74 32 41 / 8%);
+  box-shadow: inset 0 0 0 6px rgb(255 252 250 / 55%);
+}
+.tone-clay  { background: linear-gradient(150deg, #f0d9d3, #e3bdb6); color: var(--cocoa); }
+.tone-moss  { background: linear-gradient(150deg, #e2e0cf, #cdcdb6); color: #4a4a35; }
+.tone-rose  { background: linear-gradient(150deg, #f6e0dd, #e9c4c2); color: var(--berry); }
+.tone-sand  { background: linear-gradient(150deg, #f2e6cf, #e2cfa8); color: #7a6234; }
+.tone-ink   { background: linear-gradient(150deg, #6b3742, var(--cocoa)); color: #f7e9e4; }
+.tone-lilac { background: linear-gradient(150deg, #ece0e3, #d9c6cd); color: #5c414c; }
 .category-card strong { font-family: var(--font-cormorant), 'Cormorant Garamond', serif; font-size: clamp(1rem, 1.35vw, 1.25rem); font-weight: 500; }
 .category-card small { margin-top: 0.15rem; color: var(--muted-foreground); font-size: 0.62rem; }
 
@@ -1550,21 +1563,31 @@ img { display: block; max-width: 100%; }
 .whatsapp-float {
   position: fixed;
   z-index: 70;
+  right: 1.1rem;
   bottom: 1.1rem;
-  left: 1.1rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.65rem 0.95rem;
+  gap: 0.45rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid rgb(255 252 250 / 22%);
   border-radius: 999px;
-  background: #1f7a3d;
+  background: linear-gradient(160deg, #2a8f4c, #1c6b39);
   color: #fff;
-  box-shadow: 0 12px 28px rgb(31 122 61 / 32%);
-  font-size: 0.72rem;
+  box-shadow: 0 10px 26px rgb(28 107 57 / 30%);
+  font-size: 0.74rem;
   font-weight: 650;
+  /* Kept out of the way until the visitor has actually started reading. */
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 240ms ease, transform 240ms ease, background 200ms ease;
 }
+.whatsapp-float.is-shown { opacity: 1; transform: none; pointer-events: auto; }
 .whatsapp-float svg { width: 1rem; }
-.whatsapp-float:hover { background: #19632f; }
+.whatsapp-float:hover { background: linear-gradient(160deg, #2f9c54, #196033); }
+@media (prefers-reduced-motion: reduce) {
+  .whatsapp-float { transition: opacity 120ms linear; transform: none; }
+}
 
 /* --- Footer ------------------------------------------------------------------------ */
 
@@ -1599,7 +1622,9 @@ img { display: block; max-width: 100%; }
   .bag-line-total { width: 100%; margin-left: 0; }
   .toast-host { right: 0.6rem; bottom: 5.2rem; left: 0.6rem; }
   .toast { max-width: none; }
-  .whatsapp-float { bottom: 4.9rem; left: 0.7rem; padding: 0.55rem 0.8rem; }
+  /* Above the bottom bar, and on the opposite side to the bag so the two do
+     not sit on top of each other. */
+  .whatsapp-float { right: 0.75rem; bottom: 4.9rem; padding: 0.5rem 0.75rem; }
   .whatsapp-float span { display: none; }
   .account-hero { flex-direction: column; gap: 0.8rem; }
   .product-rail { margin-top: 2.8rem; }

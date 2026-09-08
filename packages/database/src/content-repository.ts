@@ -125,6 +125,7 @@ export async function getMediaLibrary(): Promise<MediaRecord[]> {
       byPath.set(url, {
         id: row.media_id,
         url,
+        path: row.path,
         alt: row.alt,
         focal: row.focal,
         buckets: [row.bucket as MediaBucket],
