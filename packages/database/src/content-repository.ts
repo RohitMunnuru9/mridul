@@ -26,6 +26,7 @@ import type {
 import {
   fetchCategories,
   fetchCollections,
+  fetchContentBlocks,
   fetchHeroSlides,
   fetchHomepageSections,
   fetchJournalPosts,
@@ -71,6 +72,14 @@ export async function getJournalPosts(includeDrafts = false): Promise<JournalPos
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   return fetchSiteSettings();
+}
+
+/**
+ * Editorial prose by key, with a fallback so a missing row shows nothing
+ * rather than the word "undefined" on a customer-facing page.
+ */
+export async function getContentBlocks(): Promise<Record<string, string>> {
+  return fetchContentBlocks();
 }
 
 /** Homepage entry tiles. Rows now, so a tile can be edited without a deploy. */

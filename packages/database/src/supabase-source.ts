@@ -178,6 +178,7 @@ export async function fetchCategories(): Promise<Category[]> {
     .from('categories')
     .select(
       'id, slug, name, tagline, intro, description, position, is_active, ' +
+        'size_chart, size_chart_note, ' +
         'hero:media!categories_hero_media_id_fkey(id, bucket, path, alt, focal)',
     )
     .order('position');
@@ -192,6 +193,8 @@ export async function fetchCategories(): Promise<Category[]> {
     intro: row.intro,
     description: row.description,
     heroImage: toImage(row.hero) ?? MISSING_IMAGE,
+    sizeChart: Array.isArray(row.size_chart) ? row.size_chart : [],
+    sizeChartNote: row.size_chart_note ?? '',
     position: row.position,
     isActive: row.is_active,
   }));
@@ -345,6 +348,7 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
     tagline: row?.tagline ?? '',
     announcements: row?.announcements ?? [],
     freeShippingThresholdPaise: row?.free_shipping_threshold_paise ?? 199900,
+    flatShippingPaise: row?.flat_shipping_paise ?? 9900,
     returnWindowDays: row?.return_window_days ?? 7,
     contact: {
       whatsapp: row?.whatsapp_number ?? '',
@@ -352,14 +356,19 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
       instagram: row?.instagram_url ?? '',
       youtube: row?.youtube_url ?? '',
     },
-    pendingPolicies: [
-      'Track order',
-      'Shipping policy',
-      'Return policy',
-      'Privacy policy',
-      'Terms and conditions',
-    ],
+    pendingPolicies: row?.pending_policies ?? [],
   };
+}
+
+/** Named editorial prose, keyed by slug. */
+export async function fetchContentBlocks(): Promise<Record<string, string>> {
+  const { data, error } = await publicClient()
+    .from('content_blocks')
+    .select('key, body');
+
+  if (error) throw new Error(`Loading content blocks: ${error.message}`);
+
+  return Object.fromEntries((data ?? []).map((row: any) => [row.key, row.body]));
 }
 
 export async function fetchMoodTiles() {

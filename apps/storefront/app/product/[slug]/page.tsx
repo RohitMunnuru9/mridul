@@ -14,23 +14,15 @@ import { ProductRail } from '@/app/components/product-rail';
 import { badgeLabel } from '@mridul/utils';
 import {
   getCategoryBySlug,
+  getContentBlocks,
   getProductBySlug,
   getRelatedProducts,
+  getSiteSettings,
 } from '@mridul/database';
 import { DeliveryCheck } from './delivery-check';
 import { ProductGallery, ProductPurchase } from './product-detail';
 
 type PageProps = { params: Promise<{ slug: string }> };
-
-/** Blouse measurements, in inches. Replace with per-product data when stitched sizes vary. */
-const SIZE_CHART = [
-  { size: 'XS', bust: '32', waist: '26', shoulder: '13' },
-  { size: 'S', bust: '34', waist: '28', shoulder: '13.5' },
-  { size: 'M', bust: '36', waist: '30', shoulder: '14' },
-  { size: 'L', bust: '38', waist: '32', shoulder: '14.5' },
-  { size: 'XL', bust: '40', waist: '34', shoulder: '15' },
-  { size: 'XXL', bust: '42', waist: '36', shoulder: '15.5' },
-];
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -48,10 +40,21 @@ export default async function ProductPage({ params }: PageProps) {
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const category = await getCategoryBySlug(product.categorySlug);
-  const related = await getRelatedProducts(product, 4);
+  const [category, related, settings, copy] = await Promise.all([
+    getCategoryBySlug(product.categorySlug),
+    getRelatedProducts(product, 4),
+    getSiteSettings(),
+    getContentBlocks(),
+  ]);
   const label = badgeLabel(product.badge);
-  const isBlouse = product.categorySlug === 'blouses';
+
+  // Whether a size chart appears is a property of the category, not a hardcoded
+  // check for the word "blouses" — a new sized category needs no code change.
+  const sizeChart = category?.sizeChart ?? [];
+  const rates = {
+    freeShippingThresholdPaise: settings.freeShippingThresholdPaise,
+    flatRatePaise: settings.flatShippingPaise,
+  };
 
   const specs = [
     { label: 'Fabric', value: product.fabric },
@@ -93,9 +96,12 @@ export default async function ProductPage({ params }: PageProps) {
 
           <p className="pdp-description">{product.description}</p>
 
-          <ProductPurchase product={product} />
+          <ProductPurchase
+            product={product}
+            freeShippingThresholdPaise={settings.freeShippingThresholdPaise}
+          />
 
-          <DeliveryCheck pricePaise={product.pricePaise} />
+          <DeliveryCheck pricePaise={product.pricePaise} rates={rates} />
 
           <dl className="pdp-specs">
             {specs.map((spec) => (
@@ -107,7 +113,7 @@ export default async function ProductPage({ params }: PageProps) {
           </dl>
 
           <div className="pdp-accordions">
-            {isBlouse && (
+            {sizeChart.length > 0 && (
               <details>
                 <summary>
                   <Ruler aria-hidden="true" /> Size chart
@@ -123,7 +129,7 @@ export default async function ProductPage({ params }: PageProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {SIZE_CHART.map((row) => (
+                      {sizeChart.map((row) => (
                         <tr key={row.size}>
                           <td>{row.size}</td>
                           <td>{row.bust}&quot;</td>
@@ -133,10 +139,7 @@ export default async function ProductPage({ params }: PageProps) {
                       ))}
                     </tbody>
                   </table>
-                  <p>
-                    Measurements are of the garment, not the body. Every piece leaves
-                    a small seam allowance if you want a local alteration.
-                  </p>
+                  {category?.sizeChartNote && <p>{category.sizeChartNote}</p>}
                 </div>
               </details>
             )}
@@ -156,21 +159,11 @@ export default async function ProductPage({ params }: PageProps) {
             </details>
             <details>
               <summary>Shipping &amp; returns</summary>
-              <p>
-                Dispatched within two working days. Delivery charge is calculated
-                from your pincode at checkout, and the tracking link reaches you on
-                WhatsApp once the parcel is picked up. Returns accepted within seven
-                days of delivery on unworn pieces with tags intact.
-              </p>
+              <p>{copy.pdp_shipping_returns}</p>
             </details>
             <details>
               <summary>Why it costs what it costs</summary>
-              <p>
-                Small runs on a handloom cost more per metre than a mill does, and we
-                would rather pay that than shorten the weave. What you are paying for
-                is the yarn, the weaver&apos;s time, and a piece that stays in your
-                wardrobe long enough to justify both.
-              </p>
+              <p>{copy.pdp_why_it_costs}</p>
             </details>
           </div>
         </div>

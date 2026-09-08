@@ -245,6 +245,67 @@ export const journalPosts: JournalPost[] = [
   },
 ];
 
+/**
+ * Homepage entry tiles. Each is a category plus a filter, so a tile always
+ * resolves to a real listing and can never dead-end.
+ */
+export const moodTiles = [
+  {
+    id: 'mood_everyday',
+    label: 'Everyday drapes',
+    note: 'Airy and easy',
+    href: '/shop/sarees?occasion=Everyday',
+    icon: 'waves',
+    tone: 'clay',
+    position: 1,
+  },
+  {
+    id: 'mood_silk',
+    label: 'Silk stories',
+    note: 'Quiet celebration',
+    href: '/shop/sarees?fabric=Tussar+silk&fabric=Banarasi+silk&fabric=Kanjivaram+silk',
+    icon: 'sparkles',
+    tone: 'moss',
+    position: 2,
+  },
+  {
+    id: 'mood_blouses',
+    label: 'Ready-to-wear blouses',
+    note: 'Finish the drape',
+    href: '/shop/blouses',
+    icon: 'scissors',
+    tone: 'rose',
+    position: 3,
+  },
+  {
+    id: 'mood_wedding',
+    label: 'Wedding edit',
+    note: 'For grand days',
+    href: '/collections/wedding',
+    icon: 'gem',
+    tone: 'sand',
+    position: 4,
+  },
+  {
+    id: 'mood_handloom',
+    label: 'Handloom',
+    note: 'Made with time',
+    href: '/shop/sarees?occasion=Work&occasion=Everyday',
+    icon: 'flower',
+    tone: 'ink',
+    position: 5,
+  },
+  {
+    id: 'mood_sale',
+    label: 'On offer',
+    note: 'Still in stock',
+    href: '/shop/sarees?sale=1',
+    icon: 'gift',
+    tone: 'lilac',
+    position: 6,
+  },
+];
+
 export const siteSettings: SiteSettings = {
   brandName: 'Mridul by MR',
   tagline: 'Sarees made to stay with you',
@@ -255,6 +316,7 @@ export const siteSettings: SiteSettings = {
     'Handwoven in small runs',
   ],
   freeShippingThresholdPaise: 199900,
+  flatShippingPaise: 9900,
   returnWindowDays: 7,
   contact: {
     whatsapp: '+91 90000 00000',

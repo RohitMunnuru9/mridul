@@ -10,6 +10,7 @@ import { StoreProvider } from './providers/store-provider';
 import {
   getCategories,
   getCollections,
+  getContentBlocks,
   getNavigationMenus,
   getSiteSettings,
 } from '@mridul/database';
@@ -40,11 +41,12 @@ export default async function RootLayout({
   // Navigation is data, not markup: the header, footer and mobile bar all read
   // the same catalogue, so the admin panel becomes the single place to change
   // what the storefront offers.
-  const [categories, collections, menus, settings] = await Promise.all([
+  const [categories, collections, menus, settings, copy] = await Promise.all([
     getCategories(),
     getCollections(),
     getNavigationMenus(),
     getSiteSettings(),
+    getContentBlocks(),
   ]);
 
   return (
@@ -55,12 +57,14 @@ export default async function RootLayout({
             menus={menus}
             collections={collections}
             announcements={settings.announcements}
+            strapline={copy.header_strapline ?? ''}
           />
           <main id="top">{children}</main>
           <SiteFooter
             categories={categories}
             collections={collections}
             settings={settings}
+            copy={copy}
           />
           <MobileBottomNav />
           <WhatsAppButton phone={settings.contact.whatsapp} />

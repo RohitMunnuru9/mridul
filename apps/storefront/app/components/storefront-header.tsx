@@ -41,7 +41,13 @@ import type { Collection, NavMenu } from '@mridul/types';
 import { useStore } from '../providers/store-provider';
 
 /** Messages come from site settings, so marketing owns the strip. */
-function AnnouncementBar({ messages }: { messages: string[] }) {
+function AnnouncementBar({
+  messages,
+  strapline,
+}: {
+  messages: string[];
+  strapline: string;
+}) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -69,7 +75,7 @@ function AnnouncementBar({ messages }: { messages: string[] }) {
       <span aria-live="polite" className="announcement-rotating">
         {messages[index % messages.length]}
       </span>
-      <span className="announcement-story">Wear a story. Not just clothing.</span>
+      {strapline && <span className="announcement-story">{strapline}</span>}
     </div>
   );
 }
@@ -115,10 +121,12 @@ export function StorefrontHeader({
   menus,
   collections,
   announcements,
+  strapline,
 }: {
   menus: NavMenu[];
   collections: Collection[];
   announcements: string[];
+  strapline: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -164,7 +172,7 @@ export function StorefrontHeader({
 
   return (
     <>
-      <AnnouncementBar messages={announcements} />
+      <AnnouncementBar messages={announcements} strapline={strapline} />
       <div className={`navigation-stack${compact ? ' is-compact' : ''}`}>
         <header className="site-header">
           <div className="mobile-nav">

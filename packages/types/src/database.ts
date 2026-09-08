@@ -209,6 +209,8 @@ export type Database = {
           name: string
           parent_id: string | null
           position: number
+          size_chart: Json
+          size_chart_note: string
           slug: string
           tagline: string
           updated_at: string
@@ -223,6 +225,8 @@ export type Database = {
           name: string
           parent_id?: string | null
           position?: number
+          size_chart?: Json
+          size_chart_note?: string
           slug: string
           tagline?: string
           updated_at?: string
@@ -237,6 +241,8 @@ export type Database = {
           name?: string
           parent_id?: string | null
           position?: number
+          size_chart?: Json
+          size_chart_note?: string
           slug?: string
           tagline?: string
           updated_at?: string
@@ -287,6 +293,33 @@ export type Database = {
           position?: number
           slug?: string
           tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_blocks: {
+        Row: {
+          body: string
+          is_active: boolean
+          key: string
+          placement: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          is_active?: boolean
+          key: string
+          placement?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          is_active?: boolean
+          key?: string
+          placement?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -1228,6 +1261,7 @@ export type Database = {
           free_shipping_threshold_paise: number
           id: boolean
           instagram_url: string
+          pending_policies: string[]
           return_window_days: number
           tagline: string
           updated_at: string
@@ -1242,6 +1276,7 @@ export type Database = {
           free_shipping_threshold_paise?: number
           id?: boolean
           instagram_url?: string
+          pending_policies?: string[]
           return_window_days?: number
           tagline?: string
           updated_at?: string
@@ -1256,6 +1291,7 @@ export type Database = {
           free_shipping_threshold_paise?: number
           id?: boolean
           instagram_url?: string
+          pending_policies?: string[]
           return_window_days?: number
           tagline?: string
           updated_at?: string

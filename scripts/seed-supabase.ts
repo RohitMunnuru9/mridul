@@ -32,12 +32,12 @@ import {
   heroSlides,
   homepageSections,
   journalPosts,
+  moodTiles,
   occasionPanels,
   siteSettings,
   storyPanel,
   valueProps,
 } from '../packages/database/src/site-content';
-import { moodTiles } from '../packages/database/src/homepage';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -143,6 +143,8 @@ async function seedCategories(db: Client, media: Map<string, string>) {
           intro: category.intro,
           description: category.description,
           hero_media_id: media.get(category.heroImage.url) ?? null,
+          size_chart: category.sizeChart,
+          size_chart_note: category.sizeChartNote,
           position: category.position,
           is_active: category.isActive,
         },
@@ -417,15 +419,72 @@ async function seedContent(
     tagline: siteSettings.tagline,
     announcements: siteSettings.announcements,
     free_shipping_threshold_paise: siteSettings.freeShippingThresholdPaise,
-    flat_shipping_paise: 9900,
+    flat_shipping_paise: siteSettings.flatShippingPaise,
     return_window_days: siteSettings.returnWindowDays,
     whatsapp_number: siteSettings.contact.whatsapp,
     contact_email: siteSettings.contact.email,
     instagram_url: siteSettings.contact.instagram,
     youtube_url: siteSettings.contact.youtube,
+    pending_policies: siteSettings.pendingPolicies,
   });
   if (settingsError) throw new Error(`Settings: ${settingsError.message}`);
   done('site settings');
+}
+
+/**
+ * Editorial prose that used to be written into components. Keyed by a stable
+ * slug the components look up, so rewording is an edit rather than a deploy.
+ */
+const CONTENT_BLOCKS = [
+  {
+    key: 'header_strapline',
+    placement: 'header',
+    title: 'Announcement bar strapline',
+    body: 'Wear a story. Not just clothing.',
+  },
+  {
+    key: 'footer_brand_line',
+    placement: 'footer',
+    title: 'Footer brand line',
+    body: 'Timeless weaves. Thoughtful choices. Made for your life.',
+  },
+  {
+    key: 'footer_quote',
+    placement: 'footer',
+    title: 'Footer pull quote',
+    body: '“Beautiful things take time—and become part of yours.”',
+  },
+  {
+    key: 'pdp_shipping_returns',
+    placement: 'product',
+    title: 'Shipping and returns',
+    body:
+      'Dispatched within two working days. Delivery charge is calculated from ' +
+      'your pincode at checkout, and the tracking link reaches you on WhatsApp ' +
+      'once the parcel is picked up. Returns accepted within seven days of ' +
+      'delivery on unworn pieces with tags intact.',
+  },
+  {
+    key: 'pdp_why_it_costs',
+    placement: 'product',
+    title: 'Why it costs what it costs',
+    body:
+      'Small runs on a handloom cost more per metre than a mill does, and we ' +
+      'would rather pay that than shorten the weave. What you are paying for is ' +
+      'the yarn, the weaver’s time, and a piece that stays in your wardrobe ' +
+      'long enough to justify both.',
+  },
+];
+
+async function seedContentBlocks(db: Client) {
+  step('Editorial blocks');
+  for (const block of CONTENT_BLOCKS) {
+    const { error } = await db
+      .from('content_blocks')
+      .upsert({ ...block, is_active: true }, { onConflict: 'key' });
+    if (error) throw new Error(`Block ${block.key}: ${error.message}`);
+    done(block.key);
+  }
 }
 
 async function seedCoupons(db: Client) {
@@ -457,6 +516,7 @@ async function main() {
   const collectionIds = await seedCollections(db);
   await seedProducts(db, media, categoryIds, collectionIds);
   await seedContent(db, media, collectionIds);
+  await seedContentBlocks(db);
   await seedCoupons(db);
 
   console.log('\nDone.');
