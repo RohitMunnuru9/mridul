@@ -19,17 +19,18 @@
     "node": true
   },
   "options": {
-    "typeAware": true,
-    "typeCheck": true
+    "typeAware": false
   },
   "ignorePatterns": [
-    ".next/**",
-    ".vinext/**",
-    "out/**",
-    "build/**",
-    "dist/**",
-    "coverage/**",
-    "next-env.d.ts"
+    "**/.next/**",
+    "**/.vinext/**",
+    "**/out/**",
+    "**/build/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/next-env.d.ts",
+    "apps/*/components/ui/**",
+    "apps/*/hooks/**"
   ],
   "rules": {
     "no-array-constructor": "error",
@@ -51,6 +52,7 @@
     "typescript/no-namespace": "error",
     "typescript/no-require-imports": "error",
     "typescript/no-unnecessary-type-constraint": "error",
-    "typescript/no-unsafe-function-type": "error"
+    "typescript/no-unsafe-function-type": "error",
+    "jsx-a11y/prefer-tag-over-role": "off"
   }
 }

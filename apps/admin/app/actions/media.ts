@@ -17,6 +17,9 @@ const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
 
 const MAX_BYTES = 10 * 1024 * 1024;
+// Hero banners are full-bleed, and the `banners` bucket allows more than the
+// product buckets do.
+const BANNER_MAX_BYTES = 15 * 1024 * 1024;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 /** Keeps uploaded names predictable and safe to put in a URL. */
@@ -256,6 +259,60 @@ export async function uploadCategoryImage(formData: FormData): Promise<ActionRes
   revalidatePath("/categories");
   revalidatePath("/");
   return OK("Category image changed.");
+}
+
+/**
+ * Uploads a fresh hero banner and points the slide at it.
+ *
+ * The image lives with the banner that shows it rather than in a separate
+ * library, because someone editing the homepage thinks "replace this banner",
+ * not "find this file". The previous media row is left untouched, so a banner
+ * swapped by mistake can be pointed back at it.
+ */
+export async function uploadHeroImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "content_manager")) return FAIL("You cannot change homepage banners.");
+
+  const slideId = String(formData.get("slide_id") ?? "");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const file = formData.get("file");
+  if (!slideId) return FAIL("Missing banner.");
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > BANNER_MAX_BYTES) return FAIL("That image is larger than 15MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
+  if (!alt) return FAIL("Describe the image so screen readers can announce it.");
+
+  const db = await sessionClient();
+  const path = `hero/${Date.now()}-${safeName(file.name)}`;
+  const { error: uploadError } = await db.storage
+    .from("banners")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
+
+  const { data: media, error: mediaError } = await db
+    .from("media")
+    .insert({
+      bucket: "banners",
+      path,
+      alt,
+      focal: "50% center",
+      mime_type: file.type,
+      byte_size: file.size,
+      uploaded_by: admin?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (mediaError) return FAIL(mediaError.message);
+
+  const { error: slideError } = await db
+    .from("hero_slides")
+    .update({ media_id: media.id })
+    .eq("id", slideId);
+  if (slideError) return FAIL(slideError.message);
+
+  revalidatePath("/homepage");
+  revalidatePath("/");
+  return OK("Banner image changed.");
 }
 
 /**

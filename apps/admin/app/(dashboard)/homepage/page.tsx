@@ -13,13 +13,14 @@ import {
   getMoodTiles,
   getOccasionPanels,
 } from '@mridul/database';
+import { uploadHeroImage } from '../../actions/media';
 import {
   updateHeroSlide,
   updateHomepageSection,
   updateMoodTile,
   updateOccasionPanel,
 } from '../../actions/content';
-import { EditForm, Field, FieldRow, TextArea, Toggle } from '../../components/form';
+import { EditForm, Field, FieldRow, FileField, TextArea, Toggle } from '../../components/form';
 import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Homepage | Mridul Admin' };
@@ -42,7 +43,7 @@ export default async function HomepagePage() {
 
       <Panel
         title="Hero banners"
-        note="The full-bleed carousel at the top. Change the image from Media."
+        note="The full-bleed carousel at the top. Change the picture and the words in one place."
       >
         <div className="hero-admin-list">
           {slides.map((slide) => (
@@ -54,6 +55,17 @@ export default async function HomepagePage() {
                   focal={slide.media.focal}
                   size={180}
                 />
+                <EditForm action={uploadHeroImage} submitLabel="Change banner picture" compact>
+                  <input name="slide_id" type="hidden" value={slide.id} />
+                  <FileField label="New picture" name="file" hint="JPEG, PNG, WebP or AVIF" />
+                  <Field
+                    label="Picture description"
+                    name="alt"
+                    defaultValue={slide.media.alt}
+                    required
+                    hint="Used by screen readers"
+                  />
+                </EditForm>
               </div>
               <div className="hero-admin-body">
                 <EditForm action={updateHeroSlide}>
@@ -124,7 +136,7 @@ export default async function HomepagePage() {
               <th>What it shows</th>
               <th>Position</th>
               <th>Shown</th>
-              <th />
+              <th aria-label="Actions" />
             </tr>
           </thead>
           <tbody>

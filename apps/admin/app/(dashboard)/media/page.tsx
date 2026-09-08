@@ -10,7 +10,7 @@
 import type { Metadata } from 'next';
 import { getMediaLibrary } from '@mridul/database';
 import { replaceMediaFile, updateMedia } from '../../actions/media';
-import { EditForm, Field, FieldRow, FileField } from '../../components/form';
+import { EditForm, Field, FileField } from '../../components/form';
 import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Media | Mridul Admin' };

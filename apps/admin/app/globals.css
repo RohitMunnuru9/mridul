@@ -589,8 +589,27 @@ th.numeric {
   padding: 1.1rem;
   background: var(--paper);
 }
+/* A fixed column so the picture and its upload form read as one unit, the way
+   the category editor does. */
 .hero-admin-preview {
+  display: flex;
+  width: 180px;
   flex: none;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.hero-admin-preview .edit-form {
+  padding: 0;
+}
+
+/* On a phone the banner stacks: picture first, then its words. */
+@media (width <= 720px) {
+  .hero-admin-card {
+    flex-direction: column;
+  }
+  .hero-admin-preview {
+    width: 100%;
+  }
 }
 .hero-admin-body {
   min-width: 0;

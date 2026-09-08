@@ -9,7 +9,7 @@ import {
   Waves,
   type LucideIcon,
 } from 'lucide-react';
-import { getMoodTiles, type MoodTile } from '@mridul/database';
+import { getMoodTiles } from '@mridul/database';
 
 /** Icon keys are stored as data, so the map lives with the markup. */
 const ICONS: Record<string, LucideIcon> = {
