@@ -1,0 +1,40 @@
+{
+  "name": "@mridul/admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vinext dev --port 3001",
+    "build": "vinext build",
+    "start": "wrangler dev --config dist/server/wrangler.json"
+  },
+  "dependencies": {
+    "@mridul/database": "*",
+    "@mridul/notifications": "*",
+    "@mridul/payments": "*",
+    "@mridul/shipping": "*",
+    "@mridul/types": "*",
+    "@mridul/utils": "*",
+    "@mridul/validation": "*",
+    "lucide-react": "1.31.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-server-dom-webpack": "19.2.6",
+    "vinext": "1.0.0-beta.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "4.20260515.1",
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "tailwindcss": "4.2.1",
+    "vite": "8.0.13",
+    "wrangler": "4.92.0"
+  }
+}
