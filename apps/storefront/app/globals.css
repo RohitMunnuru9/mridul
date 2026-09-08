@@ -1629,3 +1629,429 @@ img { display: block; max-width: 100%; }
   .account-hero { flex-direction: column; gap: 0.8rem; }
   .product-rail { margin-top: 2.8rem; }
 }
+
+/* ===========================================================================
+   Design pass
+   ---------------------------------------------------------------------------
+   The page was one flat cream from the hero to the footer, so nothing had any
+   weight and every section read the same. Three things fix most of that:
+   a rhythm of grounds so sections alternate instead of blurring together, a
+   zari rule that marks the start of a section, and depth on the things you are
+   meant to touch.
+   =========================================================================== */
+
+/* --- Section rhythm -------------------------------------------------------- */
+
+/* Blush under the mood tiles, so the first thing below the hero is not
+   another sheet of the same cream. */
+.category-section {
+  background: linear-gradient(180deg, var(--paper) 0%, #f8ebe6 100%);
+}
+
+/* Products sit on the cleanest ground on the page — the photography is the
+   colour here, and anything tinted fights it. */
+.product-section {
+  background: var(--paper);
+}
+
+.journal-section {
+  background: linear-gradient(180deg, #f6e9e4, var(--ivory));
+}
+
+/* A zari hairline between sections, so they part rather than run together. */
+.category-section,
+.product-section,
+.journal-section,
+.story-section {
+  position: relative;
+}
+.category-section::before,
+.product-section::before,
+.journal-section::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-soft) 50%, transparent);
+  content: '';
+}
+
+/* --- Section headings ------------------------------------------------------ */
+
+/* A short rule above the eyebrow. Small, but it is the difference between a
+   heading that was placed and one that just starts. */
+.compact-section-heading > div > p::before,
+.product-heading > div > p::before {
+  display: block;
+  width: 2.2rem;
+  height: 1px;
+  margin-bottom: 0.7rem;
+  background: var(--berry);
+  content: '';
+}
+.compact-section-heading > div > p,
+.product-heading > div > p {
+  color: var(--berry);
+}
+
+/* The "see all" links read as links rather than as stray uppercase text. */
+.compact-section-heading > a,
+.product-heading-actions > a {
+  border-bottom-color: var(--gold-soft);
+  transition: color 160ms ease, border-color 160ms ease, gap 160ms ease;
+}
+.compact-section-heading > a:hover,
+.product-heading-actions > a:hover {
+  gap: 0.8rem;
+  border-bottom-color: var(--berry);
+  color: var(--berry);
+}
+
+/* --- Mood tiles ------------------------------------------------------------ */
+
+.category-card strong {
+  transition: color 160ms ease;
+}
+.category-card:hover strong {
+  color: var(--berry);
+}
+.category-orbit {
+  transition:
+    border-radius 420ms ease,
+    transform 260ms ease,
+    box-shadow 260ms ease;
+}
+.category-card:hover .category-orbit {
+  box-shadow:
+    inset 0 0 0 6px rgb(255 252 250 / 55%),
+    0 14px 28px rgb(74 32 41 / 14%);
+}
+
+/* --- Curated edits --------------------------------------------------------- */
+
+/* The middle panel was a flat block of rose. Given a little gradient and a
+   gold rule it holds its own beside two photographs. */
+.occasion-note {
+  background: linear-gradient(165deg, #f4dcd9 0%, var(--rose) 55%, #e0aeae 100%);
+}
+.occasion-note::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  content: '';
+}
+.occasion-note > svg {
+  color: var(--cocoa);
+  opacity: 0.55;
+}
+.occasion-section article a {
+  transition: gap 160ms ease, border-color 160ms ease;
+}
+.occasion-section article a:hover {
+  gap: 0.85rem;
+  border-bottom-color: var(--gold);
+}
+
+/* --- Product cards --------------------------------------------------------- */
+
+.product-card {
+  transition: transform 220ms ease;
+}
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-3px);
+  }
+}
+.product-photo {
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgb(74 32 41 / 6%);
+  transition: box-shadow 220ms ease;
+}
+@media (hover: hover) {
+  .product-card:hover .product-photo {
+    box-shadow: 0 16px 32px rgb(74 32 41 / 14%);
+  }
+}
+
+/* Badges were all the same off-white. The sale one now actually reads as a
+   sale, and the rest stay quiet. */
+.product-badge {
+  border-radius: 2px;
+  background: rgb(255 252 250 / 94%);
+  color: var(--cocoa);
+  backdrop-filter: blur(6px);
+}
+.product-badge.is-sale {
+  background: var(--berry);
+  color: #fffcfa;
+}
+.product-price-row strong {
+  font-size: 0.8rem;
+  letter-spacing: -0.01em;
+}
+.product-details h3 a {
+  transition: color 160ms ease;
+}
+.product-card:hover .product-details h3 a {
+  color: var(--berry);
+}
+
+/* --- Value strip ----------------------------------------------------------- */
+
+.value-strip {
+  position: relative;
+  background: linear-gradient(100deg, #3d1a22, var(--cocoa) 45%, #5c2833);
+}
+.value-strip::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-soft) 50%, transparent);
+  content: '';
+}
+.value-strip svg {
+  color: var(--gold);
+}
+
+/* --- Journal --------------------------------------------------------------- */
+
+.journal-card {
+  border-radius: 2px;
+  transition: transform 260ms ease, box-shadow 260ms ease;
+}
+@media (hover: hover) {
+  .journal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgb(74 32 41 / 20%);
+  }
+}
+.journal-card span {
+  color: var(--gold);
+}
+
+/* --- Footer ----------------------------------------------------------------
+   It was near-white, which left the page ending on nothing — and the policy
+   list was styled in near-white text, so it was effectively invisible against
+   it. Dark is what those colours were written for.
+   --------------------------------------------------------------------------- */
+
+.site-footer {
+  background: linear-gradient(180deg, #3f1b23, var(--cocoa));
+  color: #f2e3de;
+}
+.newsletter-panel {
+  border-bottom-color: rgb(255 252 250 / 12%);
+}
+.newsletter-panel span {
+  color: var(--gold);
+}
+.newsletter-panel h2 {
+  color: #fbf1ee;
+}
+.newsletter-panel input {
+  border-color: rgb(255 252 250 / 28%);
+  background: rgb(255 252 250 / 6%);
+  color: #fbf1ee;
+}
+.newsletter-panel input::placeholder {
+  color: rgb(242 227 222 / 55%);
+}
+.newsletter-success {
+  color: var(--gold);
+}
+.footer-brand > p {
+  color: rgb(242 227 222 / 72%);
+}
+.footer-grid h3 {
+  color: var(--gold);
+}
+.footer-grid > div:not(.footer-brand) a {
+  color: rgb(242 227 222 / 78%);
+  transition: color 160ms ease;
+}
+.footer-grid > div:not(.footer-brand) a:hover {
+  color: #fffcfa;
+}
+.footer-grid blockquote {
+  color: #f7ece8;
+}
+.footer-grid blockquote svg {
+  color: var(--gold);
+}
+.footer-bottom {
+  border-top-color: rgb(255 252 250 / 12%);
+  color: rgb(242 227 222 / 60%);
+}
+.site-footer .brand-mark,
+.site-footer .brand-mark strong {
+  color: #fffcfa;
+}
+.site-footer .brand-mark > svg,
+.site-footer .brand-mark small {
+  color: var(--gold);
+}
+.social-links a {
+  border-color: rgb(255 252 250 / 24%) !important;
+  color: #f2e3de;
+  transition: background 160ms ease, color 160ms ease;
+}
+.social-links a:hover {
+  background: var(--gold);
+  color: var(--cocoa);
+}
+
+/* --- Listing pages --------------------------------------------------------- */
+
+/* The category header was floating on the same cream as everything else. A
+   tinted block gives the page a top edge. */
+.listing-header {
+  position: relative;
+  padding: clamp(1.6rem, 3vw, 2.6rem);
+  border-radius: 3px;
+  background: linear-gradient(140deg, #f8ebe6, var(--paper) 70%);
+}
+.listing-header::before {
+  position: absolute;
+  top: 0;
+  left: clamp(1.6rem, 3vw, 2.6rem);
+  width: 2.6rem;
+  height: 2px;
+  background: var(--berry);
+  content: '';
+}
+.listing-header-copy .eyebrow {
+  color: var(--berry);
+}
+.listing-header-image {
+  border-radius: 2px;
+  box-shadow: 0 14px 30px rgb(74 32 41 / 12%);
+}
+
+.listing-toolbar {
+  background: var(--paper);
+}
+.filter-chip {
+  border-radius: 999px;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+.filter-chip:hover {
+  background: var(--soft-rose);
+}
+.page-numbers a.is-current {
+  border-radius: 2px;
+}
+
+/* --- Buttons --------------------------------------------------------------- */
+
+.primary-cta {
+  border-radius: 2px !important;
+  box-shadow: 0 8px 20px rgb(74 32 41 / 18%);
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+.primary-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgb(168 84 106 / 28%);
+}
+
+/* --- Empty and utility surfaces -------------------------------------------- */
+
+.empty-state,
+.listing-empty {
+  border-radius: 3px;
+  background: linear-gradient(160deg, var(--paper), #f8ebe6);
+}
+.listing-note {
+  padding: clamp(1.6rem, 3vw, 2.4rem);
+  border-radius: 3px;
+  background: var(--paper);
+}
+.bag-summary,
+.account-card,
+.account-help {
+  border-radius: 3px;
+}
+.shipping-meter {
+  border-radius: 3px;
+  background: linear-gradient(140deg, var(--paper), #f8ebe6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .journal-card,
+  .primary-cta,
+  .category-orbit {
+    transition: none;
+  }
+  .product-card:hover,
+  .journal-card:hover,
+  .primary-cta:hover {
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+   Gutters and the listing toolbar
+   ---------------------------------------------------------------------------
+   `3.2vw` is a reasonable gutter at 1440px and only 12px on a phone, so every
+   page was pressing its content against the screen edge — which reads as
+   content falling off rather than as a narrow margin. A floor fixes it without
+   changing anything on desktop.
+   =========================================================================== */
+
+:root {
+  --gutter: max(1.15rem, 3.2vw);
+  --gutter-wide: max(1.15rem, 4vw);
+}
+
+.listing-page,
+.pdp,
+.page-shell {
+  padding-right: var(--gutter);
+  padding-left: var(--gutter);
+}
+.announcement-bar,
+.site-header {
+  padding-right: var(--gutter);
+  padding-left: var(--gutter);
+}
+.announcement-utility { left: var(--gutter); }
+.category-section,
+.product-section,
+.journal-section,
+.footer-grid,
+.footer-bottom {
+  padding-right: var(--gutter-wide);
+  padding-left: var(--gutter-wide);
+}
+.product-rail { padding-right: var(--gutter); padding-left: var(--gutter); }
+.page-shell .product-rail { padding-right: 0; padding-left: 0; }
+
+/*
+ * The toolbar had a paper fill from the design pass, which turned it into a
+ * floating slab between the header block and the grid. It works better as a
+ * plain rule — and where it sticks to the top of the screen it goes full
+ * bleed, so it reads as a bar rather than a card sliding under the header.
+ */
+.listing-toolbar {
+  background: transparent;
+}
+
+@media (width <= 720px) {
+  .listing-toolbar {
+    margin-right: calc(var(--gutter) * -1);
+    margin-left: calc(var(--gutter) * -1);
+    padding-right: var(--gutter);
+    padding-left: var(--gutter);
+    background: var(--ivory);
+    box-shadow: 0 6px 14px rgb(74 32 41 / 5%);
+  }
+  /* The count and the controls need room to breathe before they wrap. */
+  .listing-toolbar { flex-wrap: wrap; row-gap: 0.5rem; }
+  .listing-toolbar-actions { margin-left: auto; }
+}
