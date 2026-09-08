@@ -55,15 +55,16 @@ export async function updateProduct(formData: FormData): Promise<ActionResult> {
   const pricePaise = toPaise(formData.get("price"));
   if (pricePaise === null) return FAIL("Price must be a number.");
 
+  // Asked for on every product, so the listing always shows a struck-through
+  // "was" price beside what the piece actually costs.
   const compareRaw = String(formData.get("compare_at") ?? "").trim();
-  const compareAtPaise = compareRaw === "" ? null : toPaise(formData.get("compare_at"));
-  if (compareRaw !== "" && compareAtPaise === null) {
-    return FAIL("Compare-at price must be a number.");
-  }
+  if (compareRaw === "") return FAIL("Enter the was price, higher than the price.");
+  const compareAtPaise = toPaise(formData.get("compare_at"));
+  if (compareAtPaise === null) return FAIL("Was price must be a number.");
   // The database enforces this too; catching it here gives a sentence rather
   // than a constraint violation.
-  if (compareAtPaise !== null && compareAtPaise <= pricePaise) {
-    return FAIL("Compare-at price must be higher than the price, or left empty.");
+  if (compareAtPaise <= pricePaise) {
+    return FAIL("The was price must be higher than the price, or nothing is struck through.");
   }
 
   const db = await sessionClient();
@@ -78,10 +79,7 @@ export async function updateProduct(formData: FormData): Promise<ActionResult> {
       fabric: String(formData.get("fabric") ?? "").trim(),
       colour_name: String(formData.get("colour_name") ?? "").trim(),
       colour_hex: String(formData.get("colour_hex") ?? "#c8a39a").trim(),
-      swatches: String(formData.get("swatches") ?? "")
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean),
+      swatches: formData.getAll("swatches").map(String).filter(Boolean),
       occasion: String(formData.get("occasion") ?? "").trim(),
       technique: String(formData.get("technique") ?? "").trim(),
       care: String(formData.get("care") ?? "")
@@ -167,6 +165,45 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
   return OK(onHand === 0 ? "Marked out of stock." : `Stock set to ${onHand}.`);
 }
 
+/**
+ * Sets the stock for every option of one product in a single save.
+ *
+ * Stock is the thing that changes most often and the thing least worth opening
+ * a full editor for, so the list page carries its own control. Each option
+ * arrives as `stock:<variant id>`, which keeps the form flat and lets a product
+ * with six sizes and one with two share the same action.
+ */
+export async function updateProductStock(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot change stock.");
+
+  const wanted: { variantId: string; onHand: number }[] = [];
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("stock:")) continue;
+    const variantId = key.slice("stock:".length);
+    const onHand = toInt(value);
+    if (onHand === null) return FAIL("Stock must be a whole number, zero or more.");
+    wanted.push({ variantId, onHand });
+  }
+  if (wanted.length === 0) return FAIL("Nothing to save.");
+
+  const db = await sessionClient();
+  for (const { variantId, onHand } of wanted) {
+    const { error } = await db
+      .from("inventory")
+      .update({ on_hand: onHand })
+      .eq("variant_id", variantId);
+    if (error) return FAIL(error.message);
+  }
+
+  revalidatePath("/products");
+  revalidatePath("/inventory");
+  revalidatePath("/");
+
+  const total = wanted.reduce((sum, row) => sum + row.onHand, 0);
+  return OK(total === 0 ? "Saved. Now out of stock." : `Saved. ${total} in stock.`);
+}
+
 /** Show or hide a product on the storefront without deleting anything. */
 export async function toggleProductActive(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
@@ -206,8 +243,9 @@ export async function createProduct(formData: FormData): Promise<ActionResult> {
   if (!categoryId) return FAIL("Choose a category.");
   if (pricePaise === null) return FAIL("Price must be a number.");
   if (initialStock === null) return FAIL("Opening stock must be a whole number.");
-  if (compareRaw && (compareAtPaise === null || compareAtPaise <= pricePaise)) {
-    return FAIL("Compare-at price must be higher than the selling price.");
+  if (!compareRaw) return FAIL("Enter the was price, higher than the price.");
+  if (compareAtPaise === null || compareAtPaise <= pricePaise) {
+    return FAIL("The was price must be higher than the price, or nothing is struck through.");
   }
 
   const slug = name

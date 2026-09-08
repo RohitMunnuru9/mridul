@@ -12,9 +12,14 @@ import { PackagePlus, PencilLine } from "lucide-react";
 import { getAllCategories, getAllProducts } from "@mridul/database";
 import { sessionClient } from "@mridul/supabase/server";
 import { formatPaise } from "@mridul/utils";
-import { createProduct, toggleProductActive } from "../../actions/catalogue";
+import {
+  createProduct,
+  toggleProductActive,
+  updateProductStock,
+} from "../../actions/catalogue";
 import { EditForm, Field, FieldRow, Select, TextArea } from "../../components/form";
 import { InternalLink, MediaThumb, PageHead, Panel, Pill } from "../../components/ui";
+import { StockEditor } from "../../components/stock-editor";
 
 export const metadata: Metadata = { title: "Products | Mridul Admin" };
 
@@ -87,6 +92,14 @@ export default async function ProductsPage() {
                   <input name="id" type="hidden" value={product.id} />
                   <input name="active" type="hidden" value={String(!product.isActive)} />
                 </EditForm>
+                <StockEditor
+                  action={updateProductStock}
+                  variants={product.variants.map((variant) => ({
+                    id: variant.id,
+                    label: variant.label,
+                    stock: variant.stock,
+                  }))}
+                />
               </div>
             </article>
           ))}
@@ -112,7 +125,12 @@ export default async function ProductsPage() {
           </FieldRow>
           <FieldRow>
             <Field label="Price" name="price" required hint="In rupees" placeholder="4650" />
-            <Field label="Compare-at price" name="compare_at" hint="Optional original price" />
+            <Field
+              label="Was price"
+              name="compare_at"
+              required
+              hint="Struck through on the site. Higher than the price."
+            />
           </FieldRow>
           <Field label="Subtitle" name="subtitle" placeholder="Saree with blouse piece" />
           <TextArea label="Description" name="description" rows={3} />

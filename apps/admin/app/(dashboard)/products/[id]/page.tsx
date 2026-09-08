@@ -18,19 +18,23 @@ import { toggleProductActive, updateProduct, updateVariant } from "../../../acti
 import {
   moveProductImage,
   removeProductImage,
+  replaceProductImage,
   updateMedia,
   uploadProductImage,
 } from "../../../actions/media";
 import {
+  ColourSelect,
   EditForm,
   Field,
   FieldRow,
   FileField,
   Select,
+  SwatchPicker,
   TextArea,
   Toggle,
 } from "../../../components/form";
-import { MediaThumb, PageHead, Panel, Pill, ViewOnSite } from "../../../components/ui";
+import { PageHead, Panel, Pill, ViewOnSite } from "../../../components/ui";
+import { ReplaceableImage } from "../../../components/image-tile";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -94,7 +98,16 @@ export default async function ProductEditPage({ params }: PageProps) {
         <div className="image-editor">
           {realImages.map((image, index) => (
             <div className="image-editor-item" key={image.id}>
-              <MediaThumb url={image.url} alt={image.alt} focal={image.focal} size={140} />
+              <ReplaceableImage
+                action={replaceProductImage}
+                alt={image.alt}
+                focal={image.focal}
+                label={index === 0 ? "the thumbnail" : `image ${index + 1}`}
+                mediaId={image.id}
+                productId={product.id}
+                productSlug={product.slug}
+                url={image.url}
+              />
               <span className="image-role">{index === 0 ? "Thumbnail" : `Image ${index + 1}`}</span>
               <EditForm action={updateMedia} submitLabel="Save image details" compact>
                 <input name="media_id" type="hidden" value={image.id} />
@@ -233,10 +246,11 @@ export default async function ProductEditPage({ params }: PageProps) {
               required
             />
             <Field
-              label="Compare-at price"
+              label="Was price"
               name="compare_at"
               defaultValue={product.compareAtPaise ? product.compareAtPaise / 100 : ""}
-              hint="Leave empty for no offer"
+              required
+              hint="Struck through on the site. Must be higher than the price."
             />
           </FieldRow>
 
@@ -257,23 +271,22 @@ export default async function ProductEditPage({ params }: PageProps) {
 
           <FieldRow>
             <Field label="Fabric" name="fabric" defaultValue={product.fabric} />
-            <Field label="Colour" name="colour_name" defaultValue={product.colour.name} />
+            <ColourSelect
+              label="Colour"
+              name="colour_name"
+              hexName="colour_hex"
+              defaultHex={product.colour.hex}
+              defaultName={product.colour.name}
+              hint="Shown as the swatch on the listing"
+            />
           </FieldRow>
 
-          <FieldRow>
-            <Field
-              label="Colour code"
-              name="colour_hex"
-              defaultValue={product.colour.hex}
-              hint="Example: #c8a39a"
-            />
-            <Field
-              label="Extra swatches"
-              name="swatches"
-              defaultValue={product.swatches.join(", ")}
-              hint="Comma-separated colour codes"
-            />
-          </FieldRow>
+          <SwatchPicker
+            label="Also available in"
+            name="swatches"
+            defaultValues={product.swatches}
+            hint="Tick every other colour this piece comes in"
+          />
 
           <FieldRow>
             <Field label="Occasion" name="occasion" defaultValue={product.occasion} />

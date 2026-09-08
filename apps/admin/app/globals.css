@@ -1513,3 +1513,280 @@ th.numeric {
   }
 }
 
+
+/* ---------------------------------------------------------------------------
+   Click-to-change photographs, and colour picked by name
+   --------------------------------------------------------------------------- */
+
+.image-replace {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* The picture is the button, so it needs to look pressable without a border
+   drawn around the photograph itself. */
+.image-replace-trigger {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  line-height: 0;
+}
+.image-replace-trigger:disabled {
+  cursor: progress;
+}
+.image-replace-trigger .media-thumb {
+  display: block;
+  transition: filter 160ms ease;
+}
+
+/* Hidden from sight but still the form's file field. `display: none` on an
+   input inside a submitting form is fine here because it is set by script. */
+.image-replace-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.image-replace-veil {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0.4rem 0.3rem 0.35rem;
+  background: linear-gradient(to top, rgb(23 24 26 / 82%), rgb(23 24 26 / 0%));
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.image-replace-trigger:hover .image-replace-veil,
+.image-replace-trigger:focus-visible .image-replace-veil,
+.image-replace-trigger:disabled .image-replace-veil {
+  opacity: 1;
+}
+.image-replace-trigger:hover .media-thumb {
+  filter: brightness(0.9);
+}
+.image-replace-trigger:focus-visible {
+  outline: 2px solid var(--accent, #8f2f4a);
+  outline-offset: 2px;
+}
+
+/* --- Colour by name ------------------------------------------------------- */
+
+.colour-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.colour-field select {
+  flex: 1;
+  min-width: 0;
+}
+.colour-chip {
+  width: 1.6rem;
+  height: 1.6rem;
+  flex: none;
+  border: 1px solid rgb(23 24 26 / 18%);
+  border-radius: 4px;
+}
+
+.swatch-picker {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.swatch-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+/* The tick is the swatch itself: the colour fills, the label names it. */
+.swatch-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Clipped to a single pixel rather than absolutely positioned and faded: an
+   absolute box with no positioned ancestor stretches to the page width and
+   pushes the document sideways. It stays focusable, so the swatch still has a
+   keyboard path. */
+.swatch-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.swatch-option > span {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  border: 1px solid rgb(23 24 26 / 18%);
+  border-radius: 3px;
+}
+.swatch-option small {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.swatch-option:has(input:checked) {
+  border-color: var(--accent, #8f2f4a);
+  background: rgb(143 47 74 / 8%);
+  font-weight: 600;
+}
+.swatch-option:has(input:focus-visible) {
+  outline: 2px solid var(--accent, #8f2f4a);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-replace-trigger .media-thumb,
+  .image-replace-veil {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Stock, adjusted from the product list
+   --------------------------------------------------------------------------- */
+
+.stock-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 5px;
+  background: var(--paper, #fffdfc);
+}
+.stock-editor-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.stock-editor-total {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.stock-editor-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stock-editor-rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.stock-editor-label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* One control, so minus, the number and plus read as a single stepper rather
+   than three buttons that happen to sit together. */
+.stock-stepper {
+  display: inline-flex;
+  overflow: hidden;
+  flex: none;
+  align-items: stretch;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 4px;
+}
+.stock-stepper button {
+  display: grid;
+  width: 1.6rem;
+  border: 0;
+  background: var(--surface-alt, #f4efe9);
+  color: inherit;
+  cursor: pointer;
+  place-items: center;
+}
+.stock-stepper button:hover:not(:disabled) {
+  background: var(--accent, #8f2f4a);
+  color: #fff;
+}
+.stock-stepper button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.stock-stepper button svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+.stock-stepper input {
+  width: 3rem;
+  border: 0;
+  border-right: 1px solid var(--line, #e2ded8);
+  border-left: 1px solid var(--line, #e2ded8);
+  border-radius: 0;
+  background: transparent;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+/* The spinners duplicate the buttons either side of them. */
+.stock-stepper input::-webkit-outer-spin-button,
+.stock-stepper input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+.stock-stepper input[type="number"] {
+  appearance: textfield;
+}
+
+.stock-editor-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.stock-editor-foot .btn-primary {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.72rem;
+}
+.stock-editor-foot .btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

@@ -108,6 +108,74 @@ export async function uploadProductImage(formData: FormData): Promise<ActionResu
   return OK(position === 0 ? "Uploaded and set as the thumbnail." : "Image added.");
 }
 
+/**
+ * Swaps the picture behind one product image, keeping its place in the order.
+ *
+ * Clicking a photograph and choosing a file is how someone expects to change
+ * a picture, so this action carries the existing alt text and crop across
+ * rather than asking for them again — the description of an ivory saree still
+ * describes it after a better photograph of the same saree is uploaded. It can
+ * be corrected underneath if the new picture differs.
+ *
+ * A new media row is written rather than the old file overwritten, so the
+ * previous photograph survives a mistaken upload.
+ */
+export async function replaceProductImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot change product images.");
+
+  const productId = String(formData.get("product_id") ?? "");
+  const mediaId = String(formData.get("media_id") ?? "");
+  const slug = String(formData.get("product_slug") ?? "product");
+  const file = formData.get("file");
+
+  if (!productId || !mediaId) return FAIL("Missing image.");
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
+
+  const db = await sessionClient();
+
+  const { data: previous, error: previousError } = await db
+    .from("media")
+    .select("alt, focal")
+    .eq("id", mediaId)
+    .single();
+  if (previousError) return FAIL(previousError.message);
+
+  const path = `${slug}/${Date.now()}-${safeName(file.name)}`;
+  const { error: uploadError } = await db.storage
+    .from("products")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
+
+  const { data: media, error: mediaError } = await db
+    .from("media")
+    .insert({
+      bucket: "products",
+      path,
+      alt: previous.alt,
+      focal: previous.focal,
+      mime_type: file.type,
+      byte_size: file.size,
+      uploaded_by: admin?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (mediaError) return FAIL(mediaError.message);
+
+  const { error: linkError } = await db
+    .from("product_images")
+    .update({ media_id: media.id })
+    .eq("product_id", productId)
+    .eq("media_id", mediaId);
+  if (linkError) return FAIL(linkError.message);
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/");
+  return OK("Picture changed.");
+}
+
 /** Removes an image from a product. The file stays in the bucket. */
 export async function removeProductImage(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
