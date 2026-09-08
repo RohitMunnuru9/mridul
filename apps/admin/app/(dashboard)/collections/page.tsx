@@ -12,14 +12,16 @@ import {
   getHomepageSections,
   getProductsByCollection,
 } from '@mridul/database';
+import { sessionClient } from '@mridul/supabase/server';
 import { formatPaise } from '@mridul/utils';
 import { InternalLink, MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Collections | Mridul Admin' };
 
 export default async function CollectionsPage() {
+  const db = await sessionClient();
   const [collections, sections] = await Promise.all([
-    getCollectionsWithCounts(),
+    getCollectionsWithCounts(db),
     getHomepageSections(true),
   ]);
 
@@ -30,7 +32,7 @@ export default async function CollectionsPage() {
   const withProducts = await Promise.all(
     collections.map(async (collection) => ({
       collection,
-      products: await getProductsByCollection(collection.slug, 6),
+      products: await getProductsByCollection(collection.slug, 6, db),
     })),
   );
 
