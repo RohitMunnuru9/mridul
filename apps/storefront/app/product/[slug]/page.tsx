@@ -9,7 +9,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ChevronRight, Ruler, Star } from 'lucide-react';
+import {
+  ChevronRight,
+  Droplet,
+  Layers,
+  Ruler,
+  Sparkles,
+  Star,
+  Wand2,
+} from 'lucide-react';
 import { ProductRail } from '@/app/components/product-rail';
 import { badgeLabel } from '@mridul/utils';
 import {
@@ -56,11 +64,13 @@ export default async function ProductPage({ params }: PageProps) {
     flatRatePaise: settings.flatShippingPaise,
   };
 
+  // Each spec carries an icon so the block reads as four facts about a
+  // garment rather than as four rows of a form.
   const specs = [
-    { label: 'Fabric', value: product.fabric },
-    { label: 'Colour', value: product.colour.name },
-    { label: 'Weave', value: product.technique },
-    { label: 'Occasion', value: product.occasion },
+    { label: 'Fabric', value: product.fabric, icon: Layers },
+    { label: 'Colour', value: product.colour.name, icon: Droplet, swatch: product.colour.hex },
+    { label: 'Weave', value: product.technique, icon: Wand2 },
+    { label: 'Occasion', value: product.occasion, icon: Sparkles },
   ];
 
   return (
@@ -104,12 +114,24 @@ export default async function ProductPage({ params }: PageProps) {
           <DeliveryCheck pricePaise={product.pricePaise} rates={rates} />
 
           <dl className="pdp-specs">
-            {specs.map((spec) => (
-              <div key={spec.label}>
-                <dt>{spec.label}</dt>
-                <dd>{spec.value}</dd>
-              </div>
-            ))}
+            {specs.map((spec) => {
+              const Icon = spec.icon;
+              return (
+                <div key={spec.label}>
+                  <span className="spec-icon" aria-hidden="true">
+                    {spec.swatch ? (
+                      <i style={{ background: spec.swatch }} />
+                    ) : (
+                      <Icon />
+                    )}
+                  </span>
+                  <div>
+                    <dt>{spec.label}</dt>
+                    <dd>{spec.value}</dd>
+                  </div>
+                </div>
+              );
+            })}
           </dl>
 
           <div className="pdp-accordions">

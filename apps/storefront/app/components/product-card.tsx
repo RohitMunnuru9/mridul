@@ -112,10 +112,25 @@ export function ProductCard({
         ))}
 
       <div className="product-details">
-        <div className="product-title-row">
+        {/* Name and price on one line: they are the two things a shopper is
+            actually comparing, and stacking them made every card read as a
+            paragraph. */}
+        <div className="product-line">
           <h3>
             <Link href={href}>{product.name}</Link>
           </h3>
+          <span className="product-price">
+            {product.compareAtPaise && <s>{formatPaise(product.compareAtPaise)}</s>}
+            <strong>{formatPaise(product.pricePaise)}</strong>
+          </span>
+        </div>
+
+        <p className="product-meta">
+          <span className="fabric-tag">{product.fabric}</span>
+          <span className="product-subtitle">{product.subtitle}</span>
+        </p>
+
+        <div className="product-foot">
           {product.rating && (
             <span className="product-rating">
               <Star aria-hidden="true" fill="currentColor" />
@@ -123,15 +138,6 @@ export function ProductCard({
               <small>({product.rating.count})</small>
             </span>
           )}
-        </div>
-        <p className="product-fabric">
-          {product.fabric} · {product.subtitle}
-        </p>
-        <div className="product-buy-row">
-          <div className="product-price-row">
-            <strong>{formatPaise(product.pricePaise)}</strong>
-            {product.compareAtPaise && <s>{formatPaise(product.compareAtPaise)}</s>}
-          </div>
           <div className="swatches" aria-label="Available colours">
             {product.swatches.map((swatch) => (
               <span key={swatch} style={{ background: swatch }} />

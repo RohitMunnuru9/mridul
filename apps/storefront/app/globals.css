@@ -2055,3 +2055,336 @@ img { display: block; max-width: 100%; }
   .listing-toolbar { flex-wrap: wrap; row-gap: 0.5rem; }
   .listing-toolbar-actions { margin-left: auto; }
 }
+
+/* ===========================================================================
+   Contrast, and the blocks that read as a form
+   ---------------------------------------------------------------------------
+   The palette was warm neutral on warm neutral: cream text areas on cream
+   grounds, with greys that carried so much brown they read as muddy rather
+   than as quiet. Nothing had edges. The fix is not more colour — it is more
+   distance between the tones already there: darker ink, cleaner surfaces, and
+   one accent saturated enough to actually act as an accent.
+   =========================================================================== */
+
+:root {
+  /* Near-black with just enough warmth to belong. The old #2f2024 was a
+     brown, and brown text on cream is the definition of muddy. */
+  --ink: #221a1c;
+  --foreground: #221a1c;
+  --card-foreground: #221a1c;
+  --popover-foreground: #221a1c;
+
+  /* Secondary text was #7b6560 — too close to the ground to separate. */
+  --muted-foreground: #6a575b;
+
+  /* Surfaces pull apart: the ground warms, the cards go nearly white, so a
+     card now reads as a card without needing a border to say so. */
+  --background: #f8f3ef;
+  --ivory: #f8f3ef;
+  --paper: #fffdfc;
+  --card: #fffdfc;
+  --popover: #fffdfc;
+
+  /* The accent was a dusty pink doing nothing. Deeper and more saturated, it
+     can actually carry a price, a link and a sale badge. */
+  --berry: #9d3f57;
+  --accent: #9d3f57;
+  --ring: #9d3f57;
+
+  --border: #e7d9d4;
+  --input: #e7d9d4;
+  --muted: #efe2dc;
+  --soft-rose: #f7e7e6;
+
+  /* Zari with some metal in it. The old tone disappeared against cream. */
+  --gold: #b8893f;
+  --gold-soft: rgb(184 137 63 / 60%);
+}
+
+/* --- Product card ---------------------------------------------------------- */
+
+.product-details { padding: 0.85rem 0 0; }
+
+.product-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.product-line h3 {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.product-price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.product-price strong {
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.product-price s { color: #a9938f; font-size: 0.7rem; }
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.45rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.66rem;
+}
+/* The fabric is the thing shoppers actually filter on, so it gets to look
+   like a tag rather than like the back half of a sentence. */
+.fabric-tag {
+  padding: 0.16rem 0.42rem;
+  border-radius: 2px;
+  background: var(--soft-rose);
+  color: var(--berry);
+  white-space: nowrap;
+  font-size: 0.6rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.product-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.55rem;
+}
+.product-rating { color: var(--muted-foreground); font-size: 0.66rem; }
+.product-rating svg { width: 0.66rem; color: var(--gold); }
+.product-foot .swatches { margin: 0; }
+
+/* --- Product page: the buy box --------------------------------------------- */
+
+.pdp-description {
+  max-width: 46ch;
+  color: var(--muted-foreground);
+  font-size: 0.86rem;
+  line-height: 1.72;
+}
+
+.pdp-buy {
+  margin-top: 1.5rem;
+  padding: 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--paper);
+  box-shadow: 0 10px 30px rgb(74 32 41 / 6%);
+}
+.pdp-price { align-items: baseline; gap: 0.7rem; }
+.pdp-price strong {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: 2.3rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.pdp-saving {
+  padding: 0.22rem 0.5rem;
+  border-radius: 2px;
+  background: var(--berry);
+  color: #fffdfc;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.pdp-variants legend { color: var(--muted-foreground); }
+.pdp-variant {
+  border-radius: 3px;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.pdp-variant.is-on {
+  border-color: var(--cocoa);
+  background: var(--cocoa);
+  box-shadow: inset 0 0 0 2px rgb(255 253 252 / 22%);
+}
+
+.pdp-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.55rem;
+  border-radius: 2px;
+  background: #eef2ec;
+  color: #2f6f4f;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.pdp-stock::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+.pdp-stock.is-low { background: #fbeee0; color: #8a5a1c; }
+.pdp-stock.is-out { background: #f8e6e5; color: var(--destructive); }
+
+.pdp-add {
+  min-height: 3rem;
+  border-radius: 3px !important;
+  background: linear-gradient(160deg, #5c2833, var(--cocoa)) !important;
+  box-shadow: 0 10px 24px rgb(74 32 41 / 22%);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.pdp-add:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgb(157 63 87 / 30%);
+}
+.pdp-wishlist {
+  width: 3rem !important;
+  height: 3rem !important;
+  border-radius: 3px !important;
+  border-color: var(--border) !important;
+}
+.pdp-wishlist:hover { background: var(--soft-rose) !important; color: var(--berry) !important; }
+.pdp-quantity { border-radius: 3px; }
+
+/* The assurances were two lines of grey text. As a panel with a zari edge they
+   read as a promise rather than as small print. */
+.pdp-assurances {
+  margin-top: 1.2rem;
+  padding: 0.85rem 0.95rem;
+  border-left: 2px solid var(--gold);
+  border-radius: 0 3px 3px 0;
+  background: var(--ivory);
+}
+.pdp-assurances li { color: var(--muted-foreground); font-size: 0.72rem; }
+.pdp-assurances svg { color: var(--berry); }
+
+/* --- Product page: specs --------------------------------------------------- */
+
+/* Four stacked label/value pairs read as a form. Two columns of small cards,
+   each with an icon, reads as four facts about a garment. */
+.pdp-specs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1.5rem 0 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.pdp-specs > div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--paper);
+}
+.spec-icon {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--soft-rose);
+  color: var(--berry);
+}
+.spec-icon svg { width: 0.9rem; }
+.spec-icon i {
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 1px solid rgb(34 26 28 / 18%);
+  border-radius: 50%;
+}
+.pdp-specs dt {
+  color: var(--muted-foreground);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+}
+.pdp-specs dd { margin: 0.1rem 0 0; font-size: 0.82rem; font-weight: 600; }
+
+/* --- Product page: accordions ---------------------------------------------- */
+
+.pdp-accordions { margin-top: 1.6rem; border-top: 1px solid var(--border); }
+.pdp-accordions summary {
+  padding: 1rem 0.6rem 1rem 0;
+  color: var(--ink);
+  transition: color 160ms ease, padding-left 160ms ease;
+}
+.pdp-accordions summary:hover { padding-left: 0.35rem; color: var(--berry); }
+/* A chevron rather than a plus: it says "opens", not "adds". */
+.pdp-accordions summary::after {
+  float: right;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.15rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  content: '';
+  transform: rotate(45deg);
+  transition: transform 200ms ease;
+}
+.pdp-accordions details[open] summary::after {
+  transform: rotate(-135deg);
+}
+.pdp-accordions details[open] summary { color: var(--berry); }
+.pdp-accordions details[open] { border-left: 2px solid var(--soft-rose); padding-left: 0.7rem; }
+.pdp-accordions p, .pdp-accordions ul { font-size: 0.78rem; line-height: 1.7; }
+
+/* --- The chat button ------------------------------------------------------- */
+
+/* It was a neon green circle on a warm cream site — the one saturated thing on
+   the page and from a completely different family. A deep forest green keeps
+   the signal without shouting over everything else. */
+.whatsapp-float {
+  background: linear-gradient(160deg, #35704b, #245136);
+  border-color: rgb(255 253 252 / 18%);
+  box-shadow: 0 10px 24px rgb(36 81 54 / 28%);
+}
+.whatsapp-float:hover {
+  background: linear-gradient(160deg, #3d7f55, #1f4830);
+}
+
+@media (width <= 560px) {
+  .pdp-specs { grid-template-columns: 1fr; }
+}
+
+/*
+ * The buy row wrapped the wishlist button onto its own line on a phone, which
+ * left a stray square under a full-width button. Quantity, add and save all fit
+ * on one row if the button is allowed to take whatever is left.
+ */
+.pdp-actions { flex-wrap: nowrap; align-items: stretch; }
+.pdp-add { flex: 1 1 auto; min-width: 0; padding: 0 0.75rem !important; }
+.pdp-quantity, .pdp-wishlist { flex: 0 0 auto; }
+
+@media (width <= 720px) {
+  .pdp-actions { flex-wrap: nowrap; gap: 0.4rem; }
+  .pdp-add { flex-basis: auto; font-size: 0.58rem; letter-spacing: 0.09em; }
+  .pdp-wishlist { width: 2.9rem !important; height: auto !important; }
+  .pdp-quantity button { width: 1.7rem; }
+  .pdp-quantity span { min-width: 1.3rem; }
+}
+
+/* On a narrow card the subtitle wrapped to a second line beside the fabric
+   tag, which left the row ragged. One line, clipped, keeps the card tidy —
+   the full subtitle is on the product page anyway. */
+.product-meta {
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+.product-subtitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.product-line h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
