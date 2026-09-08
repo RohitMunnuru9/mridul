@@ -166,54 +166,44 @@ export default async function ProductEditPage({ params }: PageProps) {
 
       <Panel
         title="Options and stock"
-        note="Edit the option, SKU, price adjustment, and stock together. Zero stock stays saved but cannot be bought."
+        note="One card per option. Change the name, code, extra price or how many are left, then save that option."
       >
-        <table>
-          <thead>
-            <tr>
-              <th>Option</th>
-              <th>SKU</th>
-              <th className="numeric">Sells at</th>
-              <th>Edit option</th>
-            </tr>
-          </thead>
-          <tbody>
-            {product.variants.map((variant) => (
-              <tr key={variant.id}>
-                <td>
-                  <strong>{variant.label}</strong>
-                </td>
-                <td>
-                  <code>{variant.sku}</code>
-                </td>
-                <td className="numeric">
-                  {formatPaise(product.pricePaise + variant.priceDeltaPaise)}
-                </td>
-                <td>
-                  <EditForm action={updateVariant} submitLabel="Save option" compact>
-                    <input name="product_id" type="hidden" value={product.id} />
-                    <input name="variant_id" type="hidden" value={variant.id} />
-                    <Field label="Option" name="label" defaultValue={variant.label} required />
-                    <Field label="SKU" name="sku" defaultValue={variant.sku} required />
-                    <Field
-                      label="Extra price"
-                      name="price_delta"
-                      defaultValue={variant.priceDeltaPaise / 100}
-                      hint="Rupees; 0 if none"
-                    />
-                    <Field
-                      label="Stock"
-                      name="on_hand"
-                      defaultValue={variant.stock}
-                      type="number"
-                      required
-                    />
-                  </EditForm>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="variant-editor-grid">
+          {product.variants.map((variant) => (
+            <article className="variant-editor" key={variant.id}>
+              <header>
+                <strong>{variant.label}</strong>
+                <span>
+                  Sells at {formatPaise(product.pricePaise + variant.priceDeltaPaise)}
+                </span>
+              </header>
+              <EditForm action={updateVariant} submitLabel="Save option" compact>
+                <input name="product_id" type="hidden" value={product.id} />
+                <input name="variant_id" type="hidden" value={variant.id} />
+                <FieldRow>
+                  <Field label="Option" name="label" defaultValue={variant.label} required />
+                  <Field label="Code" name="sku" defaultValue={variant.sku} required />
+                </FieldRow>
+                <FieldRow>
+                  <Field
+                    label="Extra price"
+                    name="price_delta"
+                    defaultValue={variant.priceDeltaPaise / 100}
+                    hint="Rupees; 0 if none"
+                  />
+                  <Field
+                    label="Stock"
+                    name="on_hand"
+                    defaultValue={variant.stock}
+                    type="number"
+                    required
+                    hint="0 marks it sold out"
+                  />
+                </FieldRow>
+              </EditForm>
+            </article>
+          ))}
+        </div>
       </Panel>
 
       <Panel title="Details" note="What a shopper reads on the product page.">

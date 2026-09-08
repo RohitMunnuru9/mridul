@@ -1414,7 +1414,8 @@ th.numeric {
   grid-column: 2 / -1;
 }
 .product-admin-stock .stock-editor {
-  max-width: 22rem;
+  width: fit-content;
+  max-width: 100%;
 }
 .product-admin-actions .edit-form {
   padding: 0;
@@ -1486,9 +1487,6 @@ th.numeric {
   }
   .product-admin-stock {
     grid-column: 1 / -1;
-  }
-  .product-admin-stock .stock-editor {
-    max-width: none;
   }
 }
 
@@ -1700,8 +1698,8 @@ th.numeric {
 .stock-editor {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.55rem 0.6rem;
+  gap: 0.35rem;
+  padding: 0.5rem 0.55rem;
   border: 1px solid var(--line, #e2ded8);
   border-radius: 5px;
   background: var(--paper, #fffdfc);
@@ -1720,16 +1718,21 @@ th.numeric {
 .stock-editor-rows {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
+/* The label sits against its stepper rather than at the far side of a wide
+   box, so the size and its number read as one thing. */
 .stock-editor-rows li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.9rem;
+}
+.stock-editor-label {
+  flex: 1;
 }
 .stock-editor-label {
   min-width: 0;
@@ -1752,7 +1755,7 @@ th.numeric {
 }
 .stock-stepper button {
   display: grid;
-  width: 1.6rem;
+  width: 1.45rem;
   border: 0;
   background: var(--surface-alt, #f4efe9);
   color: inherit;
@@ -1772,7 +1775,7 @@ th.numeric {
   height: 0.8rem;
 }
 .stock-stepper input {
-  width: 3rem;
+  width: 2.5rem;
   border: 0;
   border-right: 1px solid var(--line, #e2ded8);
   border-left: 1px solid var(--line, #e2ded8);
@@ -1805,4 +1808,66 @@ th.numeric {
 .stock-editor-foot .btn-primary:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+/* ---------------------------------------------------------------------------
+   Product options
+   ---------------------------------------------------------------------------
+   These were table rows with a four-field form crammed into the last cell,
+   while the first three cells repeated what that form already showed. The
+   form could not fit, so it clipped, and the repeated cells stretched to its
+   height and left the row mostly empty. A card per option holds the same
+   fields with room for them.
+   --------------------------------------------------------------------------- */
+
+.variant-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.7rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.variant-editor {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 5px;
+  background: var(--paper, #fffdfc);
+}
+.variant-editor header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--line-soft, #efe9e3);
+}
+.variant-editor header strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.92rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.variant-editor header span {
+  flex: none;
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.variant-editor .edit-form {
+  padding: 0;
+}
+/* Two fields to a line while there is room, stacked once there is not. */
+.variant-editor .field-row {
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+@media (width <= 560px) {
+  .variant-editor-grid {
+    padding-inline: 0.8rem;
+  }
 }
