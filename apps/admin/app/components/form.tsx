@@ -8,8 +8,9 @@
  * failure is worse than no save button at all.
  */
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import type { ReactNode } from 'react';
+import { COLOUR_GROUPS, COLOURS } from '@mridul/utils';
 
 type Result = { ok: boolean; message: string };
 
@@ -192,4 +193,109 @@ export function FileField({
 /** A row of fields that should sit side by side when there is room. */
 export function FieldRow({ children }: { children: ReactNode }) {
   return <div className="field-row">{children}</div>;
+}
+
+/**
+ * The product's colour, chosen by name.
+ *
+ * Hex codes are how the storefront draws a swatch, not how anyone describes a
+ * saree, so the list reads "Deep Teal" and the code travels with it in a hidden
+ * field. A product whose colour is no longer on the list keeps its own entry at
+ * the top, so editing an old product never silently recolours it.
+ */
+export function ColourSelect({
+  label,
+  name,
+  hexName,
+  defaultHex,
+  defaultName,
+  hint,
+}: {
+  label: string;
+  /** Field carrying the colour name. */
+  name: string;
+  /** Field carrying the hex code. */
+  hexName: string;
+  defaultHex: string;
+  defaultName: string;
+  hint?: string;
+}) {
+  const known = COLOURS.some((colour) => colour.hex.toLowerCase() === defaultHex.toLowerCase());
+  const [hex, setHex] = useState(defaultHex);
+
+  const nameFor = (value: string) =>
+    COLOURS.find((colour) => colour.hex.toLowerCase() === value.toLowerCase())?.name ?? defaultName;
+
+  return (
+    <label className="field">
+      <span className="field-label">
+        {label}
+        {hint && <small>{hint}</small>}
+      </span>
+      <span className="colour-field">
+        <span aria-hidden="true" className="colour-chip" style={{ background: hex }} />
+        <select
+          defaultValue={defaultHex}
+          name={hexName}
+          onChange={(event) => setHex(event.target.value)}
+        >
+          {!known && <option value={defaultHex}>{defaultName} (current)</option>}
+          {COLOUR_GROUPS.map((group) => (
+            <optgroup key={group.label} label={group.label}>
+              {group.colours.map((colour) => (
+                <option key={colour.hex} value={colour.hex}>
+                  {colour.name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </span>
+      {/* The name is derived from the chosen code so the two can never disagree. */}
+      <input name={name} type="hidden" value={nameFor(hex)} />
+    </label>
+  );
+}
+
+/**
+ * The other colours a piece comes in, ticked from the same list.
+ *
+ * Checkboxes rather than a multi-select: the swatches are the point, and you
+ * can see all of them at once.
+ */
+export function SwatchPicker({
+  label,
+  name,
+  defaultValues,
+  hint,
+}: {
+  label: string;
+  name: string;
+  defaultValues: string[];
+  hint?: string;
+}) {
+  const chosen = defaultValues.map((value) => value.toLowerCase());
+
+  return (
+    <fieldset className="field swatch-picker">
+      <legend className="field-label">
+        {label}
+        {hint && <small>{hint}</small>}
+      </legend>
+      <div className="swatch-picker-grid">
+        {COLOURS.map((colour) => (
+          <label className="swatch-option" key={colour.hex} title={colour.name}>
+            <input
+              defaultChecked={chosen.includes(colour.hex.toLowerCase())}
+              name={name}
+              type="checkbox"
+              value={colour.hex}
+            />
+            <span aria-hidden="true" style={{ background: colour.hex }} />
+            <small>{colour.name}</small>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
 }
