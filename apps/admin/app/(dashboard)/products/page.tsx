@@ -92,6 +92,8 @@ export default async function ProductsPage() {
                   <input name="id" type="hidden" value={product.id} />
                   <input name="active" type="hidden" value={String(!product.isActive)} />
                 </EditForm>
+              </div>
+              <div className="product-admin-stock">
                 <StockEditor
                   action={updateProductStock}
                   variants={product.variants.map((variant) => ({
