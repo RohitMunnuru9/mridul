@@ -20,6 +20,7 @@ export function EditForm({
   submitLabel = 'Save',
   compact = false,
   danger = false,
+  title,
 }: {
   action: (formData: FormData) => Promise<Result>;
   children: ReactNode;
@@ -27,6 +28,8 @@ export function EditForm({
   compact?: boolean;
   /** Destructive actions get a quieter, warning-coloured button. */
   danger?: boolean;
+  /** Spells out what a symbol-only button does, for screen readers and hover. */
+  title?: string;
 }) {
   const [state, formAction, pending] = useActionState(
     async (_previous: Result | null, formData: FormData) => action(formData),
@@ -38,8 +41,10 @@ export function EditForm({
       {children}
       <div className="edit-form-foot">
         <button
+          aria-label={title}
           className={danger ? 'btn-danger' : 'btn-primary'}
           disabled={pending}
+          title={title}
           type="submit"
         >
           {pending ? 'Saving…' : submitLabel}
@@ -54,6 +59,36 @@ export function EditForm({
         )}
       </div>
     </form>
+  );
+}
+
+
+/**
+ * A field's label, marking the ones that must be filled in.
+ *
+ * Everything without the mark can be left blank — occasion, weave, care notes
+ * and the rest are things a product may simply not have, and an admin should
+ * not have to invent a value to get past a save.
+ */
+function FieldLabel({
+  label,
+  hint,
+  required = false,
+}: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+}) {
+  return (
+    <span className="field-label">
+      {label}
+      {required && (
+        <abbr className="required-mark" title="Must be filled in">
+          *
+        </abbr>
+      )}
+      {hint && <small>{hint}</small>}
+    </span>
   );
 }
 
@@ -76,10 +111,7 @@ export function Field({
 }) {
   return (
     <label className="field">
-      <span className="field-label">
-        {label}
-        {hint && <small>{hint}</small>}
-      </span>
+      <FieldLabel hint={hint} label={label} required={required} />
       <input
         defaultValue={defaultValue ?? ''}
         name={name}
@@ -106,10 +138,7 @@ export function TextArea({
 }) {
   return (
     <label className="field">
-      <span className="field-label">
-        {label}
-        {hint && <small>{hint}</small>}
-      </span>
+      <FieldLabel hint={hint} label={label} />
       <textarea defaultValue={defaultValue ?? ''} name={name} rows={rows} />
     </label>
   );
@@ -130,10 +159,7 @@ export function Select({
 }) {
   return (
     <label className="field">
-      <span className="field-label">
-        {label}
-        {hint && <small>{hint}</small>}
-      </span>
+      <FieldLabel hint={hint} label={label} />
       <select defaultValue={defaultValue ?? ''} name={name}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -181,10 +207,7 @@ export function FileField({
 }) {
   return (
     <label className="field">
-      <span className="field-label">
-        {label}
-        {hint && <small>{hint}</small>}
-      </span>
+      <FieldLabel hint={hint} label={label} />
       <input accept="image/jpeg,image/png,image/webp,image/avif" name={name} type="file" />
     </label>
   );

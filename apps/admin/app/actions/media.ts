@@ -54,6 +54,7 @@ export async function uploadProductImage(formData: FormData): Promise<ActionResu
   const productId = String(formData.get("product_id") ?? "");
   const slug = String(formData.get("product_slug") ?? "product");
   const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "").trim() || "50% center";
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
@@ -87,7 +88,7 @@ export async function uploadProductImage(formData: FormData): Promise<ActionResu
         bucket: "products",
         path,
         alt,
-        focal: "50% center",
+        focal,
         mime_type: file.type,
         byte_size: file.size,
         uploaded_by: admin?.id ?? null,
@@ -208,6 +209,66 @@ export async function removeProductImage(formData: FormData): Promise<ActionResu
   revalidatePath(`/products/${productId}`);
   revalidatePath("/media");
   return OK("Image removed.");
+}
+
+/**
+ * Makes one photograph the thumbnail.
+ *
+ * Shuffling images one slot at a time asked the admin to work out positions in
+ * their head; the only thing they actually wanted was "show this one on the
+ * listing". Everything else keeps its order behind it.
+ *
+ * Positions are rewritten one row at a time because there is no transaction
+ * here: the chosen image parks at -1, the ones above it shift down from the
+ * back so two rows never hold the same position, and it lands at 0.
+ */
+export async function setThumbnail(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot reorder product images.");
+
+  const productId = String(formData.get("product_id") ?? "");
+  const mediaId = String(formData.get("media_id") ?? "");
+  if (!productId || !mediaId) return FAIL("Missing image.");
+
+  const db = await sessionClient();
+  const { data: images, error } = await db
+    .from("product_images")
+    .select("id, media_id, position")
+    .eq("product_id", productId)
+    .order("position");
+  if (error) return FAIL(error.message);
+
+  const rows = images ?? [];
+  const index = rows.findIndex((image) => image.media_id === mediaId);
+  if (index < 0) return FAIL("That image is not on this product.");
+  if (index === 0) return OK("Already the thumbnail.");
+
+  const chosen = rows[index];
+  const { error: parkError } = await db
+    .from("product_images")
+    .update({ position: -1 })
+    .eq("id", chosen.id);
+  if (parkError) return FAIL(parkError.message);
+
+  // Back to front, so each row moves into a slot that has just been vacated.
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const { error: shiftError } = await db
+      .from("product_images")
+      .update({ position: i + 1 })
+      .eq("id", rows[i].id);
+    if (shiftError) return FAIL(shiftError.message);
+  }
+
+  const { error: placeError } = await db
+    .from("product_images")
+    .update({ position: 0 })
+    .eq("id", chosen.id);
+  if (placeError) return FAIL(placeError.message);
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath("/products");
+  revalidatePath("/");
+  return OK("Now the thumbnail.");
 }
 
 /** Moves a product image one position left or right; position zero is the thumbnail. */

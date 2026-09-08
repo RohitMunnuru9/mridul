@@ -1012,7 +1012,7 @@ th.numeric {
 
 .image-editor {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
   gap: 0.7rem;
   padding: 0.9rem 1.1rem;
 }
@@ -1049,7 +1049,7 @@ th.numeric {
 .image-editor-item .media-thumb {
   width: 100% !important;
   height: auto !important;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 3;
 }
 .image-editor-item .image-replace,
 .image-editor-item .image-replace-trigger {
@@ -1927,4 +1927,122 @@ th.numeric {
   .variant-editor-grid {
     padding-inline: 0.8rem;
   }
+}
+
+
+/* ---------------------------------------------------------------------------
+   Adding a photograph, with the crop chosen before it is uploaded
+   ---------------------------------------------------------------------------
+   The crop was a text field on the saved image asking for `50% center`. Nobody
+   types a CSS value, and by then the picture was already on the site. It is
+   now part of uploading: pick the file, see it, tap the part that matters.
+   --------------------------------------------------------------------------- */
+
+.image-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.image-upload .edit-form-foot {
+  margin: 0;
+}
+.image-upload .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.image-upload .btn-primary svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.crop-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* The frame is the shape a listing card crops to, so what you see here is what
+   a shopper sees. */
+.crop-frame {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 16rem;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 5px;
+  background: var(--canvas, #f4efe9);
+}
+.crop-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: object-position 200ms ease;
+}
+
+.crop-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+.crop-grid button {
+  border: 1px solid rgb(255 255 255 / 35%);
+  background: transparent;
+  cursor: pointer;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+.crop-grid button:hover {
+  background: rgb(255 255 255 / 22%);
+}
+.crop-grid button.is-on {
+  background: rgb(143 47 74 / 26%);
+  box-shadow: inset 0 0 0 2px var(--accent, #8f2f4a);
+}
+.crop-grid button:focus-visible {
+  outline: 2px solid var(--accent, #8f2f4a);
+  outline-offset: -2px;
+}
+
+.crop-chosen {
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.7rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crop-frame img,
+  .crop-grid button {
+    transition: none;
+  }
+}
+
+/* --- Required fields, and removing an option ------------------------------- */
+
+/* Marks the handful of fields that must be filled in, so everything without it
+   reads as safe to leave blank — a saree may genuinely have no occasion. */
+.required-mark {
+  margin-left: 0.15rem;
+  color: var(--accent, #8f2f4a);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* A quiet minus in the option header: destructive, so it should not compete
+   with the save button underneath it. */
+.variant-editor header .edit-form {
+  flex: none;
+  padding: 0;
+}
+.variant-editor header .edit-form-foot {
+  margin: 0;
+}
+.variant-editor header .btn-danger {
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  line-height: 1;
 }
