@@ -63,7 +63,13 @@ export function ProductGallery({ product }: { product: ProductListItem }) {
   );
 }
 
-export function ProductPurchase({ product }: { product: ProductListItem }) {
+export function ProductPurchase({
+  product,
+  freeShippingThresholdPaise,
+}: {
+  product: ProductListItem;
+  freeShippingThresholdPaise: number;
+}) {
   const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
 
   // Default to the first variant that can actually be bought.
@@ -198,8 +204,8 @@ export function ProductPurchase({ product }: { product: ProductListItem }) {
       <ul className="pdp-assurances">
         <li>
           <Truck aria-hidden="true" />
-          Free shipping above ₹1,999. Delivery charge is calculated from your
-          pincode at checkout.
+          Free shipping above {formatPaise(freeShippingThresholdPaise)}. Delivery
+          charge is calculated from your pincode at checkout.
         </li>
         <li>
           <ShieldCheck aria-hidden="true" />

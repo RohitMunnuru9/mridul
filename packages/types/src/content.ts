@@ -148,7 +148,10 @@ export type SiteSettings = {
   brandName: string;
   tagline: string;
   announcements: string[];
+  /** The one free-shipping figure. Everything that quotes shipping reads it. */
   freeShippingThresholdPaise: Money;
+  /** Charged below the threshold until a courier is contracted. */
+  flatShippingPaise: Money;
   returnWindowDays: number;
   contact: {
     whatsapp: string;
@@ -158,4 +161,20 @@ export type SiteSettings = {
   };
   /** Policy pages that still need writing, listed so the gap is visible. */
   pendingPolicies: string[];
+};
+
+/** A named piece of editorial prose, looked up by key. */
+export type ContentBlock = {
+  key: string;
+  title: string;
+  body: string;
+  placement: string;
+};
+
+/** One row of a category's size chart. Measurements are of the garment. */
+export type SizeChartRow = {
+  size: string;
+  bust: string;
+  waist: string;
+  shoulder: string;
 };

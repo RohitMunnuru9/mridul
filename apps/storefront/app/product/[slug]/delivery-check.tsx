@@ -13,15 +13,18 @@ import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPaise } from '@mridul/utils';
-import {
-  estimateShipping,
-  FREE_SHIPPING_THRESHOLD_PAISE,
-} from '@mridul/shipping';
+import { estimateShipping, type ShippingRates } from '@mridul/shipping';
 
 /** Indian pincodes are six digits and never start with zero. */
 const PINCODE = /^[1-9][0-9]{5}$/;
 
-export function DeliveryCheck({ pricePaise }: { pricePaise: number }) {
+export function DeliveryCheck({
+  pricePaise,
+  rates,
+}: {
+  pricePaise: number;
+  rates: ShippingRates;
+}) {
   const [pincode, setPincode] = useState('');
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
@@ -31,13 +34,13 @@ export function DeliveryCheck({ pricePaise }: { pricePaise: number }) {
       setResult({ ok: false, message: 'Enter a valid 6-digit pincode.' });
       return;
     }
-    const shipping = estimateShipping(pricePaise);
+    const shipping = estimateShipping(pricePaise, rates);
     setResult({
       ok: true,
       message:
         shipping === 0
           ? `We deliver to ${pincode}. This order ships free.`
-          : `We deliver to ${pincode}. Shipping is about ${formatPaise(shipping)}, free above ${formatPaise(FREE_SHIPPING_THRESHOLD_PAISE)}.`,
+          : `We deliver to ${pincode}. Shipping is about ${formatPaise(shipping)}, free above ${formatPaise(rates.freeShippingThresholdPaise)}.`,
     });
   }
 

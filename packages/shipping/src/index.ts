@@ -69,25 +69,41 @@ export interface ShippingProvider {
 }
 
 /**
- * Free shipping threshold, in paise. Lives here rather than in a component so
- * the storefront banner, the bag page and the checkout total cannot drift
- * apart. Move it to the `settings` table once the admin panel owns it.
+ * The rates a quote is calculated against.
+ *
+ * Passed in rather than held here on purpose. These figures live in the
+ * `settings` table so an admin owns them, and a module that kept its own copy
+ * would be a second source of truth — the announcement bar would say one thing
+ * and the bag another the moment someone changed it.
  */
-export const FREE_SHIPPING_THRESHOLD_PAISE = 199900;
-
-/** Flat rate charged below the threshold until a real provider is wired up. */
-export const FALLBACK_SHIPPING_PAISE = 9900;
+export type ShippingRates = {
+  freeShippingThresholdPaise: Money;
+  flatRatePaise: Money;
+};
 
 /**
- * Interim rate used by the storefront while no provider is configured.
- * Deliberately simple and clearly a placeholder, so it is obvious at review
- * time that this is not a real quote.
+ * Last-resort rates, used only when settings cannot be read at all. Marked
+ * clearly as a fallback so a wrong number is obviously a wrong number rather
+ * than looking like a decision.
  */
-export function estimateShipping(subtotalPaise: Money): Money {
-  return subtotalPaise >= FREE_SHIPPING_THRESHOLD_PAISE ? 0 : FALLBACK_SHIPPING_PAISE;
+export const FALLBACK_RATES: ShippingRates = {
+  freeShippingThresholdPaise: 199900,
+  flatRatePaise: 9900,
+};
+
+/**
+ * Interim rate used while no courier is contracted. Free above the threshold,
+ * flat below it. Real rates will come from the provider by pincode, and this
+ * function retires with them.
+ */
+export function estimateShipping(subtotalPaise: Money, rates: ShippingRates): Money {
+  return subtotalPaise >= rates.freeShippingThresholdPaise ? 0 : rates.flatRatePaise;
 }
 
 /** How much more the customer must spend to cross the free-shipping line. */
-export function amountToFreeShipping(subtotalPaise: Money): Money {
-  return Math.max(0, FREE_SHIPPING_THRESHOLD_PAISE - subtotalPaise);
+export function amountToFreeShipping(
+  subtotalPaise: Money,
+  rates: ShippingRates,
+): Money {
+  return Math.max(0, rates.freeShippingThresholdPaise - subtotalPaise);
 }

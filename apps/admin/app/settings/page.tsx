@@ -11,18 +11,23 @@
 import type { Metadata } from 'next';
 import { getSiteSettings } from '@mridul/database';
 import { formatPaise } from '@mridul/utils';
-import { FREE_SHIPPING_THRESHOLD_PAISE, FALLBACK_SHIPPING_PAISE } from '@mridul/shipping';
 import { TEMPLATES } from '@mridul/notifications';
 import { PageHead, Panel, Pill, StatCard } from '../components/ui';
 
 export const metadata: Metadata = { title: 'Settings | Mridul Admin' };
 
-const INTEGRATIONS = [
+const INTEGRATIONS: { name: string; role: string; status: 'live' | 'pending' | 'undecided'; note: string }[] = [
   {
-    name: 'Supabase',
-    role: 'Database, auth and storage',
+    name: 'Supabase database',
+    role: 'Catalogue, content and media',
+    status: 'live' as const,
+    note: 'Connected. Every page in this admin and on the storefront reads it.',
+  },
+  {
+    name: 'Supabase Auth',
+    role: 'Sign-in and admin roles',
     status: 'pending' as const,
-    note: 'Not connected. Every section here reads seed data until it is.',
+    note: 'Not wired up. This admin is unauthenticated — do not deploy it publicly yet.',
   },
   {
     name: 'Razorpay',
@@ -62,7 +67,7 @@ export default async function SettingsPage() {
         />
         <StatCard
           label="Flat shipping"
-          value={formatPaise(FALLBACK_SHIPPING_PAISE)}
+          value={formatPaise(settings.flatShippingPaise)}
           note="below the threshold"
         />
         <StatCard
@@ -161,11 +166,13 @@ export default async function SettingsPage() {
         <div className="prose">
           <p>
             Orders above{' '}
-            <strong>{formatPaise(FREE_SHIPPING_THRESHOLD_PAISE)}</strong> ship free;
-            everything below is quoted a flat{' '}
-            <strong>{formatPaise(FALLBACK_SHIPPING_PAISE)}</strong>. This is a
-            placeholder, and it is clearly labelled as an estimate wherever a
-            customer sees it.
+            <strong>{formatPaise(settings.freeShippingThresholdPaise)}</strong> ship
+            free; everything below is quoted a flat{' '}
+            <strong>{formatPaise(settings.flatShippingPaise)}</strong>. Both figures
+            live in the settings row, and the announcement bar, the bag meter and
+            the product page delivery check all read them — so they cannot drift
+            apart. This rate is a placeholder, and is labelled as an estimate
+            wherever a customer sees it.
           </p>
           <p>
             Once a provider is chosen, real rates come from the destination pincode
@@ -219,8 +226,20 @@ export default async function SettingsPage() {
                 </td>
                 <td>{integration.role}</td>
                 <td>
-                  <Pill tone={integration.status === 'pending' ? 'low' : 'muted'}>
-                    {integration.status === 'pending' ? 'Not connected' : 'Undecided'}
+                  <Pill
+                    tone={
+                      integration.status === 'live'
+                        ? 'ok'
+                        : integration.status === 'pending'
+                          ? 'low'
+                          : 'muted'
+                    }
+                  >
+                    {integration.status === 'live'
+                      ? 'Live'
+                      : integration.status === 'pending'
+                        ? 'Not connected'
+                        : 'Undecided'}
                   </Pill>
                 </td>
                 <td className="cell-wrap">{integration.note}</td>

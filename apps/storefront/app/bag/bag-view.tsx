@@ -28,17 +28,23 @@ import { formatPaise } from '@mridul/utils';
 import {
   amountToFreeShipping,
   estimateShipping,
-  FREE_SHIPPING_THRESHOLD_PAISE,
+  type ShippingRates,
 } from '@mridul/shipping';
 import type { CouponResult } from '@mridul/types';
 import { useStore } from '../providers/store-provider';
 import { applyCoupon } from './coupon-action';
 
-function FreeShippingMeter({ subtotalPaise }: { subtotalPaise: number }) {
-  const remaining = amountToFreeShipping(subtotalPaise);
+function FreeShippingMeter({
+  subtotalPaise,
+  rates,
+}: {
+  subtotalPaise: number;
+  rates: ShippingRates;
+}) {
+  const remaining = amountToFreeShipping(subtotalPaise, rates);
   const progress = Math.min(
     100,
-    Math.round((subtotalPaise / FREE_SHIPPING_THRESHOLD_PAISE) * 100),
+    Math.round((subtotalPaise / rates.freeShippingThresholdPaise) * 100),
   );
 
   return (
@@ -67,7 +73,7 @@ function FreeShippingMeter({ subtotalPaise }: { subtotalPaise: number }) {
   );
 }
 
-export function BagView() {
+export function BagView({ rates }: { rates: ShippingRates }) {
   const { lines, subtotalPaise, setQuantity, removeLine, moveLineToWishlist, notify } =
     useStore();
 
@@ -76,7 +82,7 @@ export function BagView() {
   const [checking, setChecking] = useState(false);
 
   const discountPaise = coupon?.ok ? coupon.discountPaise : 0;
-  const shippingPaise = estimateShipping(subtotalPaise - discountPaise);
+  const shippingPaise = estimateShipping(subtotalPaise - discountPaise, rates);
   const totalPaise = subtotalPaise - discountPaise + shippingPaise;
 
   async function checkCoupon(event: React.FormEvent) {
@@ -115,7 +121,7 @@ export function BagView() {
   return (
     <div className="bag-layout">
       <section className="bag-lines" aria-label="Items in your bag">
-        <FreeShippingMeter subtotalPaise={subtotalPaise} />
+        <FreeShippingMeter subtotalPaise={subtotalPaise} rates={rates} />
 
         {lines.map((line) => (
           <article className="bag-line" key={line.variantId}>
@@ -263,7 +269,7 @@ export function BagView() {
           </li>
           <li>
             <Truck aria-hidden="true" />
-            Free shipping above {formatPaise(FREE_SHIPPING_THRESHOLD_PAISE)}
+            Free shipping above {formatPaise(rates.freeShippingThresholdPaise)}
           </li>
         </ul>
       </aside>

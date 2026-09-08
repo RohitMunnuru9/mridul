@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { getProductsByCollection } from '@mridul/database';
+import { getProductsByCollection, getSiteSettings } from '@mridul/database';
 import { ProductRail } from '@/app/components/product-rail';
 import { BagView } from './bag-view';
 
@@ -11,7 +11,16 @@ export const metadata: Metadata = {
 };
 
 export default async function BagPage() {
-  const suggestions = await getProductsByCollection('best-sellers', 4);
+  // Shipping figures come from settings, so the bag meter, the announcement
+  // bar and the delivery check can never quote different thresholds.
+  const [suggestions, settings] = await Promise.all([
+    getProductsByCollection('best-sellers', 4),
+    getSiteSettings(),
+  ]);
+  const rates = {
+    freeShippingThresholdPaise: settings.freeShippingThresholdPaise,
+    flatRatePaise: settings.flatShippingPaise,
+  };
 
   return (
     <div className="page-shell">
@@ -26,7 +35,7 @@ export default async function BagPage() {
         <h1>Your bag</h1>
       </div>
 
-      <BagView />
+      <BagView rates={rates} />
 
       <ProductRail
         eyebrow="Pairs well with"

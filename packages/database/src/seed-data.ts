@@ -57,6 +57,9 @@ export const categories: Category[] = [
       'A woman in an ivory botanical saree beside a heritage window',
       0,
     ),
+    // A drape is not cut to a size, so there is nothing to chart.
+    sizeChart: [],
+    sizeChartNote: '',
     position: 1,
     isActive: true,
   },
@@ -76,6 +79,17 @@ export const categories: Category[] = [
       'Artisan hands working rose and moss threads on a handloom',
       0,
     ),
+    // Garment measurements in inches, not body measurements.
+    sizeChart: [
+      { size: 'XS', bust: '32', waist: '26', shoulder: '13' },
+      { size: 'S', bust: '34', waist: '28', shoulder: '13.5' },
+      { size: 'M', bust: '36', waist: '30', shoulder: '14' },
+      { size: 'L', bust: '38', waist: '32', shoulder: '14.5' },
+      { size: 'XL', bust: '40', waist: '34', shoulder: '15' },
+      { size: 'XXL', bust: '42', waist: '36', shoulder: '15.5' },
+    ],
+    sizeChartNote:
+      'Measurements are of the garment, not the body. Every piece leaves a small seam allowance if you want a local alteration.',
     position: 2,
     isActive: true,
   },

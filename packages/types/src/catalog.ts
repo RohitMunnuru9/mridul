@@ -33,6 +33,9 @@ export type Category = {
   /** Longer copy rendered below the grid, mainly for SEO. */
   description: string;
   heroImage: ProductImage;
+  /** Garment measurements, empty for categories that are not sized. */
+  sizeChart: { size: string; bust: string; waist: string; shoulder: string }[];
+  sizeChartNote: string;
   /** Display order in navigation. Lower sorts first. */
   position: number;
   /** `categories.is_active` — hidden categories 404 on the storefront. */

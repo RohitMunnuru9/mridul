@@ -19,10 +19,12 @@ export function SiteFooter({
   categories,
   collections,
   settings,
+  copy,
 }: {
   categories: Category[];
   collections: Collection[];
   settings: SiteSettings;
+  copy: Record<string, string>;
 }) {
   const [subscribed, setSubscribed] = useState(false);
 
@@ -63,7 +65,7 @@ export function SiteFooter({
       <div className="footer-grid">
         <div className="footer-brand">
           <BrandMark />
-          <p>Timeless weaves. Thoughtful choices. Made for your life.</p>
+          <p>{copy.footer_brand_line}</p>
           <div className="social-links">
             <a href={settings.contact.instagram} aria-label="Instagram" rel="noreferrer noopener" target="_blank">
               <Camera aria-hidden="true" />
@@ -119,7 +121,7 @@ export function SiteFooter({
 
         <blockquote>
           <Flower2 aria-hidden="true" strokeWidth={1} />
-          “Beautiful things take time—and become part of yours.”
+          {copy.footer_quote}
         </blockquote>
       </div>
 
