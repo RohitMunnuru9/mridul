@@ -21,6 +21,7 @@ import type {
   OccasionPanel,
   SiteSettings,
   StoryPanel,
+  Testimonial,
   ValueProp,
 } from "@mridul/types";
 import type { Client } from "@mridul/supabase";
@@ -37,6 +38,7 @@ import {
   fetchProducts,
   fetchSiteSettings,
   fetchStoryPanel,
+  fetchTestimonials,
   fetchValueProps,
 } from "./supabase-source";
 import { storageUrl } from "@mridul/supabase";
@@ -91,6 +93,21 @@ export async function getContentBlocks(client?: Client): Promise<Record<string, 
 }
 
 /** Homepage entry tiles. Rows now, so a tile can be edited without a deploy. */
+/**
+ * Customer reviews. Published only, unless the caller is staff and asks.
+ *
+ * Takes the caller's client for the same reason the rest do: without it this
+ * reads as the public and RLS drops every unpublished draft, so the admin
+ * could never see a review it had not published yet.
+ */
+export async function getTestimonials(
+  includeDrafts = false,
+  client?: Client,
+): Promise<Testimonial[]> {
+  const rows = await fetchTestimonials(client);
+  return includeDrafts ? rows : rows.filter((row) => row.isPublished);
+}
+
 export async function getMoodTiles(client?: Client): Promise<MoodTile[]> {
   const rows = await fetchMoodTiles(client);
   return rows.map((row) => ({

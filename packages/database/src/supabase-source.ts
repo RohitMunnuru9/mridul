@@ -28,6 +28,7 @@ import type {
   ProductImage,
   SiteSettings,
   StoryPanel,
+  Testimonial,
   ValueProp,
   HomepageSection,
 } from "@mridul/types";
@@ -376,6 +377,32 @@ export async function fetchContentBlocks(client: Client = publicClient()): Promi
   if (error) throw new Error(`Loading content blocks: ${error.message}`);
 
   return Object.fromEntries((data ?? []).map((row: any) => [row.key, row.body]));
+}
+
+export async function fetchTestimonials(
+  client: Client = publicClient(),
+): Promise<Testimonial[]> {
+  const { data, error } = await client
+    .from("testimonials")
+    .select(
+      "id, author, location, body, rating, position, is_published, " +
+        "product:products(name, slug)",
+    )
+    .order("position");
+
+  if (error) throw new Error(`Loading testimonials: ${error.message}`);
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    author: row.author,
+    location: row.location,
+    body: row.body,
+    rating: Number(row.rating),
+    productName: row.product?.name ?? undefined,
+    productSlug: row.product?.slug ?? undefined,
+    position: row.position,
+    isPublished: row.is_published,
+  }));
 }
 
 export async function fetchMoodTiles(client: Client = publicClient()) {

@@ -14,6 +14,7 @@ import { ModelContextTools } from './components/model-context-tools';
 import { OccasionEdit } from './components/occasion-edit';
 import { ProductShowcase } from './components/product-showcase';
 import { StorySection } from './components/story-section';
+import { TestimonialsSection } from './components/testimonials-section';
 import {
   getCategories,
   getCollectionBySlug,
@@ -22,6 +23,7 @@ import {
   getOccasionPanels,
   getProductsByCollection,
   getStoryPanel,
+  getTestimonials,
   getValueProps,
 } from '@mridul/database';
 
@@ -46,6 +48,7 @@ export default async function Home() {
       getCollectionBySlug(previewSlug),
       getProductsByCollection(previewSlug, 4),
     ]);
+  const reviews = await getTestimonials();
   const preview = previewCollection
     ? { name: previewCollection.name, slug: previewCollection.slug, products: previewProducts }
     : undefined;
@@ -78,6 +81,8 @@ export default async function Home() {
             return (
               <StorySection key={section.id} panel={story} values={values} preview={preview} />
             );
+          case 'testimonials':
+            return <TestimonialsSection key={section.id} reviews={reviews} />;
           case 'journal':
             return <JournalSection key={section.id} posts={journal} />;
           default:

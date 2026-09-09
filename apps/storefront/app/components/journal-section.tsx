@@ -2,21 +2,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import type { JournalPost } from '@mridul/types';
-import { Botanical } from './botanical';
 
 /**
- * The journal: one story leads as a photographic banner, the rest follow as
- * tall illustrated panels.
+ * The journal: one story, as a photographic banner.
  *
- * Three identical photo cards was the previous shape, and with seven
- * photographs on the whole site it meant the same pictures again beneath the
- * same pictures. Only the lead story carries a photograph now; the others are
- * blush and cream panels with a line drawing, which is where the reference
- * gets its look and which costs no photography at all.
+ * It was three photo cards, then a banner plus two illustrated panels. The
+ * panels have gone — the customer reviews above them now carry the blush and
+ * cream treatment, and repeating it twice in a row made the bottom of the page
+ * read as one long texture. One story, linked, with View all beside the
+ * heading for the rest.
  */
 export function JournalSection({ posts }: { posts: JournalPost[] }) {
   if (posts.length === 0) return null;
-  const [lead, ...rest] = posts;
+  const [lead] = posts;
 
   return (
     <section className="journal-editorial" aria-labelledby="journal-title">
@@ -50,29 +48,6 @@ export function JournalSection({ posts }: { posts: JournalPost[] }) {
         </div>
       </Link>
 
-      {rest.length > 0 && (
-        <div className="journal-bookmarks">
-          {rest.map((post, index) => {
-            const blush = index % 2 === 0;
-            return (
-              <Link
-                className={`journal-bookmark ${blush ? 'is-blush' : 'is-cream'}`}
-                href={post.href}
-                key={post.id}
-              >
-                <Botanical variant={blush ? 'bloom' : 'sprig'} />
-                <p className="journal-eyebrow">Read the story</p>
-                <span className="journal-rule" aria-hidden="true" />
-                <h3>{post.title}</h3>
-                <p className="journal-excerpt">{post.excerpt}</p>
-                <span className="journal-arrow" aria-hidden="true">
-                  <ArrowRight />
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
     </section>
   );
 }

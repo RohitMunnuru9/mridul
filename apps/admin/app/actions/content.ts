@@ -47,6 +47,92 @@ export async function updateHeroSlide(formData: FormData): Promise<ActionResult>
   return OK('Banner saved.');
 }
 
+/**
+ * Add a customer review.
+ *
+ * Created unpublished. A testimonial names a real person, so it reaches the
+ * storefront only when someone deliberately publishes it — never by being
+ * seeded or by being typed in half.
+ */
+export async function createTestimonial(formData: FormData): Promise<ActionResult> {
+  if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');
+
+  const author = String(formData.get('author') ?? '').trim();
+  const body = String(formData.get('body') ?? '').trim();
+  const rating = Number(formData.get('rating') ?? 5);
+  if (!author) return FAIL('Whose review is this?');
+  if (body.length < 10) return FAIL('Paste what the customer actually wrote.');
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return FAIL('Rating must be a whole number from 1 to 5.');
+  }
+
+  const db = await sessionClient();
+  const { error } = await db.from('testimonials').insert({
+    author,
+    location: String(formData.get('location') ?? '').trim(),
+    body,
+    rating,
+    position: Number(formData.get('position') ?? 0) || 0,
+  });
+
+  if (error) return FAIL(error.message);
+
+  revalidatePath('/homepage');
+  revalidatePath('/');
+  return OK('Review saved as a draft. Publish it when you are ready.');
+}
+
+/** Edit a review, and publish or unpublish it. */
+export async function updateTestimonial(formData: FormData): Promise<ActionResult> {
+  if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');
+
+  const id = String(formData.get('id') ?? '');
+  const author = String(formData.get('author') ?? '').trim();
+  const body = String(formData.get('body') ?? '').trim();
+  const rating = Number(formData.get('rating') ?? 5);
+  if (!id) return FAIL('Missing review.');
+  if (!author) return FAIL('Whose review is this?');
+  if (body.length < 10) return FAIL('Paste what the customer actually wrote.');
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return FAIL('Rating must be a whole number from 1 to 5.');
+  }
+
+  const db = await sessionClient();
+  const { error } = await db
+    .from('testimonials')
+    .update({
+      author,
+      location: String(formData.get('location') ?? '').trim(),
+      body,
+      rating,
+      position: Number(formData.get('position') ?? 0) || 0,
+      is_published: formData.get('is_published') === 'on',
+    })
+    .eq('id', id);
+
+  if (error) return FAIL(error.message);
+
+  revalidatePath('/homepage');
+  revalidatePath('/');
+  return OK('Review saved.');
+}
+
+/** Removes a review outright. Unlike a product, there is nothing to archive. */
+export async function deleteTestimonial(formData: FormData): Promise<ActionResult> {
+  if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');
+
+  const id = String(formData.get('id') ?? '');
+  if (!id) return FAIL('Missing review.');
+
+  const db = await sessionClient();
+  const { error } = await db.from('testimonials').delete().eq('id', id);
+  if (error) return FAIL(error.message);
+
+  revalidatePath('/homepage');
+  revalidatePath('/');
+  return OK('Review removed.');
+}
+
 /** The three editorial panels between the tiles and the product rail. */
 export async function updateOccasionPanel(formData: FormData): Promise<ActionResult> {
   if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');

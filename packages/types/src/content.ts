@@ -79,6 +79,7 @@ export type HomepageSectionKey =
   | 'occasions'
   | 'featured_products'
   | 'story'
+  | 'testimonials'
   | 'journal';
 
 /**
@@ -165,6 +166,28 @@ export type SiteSettings = {
   };
   /** Policy pages that still need writing, listed so the gap is visible. */
   pendingPolicies: string[];
+};
+
+/**
+ * A customer review.
+ *
+ * A row rather than a string in a component: a testimonial is a claim about a
+ * real person, so whoever collected it publishes it, and nothing reaches the
+ * storefront until they do.
+ */
+export type Testimonial = {
+  id: string;
+  author: string;
+  /** Shown under the name. Empty where the reviewer gave none. */
+  location: string;
+  body: string;
+  /** Out of five. */
+  rating: number;
+  /** The piece they bought, where it is known. */
+  productName?: string;
+  productSlug?: string;
+  position: number;
+  isPublished: boolean;
 };
 
 /** A named piece of editorial prose, looked up by key. */
