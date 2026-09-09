@@ -59,40 +59,13 @@
 .refined-chrome.is-compact .brand-mark strong {
   font-size: 1.9rem;
 }
-.refined-chrome.over-campaign:not(.is-compact) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-.refined-chrome.over-campaign:not(.is-compact) .announcement-bar {
-  display: none;
-}
-.refined-chrome.over-campaign:not(.is-compact) .navigation-stack {
-  background: transparent;
-  box-shadow: none;
-  color: #fff9ef;
-}
-.refined-chrome.over-campaign:not(.is-compact) .site-header {
-  border-bottom-color: #fff4;
-}
-.refined-chrome.over-campaign:not(.is-compact) .brand-mark small,
-.refined-chrome.over-campaign:not(.is-compact) .brand-mark > svg {
-  color: #f3d9ce;
-}
-.refined-chrome.over-campaign:not(.is-compact) .header-icon,
-.refined-chrome.over-campaign:not(.is-compact) .header-icon-link {
-  color: #fff9ef !important;
-  border-color: #fff5;
-}
-.refined-chrome.over-campaign:not(.is-compact) .mobile-category-nav {
-  display: none;
-}
-.refined-chrome.over-campaign.is-compact {
-  position: fixed;
-  left: 0;
-  right: 0;
-}
+/* The homepage header used to float over the campaign hero as transparent
+   white-on-photograph chrome. On a phone the brand, the hamburger and the bag
+   all landed on a busy picture and none of them were readable, so the header
+   is back in normal flow on every page and the hero starts below it. The rules
+   that made it transparent, hid the announcement bar and forced light text
+   have gone with it. */
+
 .refined-chrome .mega-menu,
 .refined-chrome .search-drawer {
   color: var(--ink);
