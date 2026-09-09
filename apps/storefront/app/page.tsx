@@ -15,6 +15,8 @@ import { OccasionEdit } from './components/occasion-edit';
 import { ProductShowcase } from './components/product-showcase';
 import { StorySection } from './components/story-section';
 import {
+  getCategories,
+  getCollectionBySlug,
   getHomepageSections,
   getJournalPosts,
   getOccasionPanels,
@@ -26,12 +28,27 @@ import {
 export default async function Home() {
   const sections = await getHomepageSections();
 
-  const [occasions, story, values, journal] = await Promise.all([
-    getOccasionPanels(),
-    getStoryPanel(),
-    getValueProps(),
-    getJournalPosts(),
-  ]);
+  // Categories ride along so the Edits panel that leads into one can show
+  // that category's own photograph instead of a path written into a component.
+  // The story block previews a collection beside the brand copy. Which one is
+  // the section row's business: it names best-sellers today, so the homepage
+  // shows both nav collections rather than new-arrivals twice.
+  const previewSlug =
+    sections.find((section) => section.key === 'story')?.collectionSlug ?? 'best-sellers';
+
+  const [occasions, story, values, journal, categories, previewCollection, previewProducts] =
+    await Promise.all([
+      getOccasionPanels(),
+      getStoryPanel(),
+      getValueProps(),
+      getJournalPosts(),
+      getCategories(),
+      getCollectionBySlug(previewSlug),
+      getProductsByCollection(previewSlug, 4),
+    ]);
+  const preview = previewCollection
+    ? { name: previewCollection.name, slug: previewCollection.slug, products: previewProducts }
+    : undefined;
 
   // Which products lead the homepage is a merchandising decision, so it comes
   // from whichever collection the section points at.
@@ -54,12 +71,12 @@ export default async function Home() {
           case 'mood_tiles':
             return <CategoryRail key={section.id} />;
           case 'occasions':
-            return <OccasionEdit key={section.id} panels={occasions} />;
+            return <OccasionEdit key={section.id} panels={occasions} categories={categories} />;
           case 'featured_products':
             return <ProductShowcase key={section.id} products={showcase} />;
           case 'story':
             return (
-              <StorySection key={section.id} panel={story} values={values} />
+              <StorySection key={section.id} panel={story} values={values} preview={preview} />
             );
           case 'journal':
             return <JournalSection key={section.id} posts={journal} />;

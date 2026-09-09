@@ -1,0 +1,538 @@
+/* ===========================================================================
+   The journal and the story
+   ---------------------------------------------------------------------------
+   The same vocabulary as the Edits above them: blush and cream panels, a
+   botanical line drawing cropped by the panel edge, wide-tracked capitals for
+   the eyebrows, one short rule. New class names throughout, so the older
+   journal and story rules in globals.css are simply left behind rather than
+   fought over.
+
+   Every panel that holds a drawing clips it. Nothing here may widen the page.
+   =========================================================================== */
+
+.journal-editorial,
+.story-manifesto {
+  --ed-paper: #fffaf7;
+  --ed-cream: #f6ede5;
+  --ed-blush: #f2dcd8;
+  --ed-blush-deep: #e9c9c4;
+  --ed-line: #b48a80;
+  --ed-ink: #3d282d;
+  --ed-rose: #8d5261;
+  --ed-mute: #7a6360;
+  --ed-hair: #e8d6cf;
+}
+
+/* ===========================================================================
+   Journal
+   =========================================================================== */
+
+.journal-editorial {
+  padding: clamp(3rem, 6vw, 6rem) max(1.15rem, 4vw);
+  background: linear-gradient(180deg, #f6e9e4 0%, #fbf5f1 40%, #fbf5f1 100%);
+}
+
+.journal-editorial-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto 2rem;
+}
+.journal-editorial-head p {
+  margin: 0 0 0.5rem;
+  color: var(--ed-rose);
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.journal-editorial-head p::before {
+  display: block;
+  width: 2.2rem;
+  height: 1px;
+  margin-bottom: 0.8rem;
+  background: var(--ed-rose);
+  content: '';
+}
+.journal-editorial-head h2 {
+  margin: 0;
+  color: var(--ed-ink);
+  font: 400 clamp(2.4rem, 4vw, 4rem) / 1.05 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+.journal-editorial-head > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--gold-soft, #cdb48a);
+  color: var(--ed-ink);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: gap 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.journal-editorial-head > a svg {
+  width: 0.95rem;
+}
+.journal-editorial-head > a:hover {
+  gap: 0.8rem;
+  border-color: var(--ed-rose);
+  color: var(--ed-rose);
+}
+
+/* Shared small type */
+.journal-eyebrow {
+  margin: 0;
+  color: var(--ed-rose);
+  font-size: 0.64rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.journal-excerpt {
+  margin: 0.75rem 0 0;
+  color: var(--ed-mute);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.journal-rule {
+  display: block;
+  width: 2rem;
+  height: 1px;
+  margin: 1rem 0 1.2rem;
+  background: var(--ed-rose);
+}
+
+/* --- The lead: a photographic banner -------------------------------------- */
+
+.journal-lead {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--ed-hair);
+  border-radius: 5px;
+  background: var(--ed-cream);
+  color: inherit;
+  text-decoration: none;
+}
+.journal-lead-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  padding: clamp(1.6rem, 4vw, 3.6rem);
+}
+.journal-lead-copy h3 {
+  max-width: 12ch;
+  margin: 1rem 0 0;
+  color: var(--ed-ink);
+  font: 400 clamp(2.2rem, 3.6vw, 3.8rem) / 1.04 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+.journal-lead-copy .journal-excerpt {
+  max-width: 36ch;
+}
+.journal-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.8rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--ed-ink);
+  color: var(--ed-ink);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: gap 160ms ease;
+}
+.journal-more svg {
+  width: 0.95rem;
+}
+.journal-lead:hover .journal-more {
+  gap: 0.9rem;
+}
+.journal-lead-photo {
+  position: relative;
+  overflow: hidden;
+  min-height: 420px;
+}
+.journal-lead-photo img {
+  object-fit: cover;
+  transition: transform 850ms cubic-bezier(0.22, 0.68, 0, 1);
+}
+.journal-lead:hover .journal-lead-photo img {
+  transform: scale(1.035);
+}
+
+/* --- The rest: tall illustrated panels ------------------------------------- */
+
+.journal-bookmarks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1.25rem;
+  max-width: 1400px;
+  margin: 1.25rem auto 0;
+}
+.journal-bookmark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  min-height: 24rem;
+  padding: clamp(1.5rem, 3vw, 2.4rem);
+  padding-right: clamp(5rem, 28%, 8rem);
+  overflow: hidden;
+  border: 1px solid var(--ed-hair);
+  border-radius: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+.journal-bookmark.is-blush {
+  border-color: #e6c8c3;
+  background: linear-gradient(165deg, #f5e3df 0%, var(--ed-blush) 60%, var(--ed-blush-deep) 100%);
+}
+.journal-bookmark.is-cream {
+  background: linear-gradient(170deg, #f9f1ea 0%, var(--ed-cream) 100%);
+}
+.journal-bookmark .botanical {
+  position: absolute;
+  z-index: 0;
+  color: var(--ed-line);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.journal-bookmark .botanical-bloom {
+  top: -1.2rem;
+  right: -3.4rem;
+  width: clamp(180px, 46%, 280px);
+}
+.journal-bookmark .botanical-sprig {
+  top: -1.6rem;
+  right: -2.6rem;
+  width: clamp(150px, 40%, 230px);
+  transform: rotate(8deg);
+}
+.journal-bookmark > * {
+  position: relative;
+  z-index: 1;
+}
+.journal-bookmark h3 {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--ed-ink);
+  font: 400 clamp(1.9rem, 2.6vw, 2.6rem) / 1.08 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.02em;
+}
+.journal-bookmark .journal-excerpt {
+  max-width: 28ch;
+}
+.journal-arrow {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  margin-top: auto;
+  padding-top: 0;
+  place-items: center;
+  border: 1px solid #d9babe;
+  border-radius: 50%;
+  color: #592c3a;
+  transition: background 180ms, color 180ms;
+}
+.journal-arrow svg {
+  width: 17px;
+  transition: transform 180ms;
+}
+.journal-bookmark:hover .journal-arrow {
+  background: #592c3a;
+  color: var(--ed-paper);
+}
+.journal-bookmark:hover .journal-arrow svg {
+  transform: translateX(2px);
+}
+/* The arrow sits after a flexible gap, so give the copy something to push
+   against without collapsing the panel. */
+.journal-bookmark .journal-excerpt {
+  margin-bottom: 1.6rem;
+}
+
+/* ===========================================================================
+   Story: the manifesto panel
+   =========================================================================== */
+
+.story-manifesto {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: 1.25rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(3rem, 6vw, 6rem) max(1.15rem, 4vw);
+}
+.story-manifesto-photo {
+  position: relative;
+  overflow: hidden;
+  min-height: 520px;
+  border-radius: 5px;
+}
+.story-manifesto-photo img {
+  object-fit: cover;
+}
+
+/* The collection preview that stands where the photograph did: four cards,
+   two by two, under a small heading — a pocket edition of the picks rail. */
+.story-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.story-preview-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.story-preview-head > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--gold-soft, #cdb48a);
+  color: var(--ed-ink);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: gap 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.story-preview-head > a svg {
+  width: 0.9rem;
+}
+.story-preview-head > a:hover {
+  gap: 0.8rem;
+  border-color: var(--ed-rose);
+  color: var(--ed-rose);
+}
+/* One row of four small cards: picture, name, price. The listing card's
+   hover bar, heart, swatches and rating are for choosing; this is for
+   glancing, so they are left off and the card stays a pocket edition. */
+.story-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+.story-preview .product-card {
+  min-width: 0;
+}
+.story-preview .card-action,
+.story-preview .wishlist-button,
+.story-preview .product-meta,
+.story-preview .product-foot {
+  display: none;
+}
+.story-preview .product-details {
+  padding-top: 0.55rem;
+}
+.story-preview .product-line {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+.story-preview .product-line h3 {
+  font-size: 0.98rem;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.story-preview .product-price strong {
+  font-size: 0.78rem;
+}
+.story-preview .product-price s {
+  font-size: 0.64rem;
+}
+.story-preview .quick-view-trigger,
+.story-preview .product-flags {
+  display: none;
+}
+
+.story-manifesto-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: clamp(1.8rem, 4vw, 3.6rem);
+  padding-right: clamp(6rem, 30%, 9rem);
+  overflow: hidden;
+  border: 1px solid var(--ed-hair);
+  border-radius: 5px;
+  background: linear-gradient(165deg, #f9f1ea 0%, var(--ed-cream) 58%, #efe1d6 100%);
+}
+.story-manifesto-panel .botanical {
+  position: absolute;
+  right: -3.8rem;
+  bottom: -2.4rem;
+  z-index: 0;
+  width: clamp(200px, 38%, 320px);
+  color: var(--ed-line);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.story-manifesto-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.story-eyebrow {
+  margin: 0;
+  color: var(--ed-rose);
+  font-size: 0.66rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.story-manifesto-panel h2 {
+  max-width: 14ch;
+  margin: 1.1rem 0 0;
+  color: var(--ed-ink);
+  font: 400 clamp(2.2rem, 3.6vw, 3.8rem) / 1.04 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+.story-rule {
+  display: block;
+  width: 2rem;
+  height: 1px;
+  margin: 1.4rem 0;
+  background: var(--ed-rose);
+}
+/* The body reads like a quotation but is not one, so it takes the italic and
+   not the quotation marks. */
+.story-passage {
+  max-width: 30ch;
+  margin: 0;
+  color: var(--ed-ink);
+  font: italic 400 clamp(1.25rem, 1.9vw, 1.7rem) / 1.4 var(--font-cormorant), Georgia, serif;
+}
+
+.story-figures {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 1.6rem 2.4rem;
+  margin: 2rem 0 0;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--ed-hair);
+}
+.story-figures div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+.story-figures dd {
+  margin: 0;
+  color: var(--ed-ink);
+  font: 400 clamp(1.8rem, 2.6vw, 2.5rem) / 1 var(--font-cormorant), Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+.story-figures dt {
+  margin-top: 0.45rem;
+  color: var(--ed-mute);
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.story-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 2rem;
+  color: #592c3a;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.story-cta-arrow {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid #d9babe;
+  border-radius: 50%;
+  transition: background 180ms, color 180ms;
+}
+.story-cta-arrow svg {
+  width: 17px;
+  transition: transform 180ms;
+}
+.story-cta:hover .story-cta-arrow {
+  background: #592c3a;
+  color: var(--ed-paper);
+}
+.story-cta:hover .story-cta-arrow svg {
+  transform: translateX(2px);
+}
+
+/* --- Small screens --------------------------------------------------------- */
+
+@media (width <= 860px) {
+  .journal-lead {
+    grid-template-columns: 1fr;
+  }
+  /* Photograph first, then the words — the order a magazine spread reads. */
+  .journal-lead-photo {
+    order: -1;
+    min-height: 300px;
+  }
+  .story-manifesto {
+    grid-template-columns: 1fr;
+  }
+  .story-manifesto-photo {
+    min-height: 340px;
+  }
+  /* Four across a phone is postage stamps; two by two keeps them readable. */
+  .story-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width <= 720px) {
+  .journal-bookmark,
+  .story-manifesto-panel {
+    padding-right: 5.5rem;
+  }
+  .journal-bookmark {
+    min-height: 0;
+  }
+  .journal-bookmark .botanical-bloom {
+    right: -4rem;
+    width: 190px;
+  }
+  .journal-bookmark .botanical-sprig {
+    right: -3rem;
+    width: 160px;
+  }
+  /* Down and out of the headline's way; the panel clips whatever leaves it. */
+  .story-manifesto-panel .botanical {
+    right: -5rem;
+    bottom: -3.5rem;
+    width: 180px;
+  }
+  .story-figures {
+    grid-template-columns: repeat(3, auto);
+    gap: 1rem 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-lead-photo img,
+  .story-preview-head > a,
+  .journal-more,
+  .journal-arrow,
+  .journal-arrow svg,
+  .story-cta-arrow,
+  .story-cta-arrow svg,
+  .journal-editorial-head > a {
+    transition: none;
+  }
+}
