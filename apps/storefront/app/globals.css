@@ -1428,9 +1428,11 @@ img { display: block; max-width: 100%; }
 .card-action svg { width: 0.85rem; }
 .card-action:hover { background: var(--cocoa); color: var(--primary-foreground); }
 .product-card { position: relative; }
-/* The action bar sits over the photo, so anchor it to the photo's height. */
+/* The action bar sits over the photo, so the photo is what it is measured
+   against — anchored to the card it reached down over the name and price. */
+.product-media { position: relative; }
 .product-card .product-photo { z-index: 1; }
-.product-card .card-action { bottom: auto; top: calc(100% - 3.2rem); }
+.product-card .card-action { top: auto; bottom: 0; }
 @media (hover: hover) {
   .product-card:hover .card-action { opacity: 1; transform: translateY(0); }
 }
@@ -2610,3 +2612,82 @@ img { display: block; max-width: 100%; }
   .product-price { gap: 0.4rem; }
 }
 
+
+/* ---------------------------------------------------------------------------
+   Three fixes
+   --------------------------------------------------------------------------- */
+
+/* 1. The card action was a heavy wine slab the width of the card, and it was
+   measured against the card rather than the picture, so on hover it dropped
+   over the name and the price. It now rides the bottom edge of the photograph
+   as a quieter bar: dark enough to read against any picture, short enough that
+   the photograph is still the thing you are looking at. */
+.card-action {
+  right: 0;
+  left: 0;
+  padding: 0.5rem 0.62rem;
+  border-radius: 0;
+  background: rgb(46 24 30 / 72%);
+  backdrop-filter: blur(6px);
+  font-size: 0.56rem;
+  transform: translateY(100%);
+}
+@media (hover: hover) {
+  .product-card:hover .card-action { transform: translateY(0); }
+}
+.card-action:hover {
+  background: rgb(143 47 74 / 92%);
+}
+@media (hover: none) {
+  /* No hover to reveal it, so it sits under the picture as a plain button. */
+  .card-action {
+    background: var(--cocoa);
+    backdrop-filter: none;
+    transform: none;
+  }
+}
+
+/* 2. The sign-in fields were white on near-white with a hairline border, which
+   on this cream ground reads as no field at all. They now sit on a warm rose
+   tint with a berry edge, so an empty box still looks like somewhere to type,
+   and deepen as you fill them in. */
+.customer-input {
+  border: 1.5px solid #e2b9bd;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #fffaf8, #fdeff0);
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.customer-input:hover {
+  border-color: #cf94a0;
+}
+.customer-input:focus-within {
+  border-color: var(--berry);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(157 63 87 / 16%);
+}
+.customer-input > svg { color: var(--berry); }
+.customer-input input::placeholder { color: #b59298; }
+
+/* The same treatment for the delivery fields, so checkout matches sign-in. */
+.checkout-fields input,
+.checkout-fields textarea,
+.checkout-fields select {
+  border: 1.5px solid #e2b9bd;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #fffaf8, #fdeff0);
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.checkout-fields input:focus,
+.checkout-fields textarea:focus,
+.checkout-fields select:focus {
+  border-color: var(--berry);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(157 63 87 / 16%);
+  outline: 0;
+}
+
+/* 3. The Google mark was a conic-gradient circle with a white G on it — not
+   Google's logo, and not something to ship on a sign-in button. The real
+   four-colour glyph is inline SVG below; this just gives it room. */
+.google-auth { border-radius: 4px; }
+.google-auth > svg { width: 1.15rem; height: 1.15rem; flex: none; }

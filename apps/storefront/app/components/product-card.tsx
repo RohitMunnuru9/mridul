@@ -60,56 +60,61 @@ export function ProductCard({
 
   return (
     <article className={`product-card${product.inStock ? '' : ' is-sold-out'}`}>
-      <Link className="product-photo" href={href}>
-        <Image
-          src={primary.url}
-          alt={primary.alt}
-          fill
-          sizes="(max-width: 720px) 50vw, 25vw"
-          priority={priority}
-          style={{ objectPosition: primary.focal }}
-        />
-        {secondary && (
+      {/* Photo, heart and action share one box, so the action can sit at the
+          bottom of the picture rather than the bottom of the whole card —
+          where it was covering the name and price. */}
+      <div className="product-media">
+        <Link className="product-photo" href={href}>
           <Image
-            className="product-photo-alt"
-            src={secondary.url}
-            alt=""
-            aria-hidden="true"
+            src={primary.url}
+            alt={primary.alt}
             fill
             sizes="(max-width: 720px) 50vw, 25vw"
-            style={{ objectPosition: secondary.focal }}
+            priority={priority}
+            style={{ objectPosition: primary.focal }}
           />
-        )}
-        <span className="product-flags">
-          {label && <span className="product-badge">{label}</span>}
-          {product.discountPercent > 0 && (
-            <span className="product-badge is-sale">{product.discountPercent}% off</span>
+          {secondary && (
+            <Image
+              className="product-photo-alt"
+              src={secondary.url}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 720px) 50vw, 25vw"
+              style={{ objectPosition: secondary.focal }}
+            />
           )}
-        </span>
-        {!product.inStock && <span className="product-soldout">Sold out</span>}
-      </Link>
+          <span className="product-flags">
+            {label && <span className="product-badge">{label}</span>}
+            {product.discountPercent > 0 && (
+              <span className="product-badge is-sale">{product.discountPercent}% off</span>
+            )}
+          </span>
+          {!product.inStock && <span className="product-soldout">Sold out</span>}
+        </Link>
 
-      <button
-        aria-label={`${liked ? 'Remove' : 'Add'} ${product.name} ${liked ? 'from' : 'to'} wishlist`}
-        aria-pressed={liked}
-        className={`wishlist-button${liked ? ' is-on' : ''}`}
-        onClick={onWishlist}
-        type="button"
-      >
-        <Heart aria-hidden="true" fill={liked ? 'currentColor' : 'none'} />
-      </button>
+        <button
+          aria-label={`${liked ? 'Remove' : 'Add'} ${product.name} ${liked ? 'from' : 'to'} wishlist`}
+          aria-pressed={liked}
+          className={`wishlist-button${liked ? ' is-on' : ''}`}
+          onClick={onWishlist}
+          type="button"
+        >
+          <Heart aria-hidden="true" fill={liked ? 'currentColor' : 'none'} />
+        </button>
 
-      {product.inStock &&
-        (canQuickAdd ? (
-          <button className="card-action" onClick={quickAdd} type="button">
-            <ShoppingBag aria-hidden="true" />
-            Add to bag
-          </button>
-        ) : (
-          <Link className="card-action" href={href}>
-            Select options
-          </Link>
-        ))}
+        {product.inStock &&
+          (canQuickAdd ? (
+            <button className="card-action" onClick={quickAdd} type="button">
+              <ShoppingBag aria-hidden="true" />
+              Add to bag
+            </button>
+          ) : (
+            <Link className="card-action" href={href}>
+              Select options
+            </Link>
+          ))}
+      </div>
 
       <div className="product-details">
         {/* Name and price on one line: they are the two things a shopper is
