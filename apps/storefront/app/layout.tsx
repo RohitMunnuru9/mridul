@@ -61,6 +61,7 @@ export default async function RootLayout({
             )}
             announcements={settings.announcements}
             quotes={settings.quotes}
+            whatsapp={settings.contact.whatsapp}
           />
           <SilkInteractions />
           <main id="top">{children}</main>

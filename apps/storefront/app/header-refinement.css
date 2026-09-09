@@ -119,27 +119,102 @@
 .mobile-menu-panel .brand-mark strong {
   font-size: 2rem;
 }
-.mobile-menu-panel .mobile-links a {
-  font-size: 1.65rem;
-  padding: 1rem 0;
+/* --- The drawer's one row system -------------------------------------------
+   Everything in the drawer is a row: a label, an optional icon, an arrow. The
+   shop rows are set in the display serif and the utility rows in the body
+   face at a smaller size, so the two read as different weights of the same
+   thing rather than as three unrelated widgets.
+
+   The shop links were 1.65rem, which put four words on their own screen.
+   --------------------------------------------------------------------------- */
+
+.mobile-nav-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0.4rem 1rem 0;
 }
-.mobile-menu-panel .mobile-collections h3 {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
+.mobile-group h3 {
+  margin: 0 0 0.35rem;
+  color: #9a7b78;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
 }
-.mobile-menu-panel .mobile-collections a {
-  font-size: 0.85rem;
-  padding: 0.5rem 0.8rem;
-  background: #f8eeea;
-  border-color: #e8d4cd;
+.mobile-rows {
+  display: flex;
+  flex-direction: column;
 }
-.mobile-menu-panel .mobile-utility {
-  margin-top: 1rem;
+
+.mobile-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 46px;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #efe0da;
+  color: #3f2830;
+  transition: color 160ms ease, padding-left 160ms ease;
 }
-.mobile-menu-panel .mobile-utility a {
-  font-size: 0.85rem;
-  min-height: 44px;
+.mobile-rows .mobile-row:last-child {
+  border-bottom: 0;
 }
+.mobile-row:hover,
+.mobile-row:focus-visible {
+  padding-left: 0.25rem;
+  color: #8d5261;
+}
+
+.mobile-row-label {
+  flex: 1;
+  min-width: 0;
+}
+/* The category and edit rows carry the display face, a step down from the
+   1.65rem they were. */
+.mobile-row.is-lead .mobile-row-label {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-size: 1.28rem;
+  letter-spacing: -0.01em;
+}
+.mobile-row:not(.is-lead) .mobile-row-label {
+  font-size: 0.92rem;
+}
+
+/* The leading icon on a utility row; the trailing arrow is the last child. */
+.mobile-row > svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  color: #a8546a;
+}
+.mobile-row > svg:last-child {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: #b99a94;
+}
+.mobile-row.is-lead > svg:last-child {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.mobile-row-count {
+  min-width: 1.25rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  background: #8d5261;
+  color: #fffcfa;
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 700;
+  text-align: center;
+}
+.mobile-row-note {
+  color: #9a7b78;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+}
+
 .mobile-menu-panel .mobile-menu-note {
   margin-top: 2rem;
   background: #f1e1dc;
