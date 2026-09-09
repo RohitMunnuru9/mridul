@@ -255,11 +255,11 @@ export function BagView({ rates }: { rates: ShippingRates }) {
           amount is calculated on our server before payment.
         </p>
 
-        <Button className="checkout-cta" disabled>
-          Proceed to checkout
-        </Button>
+        <Link className="checkout-cta" href="/checkout">
+          Proceed to checkout <ArrowRight aria-hidden="true" />
+        </Link>
         <p className="checkout-pending">
-          Checkout opens once Razorpay and the address book are connected.
+          Sign in securely, then confirm where we should send your order.
         </p>
 
         <ul className="bag-assurances">
@@ -276,3 +276,4 @@ export function BagView({ rates }: { rates: ShippingRates }) {
     </div>
   );
 }
+

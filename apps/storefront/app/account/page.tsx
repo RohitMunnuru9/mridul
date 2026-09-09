@@ -1,132 +1,55 @@
-/**
- * Account landing.
- *
- * Sign-in belongs to Supabase Auth, which is not wired up yet, so this page is
- * honest about that rather than showing a form that cannot work. What it can
- * do today is route to the two things that exist without an account — the bag
- * and the wishlist — and set out what an account will hold.
- */
-
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import {
-  ChevronRight,
-  Heart,
-  MapPin,
-  Package,
-  ShoppingBag,
-  Truck,
-  UserRound,
-} from 'lucide-react';
+import { ChevronRight, Heart, LogOut, MapPin, ShoppingBag, UserRound } from 'lucide-react';
+import { sessionClient } from '@mridul/supabase/server';
+import { signOut } from '../auth/actions';
 
 export const metadata: Metadata = {
   title: 'Your account | Mridul by MR',
-  description: 'Orders, addresses and saved pieces at Mridul by MR.',
+  description: 'Your details, addresses and saved pieces at Mridul by MR.',
 };
 
-const SECTIONS = [
-  {
-    icon: Package,
-    title: 'Orders',
-    body: 'Every order with its payment status, invoice and current stage.',
-    pending: true,
-  },
-  {
-    icon: Truck,
-    title: 'Track a shipment',
-    body: 'Live tracking, plus the same updates on WhatsApp as the parcel moves.',
-    pending: true,
-  },
-  {
-    icon: MapPin,
-    title: 'Addresses',
-    body: 'Saved addresses, and the pincode we use to work out delivery charges.',
-    pending: true,
-  },
-  {
-    icon: Heart,
-    title: 'Wishlist',
-    body: 'Saved on this device now, and tied to your account once you sign in.',
-    href: '/wishlist',
-  },
-  {
-    icon: ShoppingBag,
-    title: 'Bag',
-    body: 'Your bag is kept on this device and will merge into your account.',
-    href: '/bag',
-  },
-];
+export default async function AccountPage() {
+  const db = await sessionClient();
+  const { data: { user } } = await db.auth.getUser();
 
-export default function AccountPage() {
+  if (!user) {
+    return (
+      <div className="account-signin page-shell">
+        <span className="account-avatar" aria-hidden="true"><UserRound /></span>
+        <p className="eyebrow">Your account</p>
+        <h1>Sign in to see your details</h1>
+        <p>Use email or Google to securely access your delivery information.</p>
+        <Link className="primary-cta" href="/auth?next=/account">Sign in or create an account</Link>
+      </div>
+    );
+  }
+
+  const [{ data: profile }, { data: address }] = await Promise.all([
+    db.from('profiles').select('full_name, phone').eq('id', user.id).maybeSingle(),
+    db.from('addresses').select('full_name, phone, line1, line2, landmark, city, state, pincode').eq('customer_id', user.id).eq('is_default', true).maybeSingle(),
+  ]);
+  const displayName = profile?.full_name ?? String(user.user_metadata.full_name ?? 'Your account');
+
   return (
     <div className="page-shell">
-      <nav className="breadcrumb" aria-label="Breadcrumb">
-        <Link href="/">Home</Link>
-        <ChevronRight aria-hidden="true" />
-        <span aria-current="page">Account</span>
-      </nav>
-
       <div className="account-hero">
-        <span className="account-avatar" aria-hidden="true">
-          <UserRound />
-        </span>
-        <div>
-          <p className="eyebrow">Not signed in</p>
-          <h1>Your account</h1>
-          <p className="page-intro">
-            Accounts open with Supabase Auth. Until then your bag and wishlist live
-            on this device, and nothing is lost when sign-in arrives — both merge
-            into your account.
-          </p>
-        </div>
+        <span className="account-avatar" aria-hidden="true"><UserRound /></span>
+        <div><p className="eyebrow">Signed in</p><h1>{displayName}</h1><p className="page-intro">{user.email}{profile?.phone ? ` · ${profile.phone}` : ''}</p></div>
+        <form action={signOut} className="account-signout"><button type="submit"><LogOut aria-hidden="true" /> Sign out</button></form>
       </div>
 
       <div className="account-grid">
-        {SECTIONS.map(({ icon: Icon, title, body, href, pending }) => {
-          const content = (
-            <>
-              <span className="account-card-icon" aria-hidden="true">
-                <Icon />
-              </span>
-              <h2>{title}</h2>
-              <p>{body}</p>
-              {pending ? (
-                <span className="account-pending">Coming with accounts</span>
-              ) : (
-                <span className="account-go">
-                  Open <ChevronRight aria-hidden="true" />
-                </span>
-              )}
-            </>
-          );
-
-          return href ? (
-            <Link className="account-card" href={href} key={title}>
-              {content}
-            </Link>
-          ) : (
-            <div className="account-card is-pending" key={title}>
-              {content}
-            </div>
-          );
-        })}
+        <Link className="account-card" href="/checkout">
+          <span className="account-card-icon" aria-hidden="true"><MapPin /></span>
+          <h2>Delivery address</h2>
+          {address ? <p>{address.line1}{address.line2 ? `, ${address.line2}` : ''}<br />{address.city}, {address.state} — {address.pincode}</p> : <p>Add the address where your orders should be delivered.</p>}
+          <span className="account-go">{address ? 'Edit' : 'Add address'} <ChevronRight aria-hidden="true" /></span>
+        </Link>
+        <Link className="account-card" href="/wishlist"><span className="account-card-icon" aria-hidden="true"><Heart /></span><h2>Wishlist</h2><p>Return to the pieces you saved.</p><span className="account-go">Open <ChevronRight aria-hidden="true" /></span></Link>
+        <Link className="account-card" href="/bag"><span className="account-card-icon" aria-hidden="true"><ShoppingBag /></span><h2>Bag</h2><p>Review your selected pieces and continue checkout.</p><span className="account-go">Open <ChevronRight aria-hidden="true" /></span></Link>
       </div>
-
-      <section className="account-help">
-        <h2>Need a hand before then?</h2>
-        <p>
-          Message us on WhatsApp for anything about an order, a size or a fabric —
-          the same number that will send your tracking updates.
-        </p>
-        <a
-          className="primary-cta"
-          href="https://wa.me/919000000000"
-          rel="noreferrer noopener"
-          target="_blank"
-        >
-          Chat on WhatsApp
-        </a>
-      </section>
     </div>
   );
 }
+
