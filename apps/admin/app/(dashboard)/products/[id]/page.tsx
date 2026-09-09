@@ -143,8 +143,8 @@ export default async function ProductEditPage({ params }: PageProps) {
           <div className="image-editor-add">
             <ImageUploadField
               action={uploadProductImage}
-              productId={product.id}
-              productSlug={product.slug}
+              fields={{ product_id: product.id, product_slug: product.slug }}
+              submitLabel="Add photograph"
             />
           </div>
         </div>

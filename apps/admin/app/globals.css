@@ -2048,3 +2048,55 @@ th.numeric {
   font-size: 0.95rem;
   line-height: 1;
 }
+
+/* --- The visible "choose a picture" control -------------------------------
+   The native file input renders as a small grey "No file chosen" that is easy
+   to walk past — press save without noticing it and the upload just says
+   "Choose an image." So the real input is taken out of sight and a labelled
+   button drives it, with the chosen filename shown beside it.
+   -------------------------------------------------------------------------- */
+
+/* `.field input` also sets a width, and one class each means it wins on
+   source order — so this needs the extra class to actually take. */
+.image-upload .image-upload-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.image-upload-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.image-upload-pick .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: none;
+}
+.image-upload-pick .btn-secondary svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.image-upload-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Keyboard focus lands on the hidden input, so show it on the button. */
+.image-upload .image-upload-file:focus-visible + .image-upload-pick .btn-secondary {
+  outline: 2px solid var(--accent, #8f2f4a);
+  outline-offset: 2px;
+}

@@ -350,6 +350,7 @@ export async function uploadCategoryImage(formData: FormData): Promise<ActionRes
   const categoryId = String(formData.get("category_id") ?? "");
   const slug = String(formData.get("category_slug") ?? "category");
   const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "").trim() || "50% center";
   const file = formData.get("file");
   if (!categoryId) return FAIL("Missing category.");
   if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
@@ -370,7 +371,7 @@ export async function uploadCategoryImage(formData: FormData): Promise<ActionRes
       bucket: "collections",
       path,
       alt,
-      focal: "50% center",
+      focal,
       mime_type: file.type,
       byte_size: file.size,
       uploaded_by: admin?.id ?? null,
@@ -404,6 +405,7 @@ export async function uploadHeroImage(formData: FormData): Promise<ActionResult>
 
   const slideId = String(formData.get("slide_id") ?? "");
   const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "").trim() || "50% center";
   const file = formData.get("file");
   if (!slideId) return FAIL("Missing banner.");
   if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
@@ -424,7 +426,7 @@ export async function uploadHeroImage(formData: FormData): Promise<ActionResult>
       bucket: "banners",
       path,
       alt,
-      focal: "50% center",
+      focal,
       mime_type: file.type,
       byte_size: file.size,
       uploaded_by: admin?.id ?? null,

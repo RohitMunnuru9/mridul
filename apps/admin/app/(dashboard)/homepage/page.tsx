@@ -13,24 +13,27 @@ import {
   getMoodTiles,
   getOccasionPanels,
 } from '@mridul/database';
+import { sessionClient } from '@mridul/supabase/server';
 import { uploadHeroImage } from '../../actions/media';
+import { ImageUploadField } from '../../components/image-upload';
 import {
   updateHeroSlide,
   updateHomepageSection,
   updateMoodTile,
   updateOccasionPanel,
 } from '../../actions/content';
-import { EditForm, Field, FieldRow, FileField, TextArea, Toggle } from '../../components/form';
+import { EditForm, Field, FieldRow, TextArea, Toggle } from '../../components/form';
 import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Homepage | Mridul Admin' };
 
 export default async function HomepagePage() {
+  const db = await sessionClient();
   const [sections, slides, panels, tiles] = await Promise.all([
-    getHomepageSections(true),
-    getHeroSlides(true),
-    getOccasionPanels(),
-    getMoodTiles(),
+    getHomepageSections(true, db),
+    getHeroSlides(true, db),
+    getOccasionPanels(db),
+    getMoodTiles(db),
   ]);
 
   return (
@@ -55,17 +58,14 @@ export default async function HomepagePage() {
                   focal={slide.media.focal}
                   size={180}
                 />
-                <EditForm action={uploadHeroImage} submitLabel="Change banner picture" compact>
-                  <input name="slide_id" type="hidden" value={slide.id} />
-                  <FileField label="New picture" name="file" hint="JPEG, PNG, WebP or AVIF" />
-                  <Field
-                    label="Picture description"
-                    name="alt"
-                    defaultValue={slide.media.alt}
-                    required
-                    hint="Used by screen readers"
-                  />
-                </EditForm>
+                <ImageUploadField
+                  action={uploadHeroImage}
+                  altDefault={slide.media.alt}
+                  altPlaceholder="e.g. Ivory saree against a lime-washed wall"
+                  fields={{ slide_id: slide.id }}
+                  maxLabel="JPEG, PNG or WebP, up to 15MB"
+                  submitLabel="Change banner picture"
+                />
               </div>
               <div className="hero-admin-body">
                 <EditForm action={updateHeroSlide}>

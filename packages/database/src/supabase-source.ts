@@ -222,8 +222,8 @@ export async function fetchCollections(): Promise<Collection[]> {
   }));
 }
 
-export async function fetchHeroSlides(): Promise<HeroSlide[]> {
-  const { data, error } = await publicClient()
+export async function fetchHeroSlides(client: Client = publicClient()): Promise<HeroSlide[]> {
+  const { data, error } = await client
     .from("hero_slides")
     .select(
       "id, eyebrow, title, note, cta_label, cta_href, position, is_active, " +
@@ -246,8 +246,8 @@ export async function fetchHeroSlides(): Promise<HeroSlide[]> {
   }));
 }
 
-export async function fetchHomepageSections(): Promise<HomepageSection[]> {
-  const { data, error } = await publicClient()
+export async function fetchHomepageSections(client: Client = publicClient()): Promise<HomepageSection[]> {
+  const { data, error } = await client
     .from("homepage_sections")
     .select("id, key, name, description, position, is_enabled, collection:collections(slug)")
     .order("position");
@@ -265,8 +265,8 @@ export async function fetchHomepageSections(): Promise<HomepageSection[]> {
   }));
 }
 
-export async function fetchOccasionPanels(): Promise<OccasionPanel[]> {
-  const { data, error } = await publicClient()
+export async function fetchOccasionPanels(client: Client = publicClient()): Promise<OccasionPanel[]> {
+  const { data, error } = await client
     .from("occasion_panels")
     .select("id, tone, eyebrow, title, body, cta_label, cta_href, position")
     .order("position");
@@ -285,8 +285,8 @@ export async function fetchOccasionPanels(): Promise<OccasionPanel[]> {
   }));
 }
 
-export async function fetchValueProps(): Promise<ValueProp[]> {
-  const { data, error } = await publicClient()
+export async function fetchValueProps(client: Client = publicClient()): Promise<ValueProp[]> {
+  const { data, error } = await client
     .from("value_props")
     .select("id, icon, title, note, position")
     .order("position");
@@ -301,8 +301,8 @@ export async function fetchValueProps(): Promise<ValueProp[]> {
   }));
 }
 
-export async function fetchJournalPosts(): Promise<JournalPost[]> {
-  const { data, error } = await publicClient()
+export async function fetchJournalPosts(client: Client = publicClient()): Promise<JournalPost[]> {
+  const { data, error } = await client
     .from("journal_posts")
     .select(
       "id, title, excerpt, href, position, is_published, " + "media(id, bucket, path, alt, focal)",
@@ -322,8 +322,8 @@ export async function fetchJournalPosts(): Promise<JournalPost[]> {
   }));
 }
 
-export async function fetchStoryPanel(): Promise<StoryPanel> {
-  const { data, error } = await publicClient()
+export async function fetchStoryPanel(client: Client = publicClient()): Promise<StoryPanel> {
+  const { data, error } = await client
     .from("story_panel")
     .select(
       "eyebrow, title, body, stats, cta_label, cta_href, " + "media(id, bucket, path, alt, focal)",
@@ -344,8 +344,8 @@ export async function fetchStoryPanel(): Promise<StoryPanel> {
   };
 }
 
-export async function fetchSiteSettings(): Promise<SiteSettings> {
-  const { data, error } = await publicClient().from("settings").select("*").maybeSingle();
+export async function fetchSiteSettings(client: Client = publicClient()): Promise<SiteSettings> {
+  const { data, error } = await client.from("settings").select("*").maybeSingle();
 
   if (error) throw new Error(`Loading settings: ${error.message}`);
 
@@ -369,16 +369,16 @@ export async function fetchSiteSettings(): Promise<SiteSettings> {
 }
 
 /** Named editorial prose, keyed by slug. */
-export async function fetchContentBlocks(): Promise<Record<string, string>> {
-  const { data, error } = await publicClient().from("content_blocks").select("key, body");
+export async function fetchContentBlocks(client: Client = publicClient()): Promise<Record<string, string>> {
+  const { data, error } = await client.from("content_blocks").select("key, body");
 
   if (error) throw new Error(`Loading content blocks: ${error.message}`);
 
   return Object.fromEntries((data ?? []).map((row: any) => [row.key, row.body]));
 }
 
-export async function fetchMoodTiles() {
-  const { data, error } = await publicClient()
+export async function fetchMoodTiles(client: Client = publicClient()) {
+  const { data, error } = await client
     .from("mood_tiles")
     .select("id, label, note, href, icon, tone, position")
     .order("position");
