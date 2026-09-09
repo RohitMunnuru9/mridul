@@ -133,7 +133,7 @@ export function ProductPurchase({
             <button
               aria-pressed={item.id === variant.id}
               className={`pdp-variant${item.id === variant.id ? ' is-on' : ''}`}
-              disabled={item.stock <= 0}
+              disabled={product.isSoldOut || item.stock <= 0}
               key={item.id}
               onClick={() => chooseVariant(item.id)}
               type="button"
@@ -147,7 +147,9 @@ export function ProductPurchase({
         </div>
       </fieldset>
 
-      {variant.stock <= 0 ? (
+      {product.isSoldOut ? (
+        <p className="pdp-stock is-out">Currently sold out — check back soon</p>
+      ) : variant.stock <= 0 ? (
         <p className="pdp-stock is-out">Sold out in this option</p>
       ) : variant.stock <= LOW_STOCK_THRESHOLD ? (
         <p className="pdp-stock is-low">
@@ -179,7 +181,11 @@ export function ProductPurchase({
             <Plus aria-hidden="true" />
           </Button>
         </div>
-        <Button className="pdp-add" disabled={variant.stock <= 0} onClick={add}>
+        <Button
+          className="pdp-add"
+          disabled={product.isSoldOut || variant.stock <= 0}
+          onClick={add}
+        >
           <ShoppingBag aria-hidden="true" />
           {added ? 'Added to bag' : 'Add to bag'}
         </Button>

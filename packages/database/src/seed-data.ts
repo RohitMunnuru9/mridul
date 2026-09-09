@@ -209,6 +209,7 @@ export const products: Product[] = [
       'Comes with a 0.8m unstitched blouse piece in matching linen silk.',
     rating: { average: 4.7, count: 132 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-08-28',
   },
   {
@@ -235,6 +236,7 @@ export const products: Product[] = [
     blouseDetails: 'Sold as the drape alone. Pair it with the Saada Scoop blouse.',
     rating: { average: 4.6, count: 88 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-07-14',
   },
   {
@@ -264,6 +266,7 @@ export const products: Product[] = [
       'Comes with a 0.8m unstitched blouse piece in dusty rose satin.',
     rating: { average: 4.9, count: 341 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-06-02',
   },
   {
@@ -291,6 +294,7 @@ export const products: Product[] = [
     blouseDetails: 'Comes with a 0.8m unstitched blouse piece in gold tissue.',
     rating: { average: 4.8, count: 205 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-05-19',
   },
   {
@@ -316,6 +320,7 @@ export const products: Product[] = [
     care: SAREE_CARE,
     rating: { average: 4.5, count: 156 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-08-11',
   },
   {
@@ -343,6 +348,7 @@ export const products: Product[] = [
     blouseDetails: 'Comes with a 0.8m unstitched blouse piece in raw tussar.',
     rating: { average: 4.8, count: 412 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-04-30',
   },
   {
@@ -369,6 +375,7 @@ export const products: Product[] = [
     care: SAREE_CARE,
     rating: { average: 4.4, count: 74 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-03-22',
   },
   {
@@ -396,6 +403,7 @@ export const products: Product[] = [
     blouseDetails: 'Comes with a 0.8m unstitched blouse piece in undyed cotton.',
     rating: { average: 4.6, count: 61 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-09-01',
   },
   {
@@ -425,6 +433,7 @@ export const products: Product[] = [
       'Comes with a 0.8m unstitched blouse piece in matching brocade.',
     rating: { average: 5, count: 29 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-02-08',
   },
   {
@@ -450,6 +459,7 @@ export const products: Product[] = [
     care: SAREE_CARE,
     rating: { average: 4.5, count: 97 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-07-03',
   },
   {
@@ -477,6 +487,7 @@ export const products: Product[] = [
     blouseDetails: 'Comes with a 0.8m unstitched blouse piece in undyed cotton.',
     rating: { average: 4.7, count: 188 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-06-25',
   },
   {
@@ -505,6 +516,7 @@ export const products: Product[] = [
       'Comes with a 0.8m unstitched blouse piece in contrast gold silk.',
     rating: { average: 4.9, count: 267 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-01-16',
   },
   {
@@ -531,6 +543,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.6, count: 54 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-09-03',
   },
   {
@@ -557,6 +570,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.8, count: 176 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-05-07',
   },
   {
@@ -587,6 +601,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.5, count: 82 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-06-18',
   },
   {
@@ -613,6 +628,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.4, count: 121 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-04-12',
   },
   {
@@ -643,6 +659,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.6, count: 66 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-03-30',
   },
   {
@@ -669,6 +686,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.9, count: 43 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-02-20',
   },
   {
@@ -693,6 +711,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.7, count: 214 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-07-22',
   },
   {
@@ -720,6 +739,7 @@ export const products: Product[] = [
     care: BLOUSE_CARE,
     rating: { average: 4.8, count: 159 },
     isActive: true,
+    isSoldOut: false,
     publishedAt: '2026-05-28',
   },
 ];

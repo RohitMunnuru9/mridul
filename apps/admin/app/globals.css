@@ -2156,3 +2156,14 @@ th.numeric {
   border-radius: 4px;
   object-fit: cover;
 }
+
+/* --- Sold out, in the product list ------------------------------------------
+   Between live and hidden: still on the site, not buyable. The row stays fully
+   legible — unlike a hidden product it is not faded — but the thumbnail wears
+   the same blur the shopper sees, so the state is recognisable at a glance.
+   --------------------------------------------------------------------------- */
+
+.product-admin-row.is-sold-out .product-admin-image {
+  filter: blur(1.5px) saturate(0.7);
+  opacity: 0.8;
+}

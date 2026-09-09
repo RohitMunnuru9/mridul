@@ -108,6 +108,12 @@ export type Product = {
   blouseDetails?: string;
   rating?: { average: number; count: number };
   isActive: boolean;
+  /**
+   * `products.is_sold_out` — shown on the storefront but not buyable, blurred.
+   * Separate from stock so marking a piece out and back in never touches the
+   * real counts.
+   */
+  isSoldOut: boolean;
   /** ISO date. Drives the 'newest' sort; convert to a timestamp column later. */
   publishedAt: string;
 };
