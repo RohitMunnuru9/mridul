@@ -10,9 +10,9 @@
 import type { Metadata } from 'next';
 import { getMediaLibrary } from '@mridul/database';
 import { replaceMediaFile, updateMedia } from '../../actions/media';
-import { EditForm, Field, FileField } from '../../components/form';
-import { CropField } from '../../components/crop-field';
-import { MediaThumb, PageHead, Panel, ViewOnSite, mediaUrl } from '../../components/ui';
+import { EditForm, Field } from '../../components/form';
+import { ImageUploadField } from '../../components/image-upload';
+import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Media | Mridul Admin' };
 
@@ -61,22 +61,20 @@ export default async function MediaPage() {
                   required
                   hint="Read aloud by screen readers"
                 />
-                <CropField
-                  src={mediaUrl(record.url)}
-                  defaultValue={record.focal}
-                />
+
               </EditForm>
 
-              <EditForm action={replaceMediaFile} submitLabel="Replace file" compact>
-                <input name="media_id" type="hidden" value={record.id} />
-                <input name="bucket" type="hidden" value={record.buckets[0]} />
-                <input name="path" type="hidden" value={record.path} />
-                <FileField
-                  label="Replace this photograph"
-                  name="file"
-                  hint="Updates everywhere it is used"
-                />
-              </EditForm>
+              <ImageUploadField
+                action={replaceMediaFile}
+                askAlt={false}
+                fields={{
+                  media_id: record.id,
+                  bucket: record.buckets[0],
+                  path: record.path,
+                }}
+                maxLabel="Replaces the file everywhere it is used"
+                submitLabel="Replace this picture"
+              />
             </div>
           </div>
         </Panel>
