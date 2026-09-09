@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Botanical } from './botanical';
+import Image from 'next/image';
 
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -125,10 +125,18 @@ export function SilkInteractions() {
     <>
       <div ref={cursor} className="silk-cursor" aria-hidden="true" />
       <div ref={curtain} className="page-fabric" aria-hidden="true">
+        {/* Warp threads, drawn rather than an image: two repeating gradients
+            cost nothing and never wait on a request mid-navigation. */}
+        <span className="page-fabric-warp" />
         <span className="page-fabric-mark">
-          <Botanical variant="bloom" />
-          <strong>Mridul</strong>
-          <small>BY MR</small>
+          <Image
+            alt=""
+            height={336}
+            sizes="220px"
+            src="/images/brand/mridul-wordmark.png"
+            width={1100}
+          />
+          <span className="page-fabric-rule" />
         </span>
       </div>
     </>
