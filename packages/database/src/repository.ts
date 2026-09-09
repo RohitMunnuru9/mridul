@@ -53,7 +53,8 @@ function toListItem(product: Product): ProductListItem {
   const stockTotal = stockOf(product);
   return {
     ...product,
-    inStock: stockTotal > 0,
+    // Buyable needs both: stock on the shelf, and nobody having held it back.
+    inStock: stockTotal > 0 && !product.isSoldOut,
     stockTotal,
     discountPercent: discountPercent(product.pricePaise, product.compareAtPaise),
   };
@@ -193,7 +194,10 @@ function buildPredicates(query: ProductQuery): Predicates {
     price: (product) =>
       (query.minPaise === undefined || product.pricePaise >= query.minPaise) &&
       (query.maxPaise === undefined || product.pricePaise <= query.maxPaise),
-    availability: (product) => !query.inStockOnly || stockOf(product) > 0,
+    // "In stock only" means buyable, so a piece held back as sold out is
+    // excluded even while its shelf count is above zero.
+    availability: (product) =>
+      !query.inStockOnly || (stockOf(product) > 0 && !product.isSoldOut),
     sale: (product) =>
       !query.onSaleOnly || discountPercent(product.pricePaise, product.compareAtPaise) > 0,
   };

@@ -15,6 +15,7 @@ import { formatPaise } from "@mridul/utils";
 import {
   createProduct,
   toggleProductActive,
+  toggleSoldOut,
   updateProductStock,
 } from "../../actions/catalogue";
 import { EditForm, Field, FieldRow, Select, TextArea } from "../../components/form";
@@ -54,7 +55,9 @@ export default async function ProductsPage() {
         <div className="product-admin-list">
           {products.map((product) => (
             <article
-              className={`product-admin-row${!product.isActive ? " is-unlisted" : ""}`}
+              className={`product-admin-row${!product.isActive ? " is-unlisted" : ""}${
+                product.isSoldOut ? " is-sold-out" : ""
+              }`}
               key={product.id}
             >
               <div className="product-admin-image">
@@ -68,8 +71,10 @@ export default async function ProductsPage() {
               <div className="product-admin-info">
                 <div className="product-admin-title">
                   <InternalLink href={`/products/${product.id}`}>{product.name}</InternalLink>
-                  <Pill tone={product.isActive ? "ok" : "muted"}>
-                    {product.isActive ? "Live" : "Hidden"}
+                  <Pill
+                    tone={!product.isActive ? "muted" : product.isSoldOut ? "out" : "ok"}
+                  >
+                    {!product.isActive ? "Hidden" : product.isSoldOut ? "Sold out" : "Live"}
                   </Pill>
                 </div>
                 <span>
@@ -91,6 +96,15 @@ export default async function ProductsPage() {
                 >
                   <input name="id" type="hidden" value={product.id} />
                   <input name="active" type="hidden" value={String(!product.isActive)} />
+                </EditForm>
+                <EditForm
+                  action={toggleSoldOut}
+                  submitLabel={product.isSoldOut ? "Back in stock" : "Show as sold out"}
+                  compact
+                  danger={!product.isSoldOut}
+                >
+                  <input name="id" type="hidden" value={product.id} />
+                  <input name="sold_out" type="hidden" value={String(!product.isSoldOut)} />
                 </EditForm>
               </div>
               <div className="product-admin-stock">

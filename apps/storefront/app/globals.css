@@ -516,7 +516,23 @@ img { display: block; max-width: 100%; }
   font-size: 0.55rem;
   letter-spacing: 0.14em;
 }
-.product-card.is-sold-out .product-photo img { opacity: 0.72; }
+/* A sold-out piece stays on the page so shoppers know it exists, but reads
+   as unavailable at a glance: softened and blurred, badge on top. */
+.product-card.is-sold-out .product-photo img {
+  opacity: 0.6;
+  filter: blur(2.5px) saturate(0.7);
+  transition: filter 220ms ease, opacity 220ms ease;
+}
+.product-card.is-sold-out .product-photo::after {
+  position: absolute;
+  inset: 0;
+  background: rgb(255 253 252 / 18%);
+  content: '';
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card.is-sold-out .product-photo img { transition: none; }
+}
 .product-badge {
   padding: 0.35rem 0.55rem;
   background: rgb(255 250 247 / 91%);

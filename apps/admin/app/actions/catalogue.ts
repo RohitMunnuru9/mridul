@@ -245,6 +245,32 @@ export async function deleteVariant(formData: FormData): Promise<ActionResult> {
   return OK(`${label} removed.`);
 }
 
+/**
+ * Mark a product sold out, or back in stock, without touching its counts.
+ *
+ * Shoppers still see it — blurred, badged, not buyable. Different from hiding,
+ * which takes it off the site, and from zeroing stock, which throws the real
+ * numbers away. Holding a piece back for a week should not mean retyping its
+ * inventory when it returns.
+ */
+export async function toggleSoldOut(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "catalog_manager")) return FAIL("You cannot edit products.");
+
+  const id = String(formData.get("id") ?? "");
+  const soldOut = formData.get("sold_out") === "true";
+  if (!id) return FAIL("Missing product.");
+
+  const db = await sessionClient();
+  const { error } = await db.from("products").update({ is_sold_out: soldOut }).eq("id", id);
+  if (error) return FAIL(error.message);
+
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
+  revalidatePath("/");
+  return OK(soldOut ? "Shown as sold out." : "Back in stock.");
+}
+
 /** Show or hide a product on the storefront without deleting anything. */
 export async function toggleProductActive(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();

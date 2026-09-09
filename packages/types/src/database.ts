@@ -1,10 +1,3 @@
-/**
- * Generated from the live Supabase schema. Do not edit by hand.
- *
- * Regenerate after every migration:
- *   npx supabase gen types typescript --linked > packages/types/src/database.ts
- */
-
 export type Json =
   | string
   | number
@@ -1155,6 +1148,7 @@ export type Database = {
           fabric: string
           id: string
           is_active: boolean
+          is_sold_out: boolean
           name: string
           occasion: string
           price_paise: number
@@ -1180,6 +1174,7 @@ export type Database = {
           fabric?: string
           id?: string
           is_active?: boolean
+          is_sold_out?: boolean
           name: string
           occasion?: string
           price_paise: number
@@ -1205,6 +1200,7 @@ export type Database = {
           fabric?: string
           id?: string
           is_active?: boolean
+          is_sold_out?: boolean
           name?: string
           occasion?: string
           price_paise?: number

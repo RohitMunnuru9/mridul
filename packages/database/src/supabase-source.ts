@@ -76,7 +76,7 @@ const PRODUCT_SELECT = `
   id, slug, name, subtitle, description, blouse_details, care,
   price_paise, compare_at_paise, badge, fabric, colour_name, colour_hex,
   swatches, occasion, technique, rating_average, rating_count,
-  is_active, published_at,
+  is_active, is_sold_out, published_at,
   primary_category:categories!products_primary_category_id_fkey(slug),
   product_images(position, media(id, bucket, path, alt, focal)),
   product_variants(id, sku, label, price_delta_paise, position, inventory(on_hand)),
@@ -130,6 +130,7 @@ function toProduct(row: any): Product {
       ? { average: Number(row.rating_average), count: row.rating_count }
       : undefined,
     isActive: row.is_active,
+    isSoldOut: row.is_sold_out ?? false,
     publishedAt: row.published_at,
   };
 }
