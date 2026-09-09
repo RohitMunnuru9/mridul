@@ -206,6 +206,26 @@ export function StorefrontHeader({
     return () => clearInterval(id);
   }, [searchOpen, term, suggestions.length]);
 
+  /**
+   * The hero sits directly under this, and needs to know how tall it is to
+   * fill the rest of the screen. Measured rather than guessed: the
+   * announcement bar comes and goes and the rows wrap at different widths.
+   */
+  const chromeRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = chromeRef.current;
+    if (!node) return undefined;
+    const publish = () =>
+      document.documentElement.style.setProperty(
+        '--chrome-height',
+        `${Math.round(node.getBoundingClientRect().height)}px`,
+      );
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   /** A small delay stops the dropdown flickering as the pointer crosses a gap. */
   function scheduleClose() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -228,7 +248,8 @@ export function StorefrontHeader({
     // The strip and the header stick together as one block. Sticking only the
     // header would let the quote scroll away and leave a seam behind it.
     <div
-      className={`site-chrome refined-chrome${pathname === '/' ? ' over-campaign' : ''}${compact ? ' is-compact' : ''}`}
+      className={`site-chrome refined-chrome${compact ? ' is-compact' : ''}`}
+      ref={chromeRef}
     >
       <AnnouncementBar quotes={quotes} utility={announcements[0]} />
       <div className={`navigation-stack${compact ? ' is-compact' : ''}`}>

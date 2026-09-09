@@ -62,8 +62,11 @@ button:focus-visible,
 .campaign-stage {
   position: sticky;
   top: 0;
-  height: 100svh;
-  min-height: 650px;
+  /* The header sits above this rather than over it, so the hero fills what is
+     left of the screen. `--chrome-height` is published by the header itself;
+     the fallback is the height it settles at on a phone. */
+  height: calc(100svh - var(--chrome-height, 104px));
+  min-height: 520px;
   overflow: clip;
   background: #493b32;
   color: #fff9ef;
