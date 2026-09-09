@@ -9,6 +9,7 @@
 import type { Metadata } from 'next';
 import {
   getHeroSlides,
+  getTestimonials,
   getHomepageSections,
   getMoodTiles,
   getOccasionPanels,
@@ -17,7 +18,10 @@ import { sessionClient } from '@mridul/supabase/server';
 import { uploadHeroImage } from '../../actions/media';
 import { ImageUploadField } from '../../components/image-upload';
 import {
+  createTestimonial,
+  deleteTestimonial,
   updateHeroSlide,
+  updateTestimonial,
   updateHomepageSection,
   updateMoodTile,
   updateOccasionPanel,
@@ -35,6 +39,9 @@ export default async function HomepagePage() {
     getOccasionPanels(db),
     getMoodTiles(db),
   ]);
+  // Drafts included: a review that has not been published yet must still be
+  // findable, or it could never be finished.
+  const reviews = await getTestimonials(true, db);
 
   return (
     <>
@@ -81,6 +88,91 @@ export default async function HomepagePage() {
                 </EditForm>
               </div>
             </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel
+        title="Customer reviews"
+        note="Shown above the journal. A review appears on the website only once you tick Published — nothing here is invented or seeded."
+      >
+        <div className="panel-stack">
+          {reviews.length === 0 && (
+            <p className="prose">
+              No reviews yet. Paste a real one below and it appears on the
+              homepage once you publish it.
+            </p>
+          )}
+          {reviews.map((review) => (
+            <EditForm action={updateTestimonial} key={review.id}>
+              <input name="id" type="hidden" value={review.id} />
+              <FieldRow>
+                <Field label="Name" name="author" defaultValue={review.author} required />
+                <Field
+                  label="Where they are"
+                  name="location"
+                  defaultValue={review.location}
+                  hint="Optional"
+                />
+              </FieldRow>
+              <TextArea
+                label="What they wrote"
+                name="body"
+                defaultValue={review.body}
+                rows={3}
+              />
+              <FieldRow>
+                <Field
+                  label="Stars"
+                  name="rating"
+                  type="number"
+                  defaultValue={review.rating}
+                  hint="1 to 5"
+                  required
+                />
+                <Field
+                  label="Order"
+                  name="position"
+                  type="number"
+                  defaultValue={review.position}
+                />
+              </FieldRow>
+              <Toggle
+                label="Published"
+                name="is_published"
+                defaultChecked={review.isPublished}
+                hint="Off keeps it off the website"
+              />
+            </EditForm>
+          ))}
+        </div>
+        <div className="panel-stack">
+          <EditForm action={createTestimonial} submitLabel="Add review">
+            <FieldRow>
+              <Field label="Name" name="author" required placeholder="e.g. Ananya R." />
+              <Field label="Where they are" name="location" placeholder="e.g. Chennai" />
+            </FieldRow>
+            <TextArea
+              label="What they wrote"
+              name="body"
+              rows={3}
+              hint="Paste their words. Do not write it for them."
+            />
+            <FieldRow>
+              <Field label="Stars" name="rating" type="number" defaultValue={5} required />
+              <Field label="Order" name="position" type="number" defaultValue={0} />
+            </FieldRow>
+          </EditForm>
+          {reviews.map((review) => (
+            <EditForm
+              action={deleteTestimonial}
+              key={`remove-${review.id}`}
+              submitLabel={`Remove ${review.author}`}
+              compact
+              danger
+            >
+              <input name="id" type="hidden" value={review.id} />
+            </EditForm>
           ))}
         </div>
       </Panel>

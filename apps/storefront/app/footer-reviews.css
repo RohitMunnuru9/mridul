@@ -1,0 +1,506 @@
+/* ===========================================================================
+   Customer reviews, the footer, and the page transition
+   ---------------------------------------------------------------------------
+   Same vocabulary as the Edits and the journal above: blush and cream panels,
+   a botanical line drawing cropped by the panel edge, wide-tracked capitals,
+   one short rule.
+
+   The footer rules are scoped under `.site-footer.is-editorial` so they win on
+   specificity over two earlier passes in globals.css — one that made the
+   footer dark, one that patched the newsletter back to light — rather than
+   fighting them with `!important`.
+
+   Every panel that holds a drawing clips it. Nothing here may widen the page.
+   =========================================================================== */
+
+.reviews,
+.site-footer.is-editorial {
+  --ed-paper: #fffaf7;
+  --ed-cream: #f6ede5;
+  --ed-blush: #f2dcd8;
+  --ed-blush-deep: #e9c9c4;
+  --ed-line: #b48a80;
+  --ed-ink: #3d282d;
+  --ed-rose: #8d5261;
+  --ed-mute: #7a6360;
+  --ed-hair: #e8d6cf;
+}
+
+/* ===========================================================================
+   Reviews
+   =========================================================================== */
+
+.reviews {
+  padding: clamp(3rem, 6vw, 6rem) max(1.15rem, 4vw);
+  background: linear-gradient(180deg, #fbf5f1 0%, #f7ece6 100%);
+}
+
+.reviews-head {
+  max-width: 1400px;
+  margin: 0 auto 2rem;
+}
+.reviews-head p {
+  margin: 0 0 0.5rem;
+  color: var(--ed-rose);
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.reviews-head p::before {
+  display: block;
+  width: 2.2rem;
+  height: 1px;
+  margin-bottom: 0.8rem;
+  background: var(--ed-rose);
+  content: '';
+}
+.reviews-head h2 {
+  margin: 0;
+  color: var(--ed-ink);
+  font: 400 clamp(2.4rem, 4vw, 4rem) / 1.05 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1.25rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.review-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: clamp(1.5rem, 3vw, 2.2rem);
+  padding-right: clamp(4.5rem, 26%, 7rem);
+  overflow: hidden;
+  border: 1px solid var(--ed-hair);
+  border-radius: 5px;
+}
+.review-card.is-blush {
+  border-color: #e6c8c3;
+  background: linear-gradient(165deg, #f5e3df 0%, var(--ed-blush) 60%, var(--ed-blush-deep) 100%);
+}
+.review-card.is-cream {
+  background: linear-gradient(170deg, #f9f1ea 0%, var(--ed-cream) 100%);
+}
+.review-card .botanical {
+  position: absolute;
+  top: -1.4rem;
+  right: -3rem;
+  z-index: 0;
+  width: clamp(150px, 42%, 240px);
+  color: var(--ed-line);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.review-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.review-stars {
+  display: flex;
+  gap: 0.15rem;
+  margin-bottom: 1rem;
+}
+.review-stars svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: #d9c3bd;
+  fill: none;
+}
+.review-stars svg.is-filled {
+  color: #c9a227;
+  fill: #c9a227;
+}
+
+.review-card blockquote {
+  margin: 0 0 1.4rem;
+  color: var(--ed-ink);
+  font: italic 400 clamp(1.05rem, 1.5vw, 1.3rem) / 1.5 var(--font-cormorant), Georgia, serif;
+}
+
+.review-by {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgb(180 138 128 / 35%);
+  width: 100%;
+}
+.review-by cite {
+  color: var(--ed-ink);
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 600;
+}
+.review-by span {
+  color: var(--ed-mute);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+.review-by a {
+  flex-basis: 100%;
+  color: var(--ed-rose);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.review-by a:hover {
+  text-decoration: underline;
+}
+
+/* ===========================================================================
+   Footer
+   =========================================================================== */
+
+.site-footer.is-editorial {
+  background: var(--ed-cream);
+  color: var(--ed-ink);
+}
+
+/* --- The newsletter panel --------------------------------------------------
+   It was a flat block of pink with the heading floating on it. Now a blush
+   panel with a drawing at the edge and the form on its own ground.
+   --------------------------------------------------------------------------- */
+
+.site-footer.is-editorial .newsletter-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 4rem);
+  padding: clamp(3rem, 6vw, 5rem) max(1.15rem, 6vw);
+  overflow: hidden;
+  border-bottom: 0;
+  background: linear-gradient(150deg, #f6e5e1 0%, var(--ed-blush) 55%, var(--ed-blush-deep) 100%);
+}
+.site-footer.is-editorial .newsletter-panel .botanical {
+  position: absolute;
+  right: -2rem;
+  bottom: -4rem;
+  z-index: 0;
+  width: clamp(170px, 26%, 300px);
+  color: var(--ed-line);
+  opacity: 0.42;
+  pointer-events: none;
+  transform: rotate(-8deg);
+}
+.site-footer.is-editorial .newsletter-panel > * {
+  position: relative;
+  z-index: 1;
+}
+.site-footer.is-editorial .newsletter-copy span {
+  display: block;
+  color: var(--ed-rose);
+  font-size: 0.68rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+.site-footer.is-editorial .newsletter-copy h2 {
+  max-width: 16ch;
+  margin: 1rem 0 0;
+  color: var(--ed-ink);
+  font: 400 clamp(2.1rem, 3.6vw, 3.6rem) / 1.03 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+.site-footer.is-editorial .newsletter-copy p {
+  max-width: 34ch;
+  margin: 1rem 0 0;
+  color: #6d5450;
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+/* The field sits on paper rather than directly on the blush, so it reads as
+   somewhere to type. */
+.site-footer.is-editorial .newsletter-panel form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.4rem 0.4rem 1.1rem;
+  border: 1px solid #dfb9b3;
+  border-bottom: 1px solid #dfb9b3;
+  border-radius: 3px;
+  background: #fffaf8;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.site-footer.is-editorial .newsletter-panel form:focus-within {
+  border-color: var(--ed-rose);
+  box-shadow: 0 0 0 3px rgb(141 82 97 / 14%);
+}
+.site-footer.is-editorial .newsletter-panel input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.75rem 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ed-ink);
+  font-size: 0.86rem;
+}
+.site-footer.is-editorial .newsletter-panel input::placeholder {
+  color: #a98d88;
+}
+.site-footer.is-editorial .newsletter-panel button {
+  border-radius: 3px !important;
+  background: #4a2029 !important;
+}
+.site-footer.is-editorial .newsletter-success {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid #dfb9b3;
+  border-radius: 3px;
+  background: #fffaf8;
+  color: var(--ed-ink);
+  font: italic 400 1.15rem / 1.45 var(--font-cormorant), Georgia, serif;
+}
+
+/* --- The link columns ------------------------------------------------------ */
+
+.site-footer.is-editorial .footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(4, minmax(0, 0.72fr));
+  gap: clamp(1.8rem, 4vw, 4rem);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(3rem, 5vw, 4.5rem) max(1.15rem, 4vw) clamp(2rem, 3vw, 3rem);
+}
+.site-footer.is-editorial .footer-brand > p {
+  max-width: 18rem;
+  margin: 1.2rem 0 1.4rem;
+  color: var(--ed-mute);
+  font: 400 1.05rem / 1.5 var(--font-cormorant), Georgia, serif;
+}
+.site-footer.is-editorial .social-links a {
+  width: 2.3rem;
+  height: 2.3rem;
+  border-color: #d9bdb7;
+  color: var(--ed-ink);
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.site-footer.is-editorial .social-links a:hover {
+  border-color: #4a2029;
+  background: #4a2029;
+  color: var(--ed-paper);
+}
+.site-footer.is-editorial .footer-grid h3 {
+  margin: 0 0 0.9rem;
+  color: var(--ed-rose);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.site-footer.is-editorial .footer-grid > div:not(.footer-brand) {
+  gap: 0.55rem;
+}
+.site-footer.is-editorial .footer-grid > div:not(.footer-brand) a {
+  color: #6d5450;
+  font-size: 0.82rem;
+  transition: color 160ms ease, padding-left 160ms ease;
+}
+.site-footer.is-editorial .footer-grid > div:not(.footer-brand) a:hover {
+  padding-left: 0.2rem;
+  color: var(--ed-rose);
+}
+/* Policies that have no page yet: visible, and visibly not a link. At #a4908c
+   they sat at 2.6:1 on this cream, which is the same near-invisible small
+   print the dark-footer pass produced. */
+.site-footer.is-editorial .footer-pending {
+  display: block;
+  padding: 0.1rem 0;
+  color: #7d6864;
+  font-size: 0.8rem;
+}
+
+/* The brand name was left at #fffcfa by the earlier dark-footer pass — 1.13:1
+   against this cream, which is to say invisible. The mark and its BY MR line
+   were gold at 2.7:1 for the same reason. */
+.site-footer.is-editorial .brand-mark strong {
+  color: var(--ed-ink);
+}
+.site-footer.is-editorial .brand-mark > svg,
+.site-footer.is-editorial .brand-mark small {
+  color: var(--ed-rose);
+}
+
+/* --- The closing quote -----------------------------------------------------
+   It was a fifth column squeezed beside four link lists. It reads as a closing
+   line, so it closes the footer.
+   --------------------------------------------------------------------------- */
+
+.site-footer.is-editorial .footer-quote {
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3.2rem) max(1.15rem, 4vw);
+  overflow: hidden;
+  border-top: 1px solid #e3cdc6;
+}
+.site-footer.is-editorial .footer-quote .botanical {
+  position: absolute;
+  top: -2.5rem;
+  right: 4vw;
+  width: clamp(130px, 16%, 200px);
+  color: var(--ed-line);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.site-footer.is-editorial .footer-quote p {
+  position: relative;
+  z-index: 1;
+  max-width: 26ch;
+  margin: 0;
+  color: var(--ed-ink);
+  font: italic 400 clamp(1.4rem, 2.4vw, 2.2rem) / 1.35 var(--font-cormorant), Georgia, serif;
+}
+
+/* --- The bottom bar -------------------------------------------------------- */
+
+.site-footer.is-editorial .footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1.5rem;
+  padding: 1.2rem max(1.15rem, 4vw);
+  border-top: 1px solid #e3cdc6;
+  background: #4a2029;
+  color: rgb(246 237 229 / 72%);
+  font-size: 0.7rem;
+}
+.site-footer.is-editorial .footer-bottom p {
+  margin: 0;
+}
+.site-footer.is-editorial .footer-note {
+  color: rgb(246 237 229 / 52%);
+}
+
+/* --- Small screens --------------------------------------------------------- */
+
+@media (width <= 900px) {
+  .site-footer.is-editorial .newsletter-panel {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .site-footer.is-editorial .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .site-footer.is-editorial .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (width <= 560px) {
+  .site-footer.is-editorial .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .site-footer.is-editorial .newsletter-panel .botanical {
+    right: -4rem;
+    width: 170px;
+  }
+  .review-card {
+    padding-right: 4.5rem;
+  }
+  .review-card .botanical {
+    right: -3.5rem;
+    width: 150px;
+  }
+}
+
+/* ===========================================================================
+   The page transition
+   ---------------------------------------------------------------------------
+   It was a flat wine rectangle held for 1800ms — nearly two seconds of blank
+   screen between pages. It now carries the brand mark and a drawing, and it
+   leaves as soon as the new route commits; the timer is only a fallback.
+   =========================================================================== */
+
+.page-fabric {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #5d2839 0%, #40182a 55%, #34131f 100%);
+}
+.page-fabric::after {
+  /* A single sweep of light across the panel, so the hold reads as a curtain
+     rather than as a page that failed to load. */
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 35%,
+    rgb(226 190 160 / 12%) 50%,
+    transparent 65%
+  );
+  content: '';
+  opacity: 0;
+}
+.page-fabric.is-leaving::after {
+  animation: fabric-sheen 900ms ease-out forwards;
+}
+@keyframes fabric-sheen {
+  from { opacity: 0; transform: translateX(-35%); }
+  40%  { opacity: 1; }
+  to   { opacity: 0; transform: translateX(35%); }
+}
+
+.page-fabric-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  color: #efd9c9;
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-fabric.is-leaving .page-fabric-mark {
+  animation: fabric-mark 700ms 120ms ease-out forwards;
+}
+@keyframes fabric-mark {
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-fabric-mark .botanical {
+  width: 74px;
+  color: #c98f7e;
+  opacity: 0.75;
+}
+.page-fabric-mark strong {
+  font: 400 2rem / 1 var(--font-cormorant), Georgia, serif;
+  letter-spacing: 0.02em;
+}
+.page-fabric-mark small {
+  font-size: 0.6rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fabric,
+  .page-fabric.is-leaving,
+  .page-fabric.is-arriving {
+    transition: none;
+  }
+  .page-fabric.is-leaving::after,
+  .page-fabric.is-leaving .page-fabric-mark {
+    animation: none;
+  }
+  .page-fabric-mark {
+    opacity: 1;
+    transform: none;
+  }
+  .site-footer.is-editorial .footer-grid > div:not(.footer-brand) a,
+  .site-footer.is-editorial .social-links a,
+  .site-footer.is-editorial .newsletter-panel form {
+    transition: none;
+  }
+}

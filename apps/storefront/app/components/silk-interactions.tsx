@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { Botanical } from './botanical';
 
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -100,10 +101,14 @@ export function SilkInteractions() {
       pending.current = setTimeout(() => {
         router.push(url.pathname + url.search);
         pending.current = null;
+        // The effect on `pathname` lifts the curtain as soon as the new route
+        // commits. This is only a fallback for a navigation that never
+        // resolves — at 1800ms it was the thing holding a blank panel on
+        // screen for nearly two seconds even when the page was ready.
         setTimeout(() => {
           curtain.current?.classList.remove('is-leaving');
           curtain.current?.classList.add('is-arriving');
-        }, 1800);
+        }, 900);
       }, 450);
     };
     document.addEventListener('pointermove', move, { passive: true });
@@ -119,7 +124,13 @@ export function SilkInteractions() {
   return (
     <>
       <div ref={cursor} className="silk-cursor" aria-hidden="true" />
-      <div ref={curtain} className="page-fabric" aria-hidden="true" />
+      <div ref={curtain} className="page-fabric" aria-hidden="true">
+        <span className="page-fabric-mark">
+          <Botanical variant="bloom" />
+          <strong>Mridul</strong>
+          <small>BY MR</small>
+        </span>
+      </div>
     </>
   );
 }

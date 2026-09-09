@@ -1441,6 +1441,53 @@ export type Database = {
           },
         ]
       }
+      testimonials: {
+        Row: {
+          author: string
+          body: string
+          created_at: string
+          id: string
+          is_published: boolean
+          location: string
+          position: number
+          product_id: string | null
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          body: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          location?: string
+          position?: number
+          product_id?: string | null
+          rating?: number
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          location?: string
+          position?: number
+          product_id?: string | null
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracking_events: {
         Row: {
           created_at: string
@@ -1649,6 +1696,7 @@ export type Database = {
         | "featured_products"
         | "story"
         | "journal"
+        | "testimonials"
       media_bucket:
         | "products"
         | "collections"
@@ -1815,6 +1863,7 @@ export const Constants = {
         "featured_products",
         "story",
         "journal",
+        "testimonials",
       ],
       media_bucket: ["products", "collections", "banners", "homepage", "media"],
       order_status: [

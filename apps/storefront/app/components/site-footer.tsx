@@ -10,7 +10,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Camera, Flower2, Play } from 'lucide-react';
+import { ArrowRight, Camera, Play } from 'lucide-react';
+import { Botanical } from './botanical';
 import { BrandMark } from './brand-mark';
 import { Button } from '@/components/ui/button';
 import type { Category, Collection, SiteSettings } from '@mridul/types';
@@ -29,11 +30,13 @@ export function SiteFooter({
   const [subscribed, setSubscribed] = useState(false);
 
   return (
-    <footer className="site-footer" id="footer">
+    <footer className="site-footer is-editorial" id="footer">
       <div className="newsletter-panel">
-        <div>
+        <Botanical variant="sprig" />
+        <div className="newsletter-copy">
           <span>Letters from Mridul</span>
           <h2>New drapes, old stories, thoughtful notes.</h2>
+          <p>One letter a month. No noise, and you can leave whenever you like.</p>
         </div>
         {subscribed ? (
           <output className="newsletter-success">
@@ -126,6 +129,8 @@ export function SiteFooter({
 
         <div>
           <h3>Help</h3>
+          {/* Policy pages that do not exist yet: plain text, so nothing here
+              leads to a 404 and the gap stays visible. */}
           {settings.pendingPolicies.map((page) => (
             <span className="footer-pending" key={page}>
               {page}
@@ -133,11 +138,12 @@ export function SiteFooter({
           ))}
         </div>
 
-        <blockquote>
-          <Flower2 aria-hidden="true" strokeWidth={1} />
-          {copy.footer_quote}
-        </blockquote>
       </div>
+
+      <blockquote className="footer-quote">
+        <Botanical variant="bloom" />
+        <p>{copy.footer_quote}</p>
+      </blockquote>
 
       <div className="footer-bottom">
         <p>© 2026 {settings.brandName}. All rights reserved.</p>
