@@ -622,3 +622,46 @@
     transition: none;
   }
 }
+
+/* ===========================================================================
+   The brand mark
+   ---------------------------------------------------------------------------
+   The wordmark is now an image that already contains the name, the sub-line
+   and the leaf. The old rules — an icon beside `strong` and `small` set in
+   type — have nothing left to style, so this sizes the image instead. Written
+   last and scoped to the image so it wins over those earlier passes rather
+   than needing them all unpicked.
+   =========================================================================== */
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+.brand-mark img {
+  width: auto;
+  height: 3.3rem;
+  max-width: 100%;
+  object-fit: contain;
+}
+/* Once the page has scrolled the header collapses, so the mark comes down
+   with it — but only a little, or the header appears to lurch. */
+.brand-mark.is-compact img {
+  height: 2.6rem;
+}
+
+.site-footer.is-editorial .brand-mark img {
+  height: 3.7rem;
+}
+.mobile-menu-panel .brand-mark img {
+  height: 3.4rem;
+}
+
+@media (width <= 720px) {
+  .brand-mark img {
+    height: 2.7rem;
+  }
+  .brand-mark.is-compact img {
+    height: 2.2rem;
+  }
+}
