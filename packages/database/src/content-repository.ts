@@ -42,48 +42,57 @@ import {
 import { storageUrl } from "@mridul/supabase";
 import type { MoodTile } from "./homepage";
 
-export async function getHeroSlides(includeInactive = false): Promise<HeroSlide[]> {
-  const slides = await fetchHeroSlides();
+export async function getHeroSlides(
+  includeInactive = false,
+  client?: Client,
+): Promise<HeroSlide[]> {
+  const slides = await fetchHeroSlides(client);
   return includeInactive ? slides : slides.filter((slide) => slide.isActive);
 }
 
-export async function getHomepageSections(includeDisabled = false): Promise<HomepageSection[]> {
-  const sections = await fetchHomepageSections();
+export async function getHomepageSections(
+  includeDisabled = false,
+  client?: Client,
+): Promise<HomepageSection[]> {
+  const sections = await fetchHomepageSections(client);
   return includeDisabled ? sections : sections.filter((section) => section.isEnabled);
 }
 
-export async function getOccasionPanels(): Promise<OccasionPanel[]> {
-  return fetchOccasionPanels();
+export async function getOccasionPanels(client?: Client): Promise<OccasionPanel[]> {
+  return fetchOccasionPanels(client);
 }
 
-export async function getStoryPanel(): Promise<StoryPanel> {
-  return fetchStoryPanel();
+export async function getStoryPanel(client?: Client): Promise<StoryPanel> {
+  return fetchStoryPanel(client);
 }
 
-export async function getValueProps(): Promise<ValueProp[]> {
-  return fetchValueProps();
+export async function getValueProps(client?: Client): Promise<ValueProp[]> {
+  return fetchValueProps(client);
 }
 
-export async function getJournalPosts(includeDrafts = false): Promise<JournalPost[]> {
-  const posts = await fetchJournalPosts();
+export async function getJournalPosts(
+  includeDrafts = false,
+  client?: Client,
+): Promise<JournalPost[]> {
+  const posts = await fetchJournalPosts(client);
   return includeDrafts ? posts : posts.filter((post) => post.isPublished);
 }
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  return fetchSiteSettings();
+export async function getSiteSettings(client?: Client): Promise<SiteSettings> {
+  return fetchSiteSettings(client);
 }
 
 /**
  * Editorial prose by key, with a fallback so a missing row shows nothing
  * rather than the word "undefined" on a customer-facing page.
  */
-export async function getContentBlocks(): Promise<Record<string, string>> {
-  return fetchContentBlocks();
+export async function getContentBlocks(client?: Client): Promise<Record<string, string>> {
+  return fetchContentBlocks(client);
 }
 
 /** Homepage entry tiles. Rows now, so a tile can be edited without a deploy. */
-export async function getMoodTiles(): Promise<MoodTile[]> {
-  const rows = await fetchMoodTiles();
+export async function getMoodTiles(client?: Client): Promise<MoodTile[]> {
+  const rows = await fetchMoodTiles(client);
   return rows.map((row) => ({
     id: row.id,
     label: row.label,

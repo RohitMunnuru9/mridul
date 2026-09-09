@@ -10,8 +10,9 @@ import { getCategoriesWithCounts } from "@mridul/database";
 import { sessionClient } from "@mridul/supabase/server";
 import { updateCategory } from "../../actions/content";
 import { uploadCategoryImage } from "../../actions/media";
-import { EditForm, Field, FileField, TextArea, Toggle } from "../../components/form";
+import { EditForm, Field, TextArea, Toggle } from "../../components/form";
 import { MediaThumb, PageHead, Panel, ViewOnSite } from "../../components/ui";
+import { ImageUploadField } from "../../components/image-upload";
 
 export const metadata: Metadata = { title: "Categories | Mridul Admin" };
 
@@ -40,18 +41,13 @@ export default async function CategoriesPage() {
                 size={140}
               />
               <ViewOnSite href={`/shop/${category.slug}`} label="View listing" />
-              <EditForm action={uploadCategoryImage} submitLabel="Change category image" compact>
-                <input name="category_id" type="hidden" value={category.id} />
-                <input name="category_slug" type="hidden" value={category.slug} />
-                <FileField label="New image" name="file" hint="JPEG, PNG, WebP or AVIF" />
-                <Field
-                  label="Image description"
-                  name="alt"
-                  defaultValue={category.heroImage.alt}
-                  required
-                  hint="Used by screen readers"
-                />
-              </EditForm>
+              <ImageUploadField
+                action={uploadCategoryImage}
+                altDefault={category.heroImage.alt}
+                altPlaceholder="e.g. Folded sarees on a wooden shelf"
+                fields={{ category_id: category.id, category_slug: category.slug }}
+                submitLabel="Change category picture"
+              />
             </div>
             <EditForm action={updateCategory}>
               <input name="id" type="hidden" value={category.id} />

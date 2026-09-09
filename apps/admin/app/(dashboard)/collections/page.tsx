@@ -22,7 +22,7 @@ export default async function CollectionsPage() {
   const db = await sessionClient();
   const [collections, sections] = await Promise.all([
     getCollectionsWithCounts(db),
-    getHomepageSections(true),
+    getHomepageSections(true, db),
   ]);
 
   const featuredSlug = sections.find(
