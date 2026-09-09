@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Manrope } from 'next/font/google';
 import './globals.css';
-import { MobileBottomNav } from './components/mobile-bottom-nav';
+import './editorial.css';
+import './header-refinement.css';
+import './curated-edits.css';
 import { SiteFooter } from './components/site-footer';
 import { StorefrontHeader } from './components/storefront-header';
+import { SilkInteractions } from './components/silk-interactions';
 import { ToastHost } from './components/toast-host';
 import { WhatsAppButton } from './components/whatsapp-button';
 import { StoreProvider } from './providers/store-provider';
@@ -38,20 +41,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Navigation is data, not markup: the header, footer and mobile bar all read
-  // the same catalogue, so the admin panel becomes the single place to change
-  // what the storefront offers.
-  const [categories, collections, menus, settings, copy] = await Promise.all([
+  const [categories, collections, settings, copy, menus] = await Promise.all([
     getCategories(),
     getCollections(),
-    getNavigationMenus(),
     getSiteSettings(),
     getContentBlocks(),
+    getNavigationMenus(),
   ]);
-
-  // Which edits earn a place in the header is a flag on the row, not a slice
-  // taken here — so trimming the nav is a data change.
-  const navCollections = collections.filter((collection) => collection.showInNav);
 
   return (
     <html lang="en">
@@ -59,10 +55,13 @@ export default async function RootLayout({
         <StoreProvider>
           <StorefrontHeader
             menus={menus}
-            collections={navCollections}
+            collections={collections.filter(
+              (collection) => collection.showInNav,
+            )}
             announcements={settings.announcements}
             quotes={settings.quotes}
           />
+          <SilkInteractions />
           <main id="top">{children}</main>
           <SiteFooter
             categories={categories}
@@ -70,7 +69,6 @@ export default async function RootLayout({
             settings={settings}
             copy={copy}
           />
-          <MobileBottomNav />
           <WhatsAppButton phone={settings.contact.whatsapp} />
           <ToastHost />
         </StoreProvider>

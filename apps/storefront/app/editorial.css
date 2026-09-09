@@ -1,0 +1,633 @@
+/* Approved cinematic hero, with the original saree shop styling below. */
+:root {
+  --silk-ease: cubic-bezier(0.22, 0.68, 0, 1.01);
+}
+body {
+  overflow-x: clip;
+}
+.campaign-home {
+  --progress: 0;
+}
+.campaign-title {
+  font-family: var(--font-cormorant), 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.055em;
+}
+.silk-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid currentColor;
+  font-size: 0.875rem;
+  position: relative;
+  isolation: isolate;
+  transition:
+    color 0.25s,
+    transform 0.3s;
+}
+.silk-link::before {
+  content: '';
+  position: absolute;
+  inset: 0 -0.7rem;
+  background: currentColor;
+  opacity: 0.1;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.4s var(--silk-ease);
+  z-index: -1;
+}
+.silk-link:hover::before {
+  transform: scaleY(1);
+}
+.silk-link svg {
+  width: 20px;
+  transition: transform 0.25s;
+}
+.silk-link:hover svg {
+  transform: translate(3px, -3px);
+}
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #ad6d7d;
+  outline-offset: 5px;
+}
+
+/* The camera and the two lines separate as the reader leaves the opening. */
+.campaign-scene {
+  height: 160svh;
+}
+.campaign-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 650px;
+  overflow: clip;
+  background: #493b32;
+  color: #fff9ef;
+}
+.campaign-photograph,
+.campaign-subject {
+  position: absolute;
+  inset: 0;
+  transform: scale(calc(1 + var(--progress)*0.14));
+}
+.campaign-photograph img,
+.campaign-subject img {
+  object-fit: cover;
+  object-position: center;
+}
+.campaign-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #241c2160, transparent 24%),
+    linear-gradient(90deg, #241c2140, transparent 75%),
+    linear-gradient(0deg, #19131485, transparent 40%);
+}
+.campaign-subject::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #241c2160, transparent 24%),
+    linear-gradient(90deg, #241c2140, transparent 75%),
+    linear-gradient(0deg, #19131485, transparent 40%);
+}
+.campaign-kicker {
+  position: absolute;
+  top: 135px;
+  left: 4vw;
+  right: 4vw;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+}
+.campaign-title {
+  position: absolute;
+  left: 3.2vw;
+  top: 24%;
+  margin: 0;
+  font-size: clamp(6rem, 15.7vw, 17rem);
+  line-height: 0.8;
+  width: 94%;
+  z-index: 2;
+}
+.campaign-title span {
+  display: block;
+  transform: translateX(calc(var(--progress)*-12vw));
+}
+.campaign-title span + span {
+  margin-top: 0.08em;
+  transform: translateX(calc(var(--progress)*14vw));
+}
+.campaign-type-reveal {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 3vw;
+  font:
+    18vw/0.85 var(--font-cormorant),
+    serif;
+  letter-spacing: -0.06em;
+  color: transparent;
+  background: url('/images/products/drape-1.png') center/cover;
+  background-clip: text;
+  -webkit-background-clip: text;
+  z-index: 4;
+  opacity: clamp(0, calc((var(--progress) - 0.4) *1.7), 1);
+  transform: scale(calc(1 + var(--progress)*0.6));
+  pointer-events: none;
+}
+.campaign-title {
+  opacity: calc(1 - var(--progress)*0.85);
+}
+.campaign-subject {
+  z-index: 3;
+  pointer-events: none;
+  clip-path: polygon(
+    65% 8%,
+    70% 7%,
+    72% 11%,
+    72% 20%,
+    73% 27%,
+    77% 30%,
+    79% 45%,
+    79% 58%,
+    83% 74%,
+    87% 88%,
+    99% 100%,
+    38% 100%,
+    44% 77%,
+    49% 53%,
+    56% 50%,
+    58% 38%,
+    59% 31%,
+    63% 28%,
+    64% 23%,
+    62% 17%
+  );
+}
+.campaign-bottom {
+  position: absolute;
+  z-index: 4;
+  left: 4vw;
+  right: 4vw;
+  bottom: 3rem;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+.campaign-bottom p {
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+.campaign-bottom p em {
+  font-family: var(--font-cormorant), serif;
+  font-size: 2.5rem;
+}
+.campaign-scroll {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+.campaign-side {
+  position: absolute;
+  z-index: 4;
+  right: 1.6rem;
+  top: 42%;
+  writing-mode: vertical-rl;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+}
+
+.luxury-header {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+  background: var(--paper);
+  color: var(--ink);
+  border-bottom: 1px solid #29232620;
+  transition:
+    background 0.4s,
+    color 0.4s;
+}
+.luxury-header.is-home {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: transparent;
+  color: #fff9ef;
+  border-bottom-color: #fff5;
+}
+.luxury-header.is-home.is-scrolled {
+  position: fixed;
+  background: #f5f0e8;
+  color: #292326;
+  border-bottom-color: #29232620;
+}
+.luxury-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 4vw;
+  gap: 1rem;
+}
+.luxury-brand {
+  font:
+    2.5rem/0.85 var(--font-cormorant),
+    serif;
+  letter-spacing: -0.04em;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.luxury-brand small {
+  font:
+    0.65rem/1.4 var(--font-manrope),
+    sans-serif;
+  letter-spacing: 0.28em;
+  margin-top: 0.5rem;
+}
+.luxury-links,
+.luxury-actions {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+.luxury-links a,
+.luxury-actions a,
+.luxury-actions button {
+  font-size: 0.75rem;
+  letter-spacing: 0.07em;
+}
+.luxury-actions button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+.replacement {
+  display: inline-grid;
+  overflow: hidden;
+  height: 1.5em;
+}
+.replacement span {
+  grid-area: 1/1;
+  transition: transform 0.35s var(--silk-ease);
+}
+.replacement span + span {
+  transform: translateY(110%);
+}
+a:hover .replacement span:first-child,
+button:hover .replacement span:first-child {
+  transform: translateY(-110%);
+}
+a:hover .replacement span + span,
+button:hover .replacement span + span {
+  transform: translateY(0);
+}
+.luxury-bag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.luxury-bag b {
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+.luxury-mobile-trigger {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  width: 44px;
+  height: 44px;
+}
+.luxury-menu {
+  width: 100vw !important;
+  max-width: none !important;
+  background: #412534 !important;
+  color: #f5f0e8 !important;
+  padding: 2rem 5vw;
+  overflow-y: auto;
+  transition-duration: 700ms !important;
+}
+.luxury-menu [data-slot='sheet-title'],
+.luxury-menu [data-slot='sheet-description'] {
+  color: inherit;
+}
+.luxury-menu nav {
+  display: flex;
+  flex-direction: column;
+  margin-top: 2rem;
+}
+.luxury-menu nav a {
+  font:
+    clamp(2.5rem, 9vw, 5rem)/1.25 var(--font-cormorant),
+    serif;
+  border-bottom: 1px solid #fff3;
+  padding: 0.7rem 0;
+}
+.luxury-menu nav small {
+  font:
+    0.75rem var(--font-manrope),
+    sans-serif;
+  margin-right: 1.5rem;
+}
+.luxury-menu-utility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+.luxury-search {
+  padding: 1.25rem 4vw;
+  display: flex;
+  gap: 1rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+.luxury-search input {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  padding: 1rem 0;
+  outline-offset: 4px;
+}
+.luxury-search button {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.quick-view-panel {
+  width: min(580px, 100vw) !important;
+  max-width: none !important;
+  padding: 1.4rem 2rem 2rem;
+  overflow-y: auto;
+  background: var(--paper) !important;
+  transition-duration: 650ms !important;
+  transition-timing-function: var(--silk-ease) !important;
+}
+.quick-view-panel[data-starting-style],
+.quick-view-panel[data-ending-style] {
+  transform: translateX(100%);
+}
+.quick-view-photo {
+  position: relative;
+  min-height: 340px;
+  height: 46svh;
+}
+.quick-view-photo img {
+  object-fit: cover;
+}
+.quick-view-panel [data-slot='sheet-title'] {
+  font:
+    2.5rem/1 var(--font-cormorant),
+    serif;
+}
+.quick-view-panel [data-slot='sheet-header'] {
+  padding: 0.5rem 0;
+}
+.quick-view-price {
+  font-size: 1rem;
+}
+.quick-view-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+}
+.quick-view-options legend {
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+.quick-view-options button {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid #3c233f50;
+  cursor: pointer;
+}
+.quick-view-options button[aria-pressed='true'] {
+  background: var(--cocoa);
+  color: white;
+}
+.quick-view-options button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.quick-view-add {
+  padding: 1rem;
+  background: var(--cocoa);
+  color: white;
+  border: 0;
+  cursor: pointer;
+}
+.quick-view-add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.silk-cursor {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #f5f0e8;
+  color: #3e2031;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.silk-cursor.is-visible {
+  opacity: 1;
+}
+.bag-flight {
+  position: fixed;
+  z-index: 100;
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  pointer-events: none;
+}
+.page-fabric {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #4b2030;
+  pointer-events: none;
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.page-fabric.is-leaving {
+  transform: scaleY(1);
+  transition: transform 450ms var(--silk-ease);
+}
+.page-fabric.is-arriving {
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 650ms var(--silk-ease);
+}
+
+@media (width <= 1100px) {
+  .luxury-links {
+    gap: 0.8rem;
+  }
+  .luxury-actions {
+    gap: 0.8rem;
+  }
+  .luxury-links a,
+  .luxury-actions a,
+  .luxury-actions button {
+    font-size: 0.7rem;
+  }
+}
+@media (width <= 900px) {
+  .luxury-links,
+  .luxury-account,
+  .luxury-wishlist {
+    display: none;
+  }
+  .luxury-mobile-trigger {
+    display: block;
+  }
+  .luxury-topline {
+    padding: 0.9rem 4vw;
+  }
+  .luxury-brand {
+    font-size: 2rem;
+  }
+  .luxury-topline > .luxury-brand {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (width <= 760px) {
+  .campaign-scene {
+    height: 125svh;
+  }
+  .campaign-stage {
+    min-height: 660px;
+  }
+  .campaign-photograph img {
+    object-position: 65% center;
+  }
+  .campaign-subject {
+    display: none;
+  }
+  .campaign-shade {
+    background: linear-gradient(0deg, #211520a0, transparent 75%);
+  }
+  .campaign-kicker {
+    top: 125px;
+    font-size: 0.7rem;
+  }
+  .campaign-kicker span + span,
+  .campaign-side {
+    display: none;
+  }
+  .campaign-title {
+    top: 41%;
+    left: 5vw;
+    font-size: 21vw;
+    line-height: 0.86;
+  }
+  .campaign-title span + span {
+    margin-top: 0.1em;
+  }
+  .campaign-bottom {
+    bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .campaign-bottom p {
+    display: none;
+  }
+  .campaign-bottom .silk-link {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .campaign-scroll {
+    font-size: 0.7rem;
+  }
+}
+
+.product-photo img {
+  transition:
+    transform 850ms var(--silk-ease),
+    opacity 450ms;
+}
+.product-photo:hover img {
+  transform: scale(1.035);
+}
+.product-card:focus-within .card-action {
+  transform: none;
+  opacity: 1;
+}
+.quick-view-trigger {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.7rem 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  color: var(--cocoa);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.wishlist-button.is-on svg {
+  animation: heart-thread 300ms ease;
+}
+@keyframes heart-thread {
+  50% {
+    transform: scale(1.12);
+  }
+}
+@media (width <= 760px) {
+  .silk-cursor {
+    display: none;
+  }
+  .quick-view-panel {
+    padding: 2rem 1.2rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .campaign-scene {
+    height: auto;
+  }
+  .campaign-stage {
+    position: relative;
+  }
+  .silk-cursor {
+    display: none;
+  }
+}

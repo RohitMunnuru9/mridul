@@ -11,11 +11,19 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Heart, Minus, Plus, ShieldCheck, ShoppingBag, Truck } from 'lucide-react';
+import {
+  Heart,
+  Minus,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPaise } from '@mridul/utils';
 import type { ProductListItem } from '@mridul/types';
 import { useStore } from '@/app/providers/store-provider';
+import { flyToBag } from '@/app/components/silk-interactions';
 
 /** Below this many units we say so, to be honest about a short run. */
 const LOW_STOCK_THRESHOLD = 5;
@@ -74,18 +82,21 @@ export function ProductPurchase({
 
   // Default to the first variant that can actually be bought.
   const [variantId, setVariantId] = useState(
-    () => (product.variants.find((item) => item.stock > 0) ?? product.variants[0]).id,
+    () =>
+      (product.variants.find((item) => item.stock > 0) ?? product.variants[0])
+        .id,
   );
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
   const variant =
-    product.variants.find((item) => item.id === variantId) ?? product.variants[0];
+    product.variants.find((item) => item.id === variantId) ??
+    product.variants[0];
   const unitPricePaise = product.pricePaise + variant.priceDeltaPaise;
   const liked = isWishlisted(product.id);
   const maxQuantity = Math.max(1, Math.min(variant.stock, 10));
 
-  function add() {
+  function add(event: React.MouseEvent<HTMLButtonElement>) {
     if (variant.stock <= 0) return;
     addLine(
       {
@@ -104,7 +115,11 @@ export function ProductPurchase({
       quantity,
     );
     setAdded(true);
-    notify(`${product.name} added to bag.`, { label: 'View bag', href: '/bag' });
+    flyToBag(event.currentTarget, product.images[0].url);
+    notify(`${product.name} added to bag.`, {
+      label: 'View bag',
+      href: '/bag',
+    });
   }
 
   function chooseVariant(id: string) {
@@ -122,7 +137,9 @@ export function ProductPurchase({
           <span className="pdp-saving">{product.discountPercent}% off</span>
         )}
       </div>
-      <p className="pdp-tax-note">Inclusive of all taxes. Shipping shown at checkout.</p>
+      <p className="pdp-tax-note">
+        Inclusive of all taxes. Shipping shown at checkout.
+      </p>
 
       <fieldset className="pdp-variants">
         <legend>
@@ -176,7 +193,9 @@ export function ProductPurchase({
             size="icon"
             aria-label="Increase quantity"
             disabled={quantity >= maxQuantity}
-            onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
+            onClick={() =>
+              setQuantity((value) => Math.min(maxQuantity, value + 1))
+            }
           >
             <Plus aria-hidden="true" />
           </Button>
@@ -198,7 +217,9 @@ export function ProductPurchase({
           onClick={() => {
             const saved = toggleWishlist(product.id);
             notify(
-              saved ? `${product.name} saved.` : `${product.name} removed from wishlist.`,
+              saved
+                ? `${product.name} saved.`
+                : `${product.name} removed from wishlist.`,
               saved ? { label: 'View wishlist', href: '/wishlist' } : undefined,
             );
           }}
@@ -210,8 +231,8 @@ export function ProductPurchase({
       <ul className="pdp-assurances">
         <li>
           <Truck aria-hidden="true" />
-          Free shipping above {formatPaise(freeShippingThresholdPaise)}. Delivery
-          charge is calculated from your pincode at checkout.
+          Free shipping above {formatPaise(freeShippingThresholdPaise)}.
+          Delivery charge is calculated from your pincode at checkout.
         </li>
         <li>
           <ShieldCheck aria-hidden="true" />

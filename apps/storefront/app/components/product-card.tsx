@@ -13,11 +13,21 @@
  */
 
 import Image from 'next/image';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { badgeLabel, formatPaise } from '@mridul/utils';
 import type { ProductListItem } from '@mridul/types';
 import { useStore } from '../providers/store-provider';
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import { flyToBag } from './silk-interactions';
 
 export function ProductCard({
   product,
@@ -28,6 +38,8 @@ export function ProductCard({
 }) {
   const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
   const liked = isWishlisted(product.id);
+  const card = useRef<HTMLElement>(null);
+  const [selectedVariant, setSelectedVariant] = useState('');
   const [primary, secondary] = product.images;
   const label = badgeLabel(product.badge);
   const href = `/product/${product.slug}`;
@@ -47,24 +59,33 @@ export function ProductCard({
       unitPricePaise: product.pricePaise + variant.priceDeltaPaise,
       image: { url: primary.url, focal: primary.focal, alt: primary.alt },
     });
-    notify(`${product.name} added to bag.`, { label: 'View bag', href: '/bag' });
+    notify(`${product.name} added to bag.`, {
+      label: 'View bag',
+      href: '/bag',
+    });
+    if (card.current) flyToBag(card.current, primary.url);
   }
 
   function onWishlist() {
     const added = toggleWishlist(product.id);
     notify(
-      added ? `${product.name} saved.` : `${product.name} removed from wishlist.`,
+      added
+        ? `${product.name} saved.`
+        : `${product.name} removed from wishlist.`,
       added ? { label: 'View wishlist', href: '/wishlist' } : undefined,
     );
   }
 
   return (
-    <article className={`product-card${product.inStock ? '' : ' is-sold-out'}`}>
+    <article
+      ref={card}
+      className={`product-card${product.inStock ? '' : ' is-sold-out'}`}
+    >
       {/* Photo, heart and action share one box, so the action can sit at the
           bottom of the picture rather than the bottom of the whole card —
           where it was covering the name and price. */}
       <div className="product-media">
-        <Link className="product-photo" href={href}>
+        <Link className="product-photo" href={href} data-cursor="VIEW">
           <Image
             src={primary.url}
             alt={primary.alt}
@@ -87,10 +108,14 @@ export function ProductCard({
           <span className="product-flags">
             {label && <span className="product-badge">{label}</span>}
             {product.discountPercent > 0 && (
-              <span className="product-badge is-sale">{product.discountPercent}% off</span>
+              <span className="product-badge is-sale">
+                {product.discountPercent}% off
+              </span>
             )}
           </span>
-          {!product.inStock && <span className="product-soldout">Sold out</span>}
+          {!product.inStock && (
+            <span className="product-soldout">Sold out</span>
+          )}
         </Link>
 
         <button
@@ -125,7 +150,9 @@ export function ProductCard({
             <Link href={href}>{product.name}</Link>
           </h3>
           <span className="product-price">
-            {product.compareAtPaise && <s>{formatPaise(product.compareAtPaise)}</s>}
+            {product.compareAtPaise && (
+              <s>{formatPaise(product.compareAtPaise)}</s>
+            )}
             <strong>{formatPaise(product.pricePaise)}</strong>
           </span>
         </div>
@@ -150,6 +177,97 @@ export function ProductCard({
           </div>
         </div>
       </div>
+      <Sheet>
+        <SheetTrigger
+          className="quick-view-trigger"
+          aria-label={`Quick view ${product.name}`}
+        >
+          <span>QUICK VIEW</span>
+          <span aria-hidden="true">↗</span>
+        </SheetTrigger>
+        <SheetContent side="right" className="quick-view-panel">
+          <SheetHeader>
+            <SheetTitle>{product.name}</SheetTitle>
+            <SheetDescription>
+              {product.fabric} · {product.subtitle}
+            </SheetDescription>
+          </SheetHeader>
+          <div className="quick-view-photo">
+            <Image
+              src={primary.url}
+              alt={primary.alt}
+              fill
+              sizes="580px"
+              style={{ objectPosition: primary.focal }}
+            />
+          </div>
+          <p className="quick-view-price">
+            {formatPaise(
+              product.pricePaise +
+                (product.variants.find((item) => item.id === selectedVariant)
+                  ?.priceDeltaPaise ?? 0),
+            )}
+          </p>
+          <fieldset className="quick-view-options">
+            <legend>Select your finish</legend>
+            {product.variants.map((variant) => (
+              <button
+                type="button"
+                key={variant.id}
+                disabled={!product.inStock || variant.stock <= 0}
+                aria-pressed={selectedVariant === variant.id}
+                onClick={() => setSelectedVariant(variant.id)}
+              >
+                {variant.label}
+                {variant.stock <= 0 ? ' — sold out' : ''}
+              </button>
+            ))}
+          </fieldset>
+          <button
+            type="button"
+            className="quick-view-add"
+            disabled={
+              !product.inStock ||
+              !product.variants.some(
+                (item) => item.id === selectedVariant && item.stock > 0,
+              )
+            }
+            onClick={(event) => {
+              const variant = product.variants.find(
+                (item) => item.id === selectedVariant && item.stock > 0,
+              );
+              if (!variant || !product.inStock) return;
+              addLine({
+                productId: product.id,
+                productSlug: product.slug,
+                variantId: variant.id,
+                name: product.name,
+                variantLabel: variant.label,
+                unitPricePaise: product.pricePaise + variant.priceDeltaPaise,
+                image: {
+                  url: primary.url,
+                  alt: primary.alt,
+                  focal: primary.focal,
+                },
+              });
+              flyToBag(event.currentTarget, primary.url);
+              notify(`${product.name} added to bag.`, {
+                label: 'View bag',
+                href: '/bag',
+              });
+            }}
+          >
+            {!product.inStock
+              ? 'SOLD OUT'
+              : selectedVariant
+                ? 'ADD TO BAG'
+                : 'SELECT A FINISH'}
+          </button>
+          <Link className="silk-link" href={href}>
+            Explore the piece <span aria-hidden="true">↗</span>
+          </Link>
+        </SheetContent>
+      </Sheet>
     </article>
   );
 }

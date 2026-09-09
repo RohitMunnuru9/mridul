@@ -26,7 +26,12 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
   }
 
   return (
-    <section className="hero" aria-roledescription="carousel" aria-label="Featured collections">
+    <section className="hero editorial-hero" aria-roledescription="carousel" aria-label="Featured collections"
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
+        if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
+      }}>
+      <div className="hero-frame" key={slide.id}>
       <Image
         className="hero-image"
         src={slide.media.url}
@@ -36,8 +41,10 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
         sizes="100vw"
         style={{ objectPosition: slide.media.focal }}
       />
+      </div>
       <div className="hero-wash" aria-hidden="true" />
-      <div className="hero-copy" aria-live="polite">
+      <div className="hero-edition" aria-hidden="true"><span>MRIDUL / THE COLLECTIONS</span><span>Thoughtfully woven. Beautifully lived.</span></div>
+      <div className="hero-copy" aria-live="polite" aria-atomic="true" key={`copy-${slide.id}`}>
         <p className="eyebrow">{slide.eyebrow}</p>
         <h1>{slide.title}</h1>
         <p className="hero-intro">{slide.note}</p>
@@ -46,6 +53,8 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
           <ArrowUpRight aria-hidden="true" />
         </Link>
       </div>
+      <div className="hero-signature" aria-hidden="true">The art of<br /><em>being you.</em></div>
+      <div className="hero-index" aria-hidden="true"><strong>{String(active + 1).padStart(2, '0')}</strong><span> / {String(slides.length).padStart(2, '0')}</span></div>
       {slides.length > 1 && (
         <div className="hero-controls">
           <Button variant="ghost" size="icon" aria-label="Previous collection" onClick={() => move(-1)}>
@@ -60,7 +69,7 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
                 key={item.id}
                 onClick={() => setActive(index)}
                 type="button"
-              />
+              >{String(index + 1).padStart(2, '0')}</button>
             ))}
           </div>
           <Button variant="ghost" size="icon" aria-label="Next collection" onClick={() => move(1)}>

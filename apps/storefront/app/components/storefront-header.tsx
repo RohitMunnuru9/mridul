@@ -137,6 +137,7 @@ export function StorefrontHeader({
   const { cartCount, wishlist } = useStore();
 
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [term, setTerm] = useState('');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [compact, setCompact] = useState(false);
@@ -167,6 +168,7 @@ export function StorefrontHeader({
     setLastPath(pathname);
     setOpenMenu(null);
     setSearchOpen(false);
+    setMobileOpen(false);
   }
 
   /** A small delay stops the dropdown flickering as the pointer crosses a gap. */
@@ -190,12 +192,14 @@ export function StorefrontHeader({
   return (
     // The strip and the header stick together as one block. Sticking only the
     // header would let the quote scroll away and leave a seam behind it.
-    <div className={`site-chrome${compact ? ' is-compact' : ''}`}>
+    <div
+      className={`site-chrome refined-chrome${pathname === '/' ? ' over-campaign' : ''}${compact ? ' is-compact' : ''}`}
+    >
       <AnnouncementBar quotes={quotes} utility={announcements[0]} />
       <div className={`navigation-stack${compact ? ' is-compact' : ''}`}>
         <header className="site-header">
           <div className="mobile-nav">
-            <Sheet>
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger
                 render={
                   <Button
@@ -213,7 +217,17 @@ export function StorefrontHeader({
               >
                 <Menu aria-hidden="true" />
               </SheetTrigger>
-              <SheetContent side="left" className="mobile-menu-panel">
+              <SheetContent
+                side="left"
+                className="mobile-menu-panel"
+                onClick={(event) => {
+                  if (
+                    event.target instanceof Element &&
+                    event.target.closest('a')
+                  )
+                    setMobileOpen(false);
+                }}
+              >
                 <SheetHeader>
                   <SheetTitle>
                     <BrandMark />
@@ -225,7 +239,10 @@ export function StorefrontHeader({
 
                 <nav aria-label="Mobile navigation" className="mobile-links">
                   {menus.map((menu) => (
-                    <Link href={`/shop/${menu.categorySlug}`} key={menu.categorySlug}>
+                    <Link
+                      href={`/shop/${menu.categorySlug}`}
+                      key={menu.categorySlug}
+                    >
                       {menu.categoryName}
                       <span aria-hidden="true">↗</span>
                     </Link>
@@ -302,7 +319,9 @@ export function StorefrontHeader({
                 ignored the database flag that is supposed to decide this. */}
             {collections.map((collection) => (
               <div className="nav-item" key={collection.id}>
-                <Link href={`/collections/${collection.slug}`}>{collection.name}</Link>
+                <Link href={`/collections/${collection.slug}`}>
+                  {collection.name}
+                </Link>
               </div>
             ))}
           </nav>
@@ -316,7 +335,11 @@ export function StorefrontHeader({
               aria-expanded={searchOpen}
               onClick={() => setSearchOpen((open) => !open)}
             >
-              {searchOpen ? <X aria-hidden="true" /> : <Search aria-hidden="true" />}
+              {searchOpen ? (
+                <X aria-hidden="true" />
+              ) : (
+                <Search aria-hidden="true" />
+              )}
             </Button>
             <Link
               className="header-icon-link desktop-action"
@@ -335,6 +358,7 @@ export function StorefrontHeader({
             </Link>
             <Link
               className="header-icon-link count-holder"
+              data-bag-target
               href="/bag"
               aria-label={`Shopping bag, ${cartCount} items`}
             >
