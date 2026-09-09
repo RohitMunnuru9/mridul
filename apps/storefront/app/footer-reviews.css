@@ -419,89 +419,126 @@
 /* ===========================================================================
    The page transition
    ---------------------------------------------------------------------------
-   It was a flat wine rectangle held for 1800ms — nearly two seconds of blank
-   screen between pages. It now carries the brand mark and a drawing, and it
-   leaves as soon as the new route commits; the timer is only a fallback.
+   It began as a flat wine rectangle held for 1800ms, which read as a page
+   that had failed to load. It is a curtain now: it falls from the top, the
+   warp threads of a loom show faintly across it, a sheen passes over once,
+   and the wordmark rises with a gold rule drawing out beneath it. Then it
+   lifts from the bottom the moment the new route commits.
+
+   The whole thing is drawn in CSS apart from the wordmark, which is already
+   cached from the header — nothing here waits on a request mid-navigation.
    =========================================================================== */
 
 .page-fabric {
   display: grid;
+  overflow: hidden;
   place-items: center;
   background:
-    radial-gradient(120% 90% at 50% 0%, #5d2839 0%, #40182a 55%, #34131f 100%);
+    radial-gradient(120% 85% at 50% 8%, #64303f 0%, #4a2029 45%, #35131e 100%);
 }
+
+/* The threads of a loom: warp one way, a fainter weft the other. Two
+   gradients, no image. */
+.page-fabric-warp {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgb(226 190 160 / 7%) 0 1px,
+      transparent 1px 9px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgb(226 190 160 / 4%) 0 1px,
+      transparent 1px 14px
+    );
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+.page-fabric.is-leaving .page-fabric-warp {
+  opacity: 1;
+}
+
+/* One pass of light across the cloth. */
 .page-fabric::after {
-  /* A single sweep of light across the panel, so the hold reads as a curtain
-     rather than as a page that failed to load. */
   position: absolute;
   inset: 0;
   background: linear-gradient(
     100deg,
-    transparent 35%,
-    rgb(226 190 160 / 12%) 50%,
-    transparent 65%
+    transparent 34%,
+    rgb(240 214 186 / 16%) 50%,
+    transparent 66%
   );
   content: '';
   opacity: 0;
 }
 .page-fabric.is-leaving::after {
-  animation: fabric-sheen 900ms ease-out forwards;
+  animation: fabric-sheen 1000ms ease-out forwards;
 }
 @keyframes fabric-sheen {
-  from { opacity: 0; transform: translateX(-35%); }
-  40%  { opacity: 1; }
-  to   { opacity: 0; transform: translateX(35%); }
+  from { opacity: 0; transform: translateX(-40%); }
+  45%  { opacity: 1; }
+  to   { opacity: 0; transform: translateX(40%); }
 }
 
 .page-fabric-mark {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
-  color: #efd9c9;
+  gap: 0.85rem;
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
+}
+.page-fabric-mark img {
+  width: clamp(160px, 42vw, 240px);
+  height: auto;
 }
 .page-fabric.is-leaving .page-fabric-mark {
-  animation: fabric-mark 700ms 120ms ease-out forwards;
+  animation: fabric-mark 620ms 140ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
 }
 @keyframes fabric-mark {
   to { opacity: 1; transform: translateY(0); }
 }
-.page-fabric-mark .botanical {
-  width: 74px;
-  color: #c98f7e;
-  opacity: 0.75;
+
+/* A gold rule drawing outwards from the centre, under the mark. */
+.page-fabric-rule {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(215 175 128 / 90%) 50%,
+    transparent
+  );
 }
-.page-fabric-mark strong {
-  font: 400 2rem / 1 var(--font-cormorant), Georgia, serif;
-  letter-spacing: 0.02em;
+.page-fabric.is-leaving .page-fabric-rule {
+  animation: fabric-rule 640ms 320ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
 }
-.page-fabric-mark small {
-  font-size: 0.6rem;
-  letter-spacing: 0.42em;
-  text-indent: 0.42em;
-  opacity: 0.72;
+@keyframes fabric-rule {
+  to { width: clamp(180px, 46vw, 270px); }
 }
 
+/* Anyone who asked for less motion gets the curtain as a plain fall and lift:
+   no sheen sweeping across, no threads fading up, no rule drawing out — the
+   mark and its rule are simply there. */
 @media (prefers-reduced-motion: reduce) {
-  .page-fabric,
-  .page-fabric.is-leaving,
-  .page-fabric.is-arriving {
-    transition: none;
-  }
   .page-fabric.is-leaving::after,
-  .page-fabric.is-leaving .page-fabric-mark {
+  .page-fabric.is-leaving .page-fabric-mark,
+  .page-fabric.is-leaving .page-fabric-rule {
     animation: none;
+  }
+  .page-fabric-warp {
+    transition: none;
   }
   .page-fabric-mark {
     opacity: 1;
     transform: none;
   }
-  .site-footer.is-editorial .footer-grid > div:not(.footer-brand) a,
-  .site-footer.is-editorial .social-links a,
-  .site-footer.is-editorial .newsletter-panel form {
-    transition: none;
+  .page-fabric-rule {
+    width: clamp(180px, 46vw, 270px);
   }
 }
 
