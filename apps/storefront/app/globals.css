@@ -2691,3 +2691,100 @@ img { display: block; max-width: 100%; }
    four-colour glyph is inline SVG below; this just gives it room. */
 .google-auth { border-radius: 4px; }
 .google-auth > svg { width: 1.15rem; height: 1.15rem; flex: none; }
+
+/* ---------------------------------------------------------------------------
+   The product page header
+   ---------------------------------------------------------------------------
+   It was a badge, a large name, then three separate scraps of small grey text
+   stacked down the page with nothing holding them together, and a description
+   set so pale it read as a caption. The name is the only thing that had any
+   weight, so everything under it looked like an afterthought.
+   --------------------------------------------------------------------------- */
+
+/* The name and its facts read as one masthead, closed by a zari rule. */
+.pdp-heading {
+  position: relative;
+  padding-bottom: 1rem;
+}
+.pdp-heading::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold-soft), rgb(184 137 63 / 0%) 72%);
+  content: "";
+}
+.pdp-heading .product-badge {
+  border-color: var(--gold-soft);
+  background: var(--soft-rose);
+  color: var(--berry);
+}
+
+/* Fabric line and rating sit on one row, parted by a dot rather than a
+   line break. */
+.pdp-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.8rem;
+  margin-top: 0.55rem;
+}
+.pdp-meta .pdp-subtitle,
+.pdp-meta .pdp-rating {
+  margin: 0;
+}
+.pdp-meta .pdp-subtitle {
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+.pdp-meta .pdp-subtitle + .pdp-rating::before {
+  margin-right: 0.65rem;
+  color: var(--gold);
+  content: "\2022";
+}
+.pdp-rating {
+  color: var(--ink);
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pdp-rating small {
+  color: var(--muted-foreground);
+  font-weight: 400;
+}
+
+/* The description is the one place a shopper reads a sentence about the
+   piece, so it gets ink rather than grey, and room to be read. */
+.pdp-description {
+  margin-top: 1.15rem;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+/* It sits on its own ground rather than bare on the page: a warm panel with a
+   zari edge, so the one paragraph about the piece looks placed instead of left
+   over. The typeface is untouched — this is the block that needed defining,
+   not the letters. */
+.pdp-description {
+  position: relative;
+  padding: 1.1rem 1.25rem 1.15rem 1.4rem;
+  border: 1px solid #ecdcd6;
+  border-radius: 4px;
+  background: linear-gradient(160deg, #fffaf7 0%, #fbeee9 100%);
+  box-shadow: 0 1px 2px rgb(74 32 41 / 5%);
+}
+.pdp-description::before {
+  position: absolute;
+  top: 1.1rem;
+  bottom: 1.1rem;
+  left: 0;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, var(--gold), rgb(184 137 63 / 25%));
+  content: "";
+}
+
+@media (width <= 720px) {
+  .pdp-description { font-size: 0.9rem; }
+}
