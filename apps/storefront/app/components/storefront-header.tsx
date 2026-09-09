@@ -21,7 +21,9 @@ import {
   ArrowRight,
   ChevronDown,
   Heart,
+  LogIn,
   Menu,
+  MessageCircle,
   Search,
   ShoppingBag,
   UserRound,
@@ -125,12 +127,15 @@ export function StorefrontHeader({
   collections,
   announcements,
   quotes,
+  whatsapp = '',
 }: {
   menus: NavMenu[];
   /** Already filtered to the edits that belong in the nav. */
   collections: Collection[];
   announcements: string[];
   quotes: string[];
+  /** Powers the Contact us row. Without it that row is left out. */
+  whatsapp?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -237,43 +242,86 @@ export function StorefrontHeader({
                   </SheetDescription>
                 </SheetHeader>
 
-                <nav aria-label="Mobile navigation" className="mobile-links">
-                  {menus.map((menu) => (
-                    <Link
-                      href={`/shop/${menu.categorySlug}`}
-                      key={menu.categorySlug}
-                    >
-                      {menu.categoryName}
-                      <span aria-hidden="true">↗</span>
-                    </Link>
-                  ))}
-                </nav>
+                {/* One row system for the whole drawer. It was a stack of
+                    oversized links, then a row of pills, then a cramped strip
+                    of icons — three different ways of saying "go here". */}
+                <nav aria-label="Mobile navigation" className="mobile-nav-groups">
+                  <section className="mobile-group">
+                    <h3>Shop</h3>
+                    <div className="mobile-rows">
+                      {menus.map((menu) => (
+                        <Link
+                          className="mobile-row is-lead"
+                          href={`/shop/${menu.categorySlug}`}
+                          key={menu.categorySlug}
+                        >
+                          <span className="mobile-row-label">{menu.categoryName}</span>
+                          <ArrowRight aria-hidden="true" />
+                        </Link>
+                      ))}
+                      {collections.map((collection) => (
+                        <Link
+                          className="mobile-row is-lead"
+                          href={`/collections/${collection.slug}`}
+                          key={collection.id}
+                        >
+                          <span className="mobile-row-label">{collection.name}</span>
+                          <ArrowRight aria-hidden="true" />
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
 
-                <div className="mobile-collections">
-                  <h3>Edits</h3>
-                  <div>
-                    {collections.map((collection) => (
-                      <Link
-                        href={`/collections/${collection.slug}`}
-                        key={collection.id}
-                      >
-                        {collection.name}
+                  <section className="mobile-group">
+                    <h3>Your account</h3>
+                    <div className="mobile-rows">
+                      <Link className="mobile-row" href="/auth">
+                        <LogIn aria-hidden="true" />
+                        <span className="mobile-row-label">Sign in or register</span>
+                        <ArrowRight aria-hidden="true" />
                       </Link>
-                    ))}
-                  </div>
-                </div>
+                      <Link className="mobile-row" href="/account">
+                        <UserRound aria-hidden="true" />
+                        <span className="mobile-row-label">Account</span>
+                        <ArrowRight aria-hidden="true" />
+                      </Link>
+                      <Link className="mobile-row" href="/wishlist">
+                        <Heart aria-hidden="true" />
+                        <span className="mobile-row-label">Wishlist</span>
+                        {wishlist.length > 0 && (
+                          <em className="mobile-row-count">{wishlist.length}</em>
+                        )}
+                        <ArrowRight aria-hidden="true" />
+                      </Link>
+                      <Link className="mobile-row" href="/bag">
+                        <ShoppingBag aria-hidden="true" />
+                        <span className="mobile-row-label">Bag</span>
+                        {cartCount > 0 && <em className="mobile-row-count">{cartCount}</em>}
+                        <ArrowRight aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </section>
 
-                <div className="mobile-utility">
-                  <Link href="/account">
-                    <UserRound aria-hidden="true" /> Account
-                  </Link>
-                  <Link href="/wishlist">
-                    <Heart aria-hidden="true" /> Wishlist
-                  </Link>
-                  <Link href="/bag">
-                    <ShoppingBag aria-hidden="true" /> Bag
-                  </Link>
-                </div>
+                  {/* wa.me wants digits only, the same as the chat button. */}
+                  {whatsapp.replace(/\D/g, '') && (
+                    <section className="mobile-group">
+                      <h3>Help</h3>
+                      <div className="mobile-rows">
+                        <a
+                          className="mobile-row"
+                          href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+                          rel="noreferrer noopener"
+                          target="_blank"
+                        >
+                          <MessageCircle aria-hidden="true" />
+                          <span className="mobile-row-label">Contact us</span>
+                          <small className="mobile-row-note">WhatsApp</small>
+                          <ArrowRight aria-hidden="true" />
+                        </a>
+                      </div>
+                    </section>
+                  )}
+                </nav>
 
                 <div className="mobile-menu-note">
                   <span>Made slowly</span>
