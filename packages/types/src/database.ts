@@ -1449,6 +1449,7 @@ export type Database = {
           id: string
           is_published: boolean
           location: string
+          media_id: string | null
           position: number
           product_id: string | null
           rating: number
@@ -1461,6 +1462,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           location?: string
+          media_id?: string | null
           position?: number
           product_id?: string | null
           rating?: number
@@ -1473,12 +1475,20 @@ export type Database = {
           id?: string
           is_published?: boolean
           location?: string
+          media_id?: string | null
           position?: number
           product_id?: string | null
           rating?: number
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "testimonials_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "testimonials_product_id_fkey"
             columns: ["product_id"]

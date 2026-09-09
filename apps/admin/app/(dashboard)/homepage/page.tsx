@@ -15,7 +15,11 @@ import {
   getOccasionPanels,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
-import { uploadHeroImage } from '../../actions/media';
+import {
+  removeTestimonialImage,
+  uploadHeroImage,
+  uploadTestimonialImage,
+} from '../../actions/media';
 import { ImageUploadField } from '../../components/image-upload';
 import {
   createTestimonial,
@@ -27,7 +31,7 @@ import {
   updateOccasionPanel,
 } from '../../actions/content';
 import { EditForm, Field, FieldRow, TextArea, Toggle } from '../../components/form';
-import { MediaThumb, PageHead, Panel, ViewOnSite } from '../../components/ui';
+import { MediaThumb, PageHead, Panel, Pill, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Homepage | Mridul Admin' };
 
@@ -104,7 +108,46 @@ export default async function HomepagePage() {
             </p>
           )}
           {reviews.map((review) => (
-            <EditForm action={updateTestimonial} key={review.id}>
+            <div className="review-editor" key={review.id}>
+              <div className="review-editor-state">
+                <Pill tone={review.isPublished ? 'ok' : 'low'}>
+                  {review.isPublished ? 'On the website' : 'Draft — not on the website'}
+                </Pill>
+                {!review.isPublished && (
+                  <small>Tick Published below, then Save, to show it.</small>
+                )}
+              </div>
+
+              <div className="review-editor-photo">
+                {review.media ? (
+                  <>
+                    <MediaThumb
+                      alt={review.media.alt}
+                      focal={review.media.focal}
+                      size={110}
+                      url={review.media.url}
+                    />
+                    <EditForm
+                      action={removeTestimonialImage}
+                      submitLabel="Remove picture"
+                      compact
+                      danger
+                    >
+                      <input name="testimonial_id" type="hidden" value={review.id} />
+                    </EditForm>
+                  </>
+                ) : (
+                  <ImageUploadField
+                    action={uploadTestimonialImage}
+                    altPlaceholder="e.g. Ananya in the Saanjh Sage saree"
+                    fields={{ testimonial_id: review.id }}
+                    maxLabel="Optional. JPEG, PNG or WebP, up to 10MB"
+                    submitLabel="Add picture"
+                  />
+                )}
+              </div>
+
+              <EditForm action={updateTestimonial}>
               <input name="id" type="hidden" value={review.id} />
               <FieldRow>
                 <Field label="Name" name="author" defaultValue={review.author} required />
@@ -143,7 +186,8 @@ export default async function HomepagePage() {
                 defaultChecked={review.isPublished}
                 hint="Off keeps it off the website"
               />
-            </EditForm>
+              </EditForm>
+            </div>
           ))}
         </div>
         <div className="panel-stack">

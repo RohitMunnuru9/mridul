@@ -2167,3 +2167,136 @@ th.numeric {
   filter: blur(1.5px) saturate(0.7);
   opacity: 0.8;
 }
+
+/* --- Sign in: Google, and the no-role notice ------------------------------- */
+
+.login-card .google-auth {
+  display: flex;
+  width: 100%;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--line, #e2ded8);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--ink, #221a1c);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.login-card .google-auth:hover {
+  border-color: var(--accent, #8f2f4a);
+  background: #fdf6f7;
+}
+.login-card .google-auth svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0 0 1rem;
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.74rem;
+}
+.login-divider::before,
+.login-divider::after {
+  height: 1px;
+  flex: 1;
+  background: var(--line, #e2ded8);
+  content: '';
+}
+
+/* Signed in, but `admin_roles` has nothing for them. Without this they would
+   sign in with Google, land back on this page, and have no idea why. */
+.login-norole {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e6c8a8;
+  border-left: 3px solid #b8893f;
+  border-radius: 4px;
+  background: #fdf6ea;
+}
+.login-norole strong {
+  font-size: 0.86rem;
+}
+.login-norole span {
+  color: #6a575b;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.login-norole button {
+  align-self: start;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #d8c3a4;
+  border-radius: 4px;
+  background: transparent;
+  color: #6d4b16;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+}
+.login-norole button:hover {
+  background: #f6e9d6;
+}
+
+.login-error {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 4px;
+  background: #f9e6e5;
+  color: #8f2f2a;
+  font-size: 0.8rem;
+}
+
+/* --- Reviews in the admin --------------------------------------------------
+   Whether a review is on the website is the thing people miss, so it is a
+   badge on the card rather than only a toggle further down.
+   --------------------------------------------------------------------------- */
+
+.review-editor {
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 1fr);
+  gap: 0.9rem 1.2rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--line-soft, #efe9e3);
+}
+.review-editor:last-child {
+  border-bottom: 0;
+}
+.review-editor-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  grid-column: 1 / -1;
+}
+.review-editor-state small {
+  color: var(--muted-foreground, #6a575b);
+  font-size: 0.72rem;
+}
+.review-editor-photo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.review-editor > .edit-form {
+  min-width: 0;
+  padding: 0;
+}
+
+@media (width <= 820px) {
+  .review-editor {
+    grid-template-columns: 1fr;
+  }
+}

@@ -13,7 +13,7 @@
  * lead to an empty listing.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -142,6 +142,27 @@ export function StorefrontHeader({
   const { cartCount, wishlist } = useStore();
 
   const [searchOpen, setSearchOpen] = useState(false);
+
+  /**
+   * What the search box suggests, taken from the catalogue rather than typed
+   * here: the category names, then the fabrics, weaves and occasions the
+   * navigation already lists. Add a fabric in the admin and it turns up here.
+   */
+  const suggestions = useMemo(() => {
+    const categories = menus.map((menu) => menu.categoryName);
+    const facets = menus.flatMap((menu) =>
+      menu.groups.flatMap((group) => group.links.map((link) => link.label)),
+    );
+    const seen = new Set<string>();
+    return [...categories, ...facets].filter((label) => {
+      const key = label.toLowerCase();
+      if (seen.has(key) || label.length > 22) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [menus]);
+
+  const [hint, setHint] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [term, setTerm] = useState('');
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -175,6 +196,15 @@ export function StorefrontHeader({
     setSearchOpen(false);
     setMobileOpen(false);
   }
+
+  useEffect(() => {
+    if (!searchOpen || term || suggestions.length < 2) return undefined;
+    const id = setInterval(
+      () => setHint((current) => (current + 1) % suggestions.length),
+      2400,
+    );
+    return () => clearInterval(id);
+  }, [searchOpen, term, suggestions.length]);
 
   /** A small delay stops the dropdown flickering as the pointer crosses a gap. */
   function scheduleClose() {
@@ -431,29 +461,44 @@ export function StorefrontHeader({
 
         {searchOpen && (
           <form className="search-drawer" onSubmit={submitSearch} role="search">
-            <label htmlFor="site-search">Find your next favourite</label>
-            <div>
-              <Search aria-hidden="true" />
-              <input
-                id="site-search"
-                ref={focusOnOpen}
-                name="q"
-                onChange={(event) => setTerm(event.target.value)}
-                placeholder="Search sarees, blouses, fabrics…"
-                type="search"
-                value={term}
-              />
-              <Button className="search-submit" type="submit">
-                Search
-              </Button>
-            </div>
-            <div className="search-quick">
-              <span>Popular</span>
-              {['Linen', 'Organza', 'Handloom', 'Wedding'].map((suggestion) => (
-                <Link href={`/search?q=${suggestion}`} key={suggestion}>
-                  {suggestion}
-                </Link>
-              ))}
+            <div className="search-drawer-inner">
+              <label htmlFor="site-search">Find your next favourite</label>
+
+              <div className="search-field">
+                <Search aria-hidden="true" />
+                <input
+                  id="site-search"
+                  ref={focusOnOpen}
+                  name="q"
+                  onChange={(event) => setTerm(event.target.value)}
+                  placeholder={
+                    suggestions.length > 0
+                      ? `Search ${suggestions[hint % suggestions.length].toLowerCase()}…`
+                      : 'Search the shop…'
+                  }
+                  type="search"
+                  value={term}
+                />
+                <Button className="search-submit" type="submit">
+                  Search
+                </Button>
+              </div>
+
+              {suggestions.length > 0 && (
+                <div className="search-quick">
+                  <span>Try</span>
+                  <div className="search-quick-list">
+                    {suggestions.slice(0, 6).map((suggestion) => (
+                      <Link
+                        href={`/search?q=${encodeURIComponent(suggestion)}`}
+                        key={suggestion}
+                      >
+                        {suggestion}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         )}

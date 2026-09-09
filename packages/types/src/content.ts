@@ -183,6 +183,8 @@ export type Testimonial = {
   body: string;
   /** Out of five. */
   rating: number;
+  /** Optional: the customer, or the piece as they wore it. */
+  media?: MediaAsset;
   /** The piece they bought, where it is known. */
   productName?: string;
   productSlug?: string;

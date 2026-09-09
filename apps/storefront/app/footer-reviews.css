@@ -504,3 +504,121 @@
     transition: none;
   }
 }
+
+/* ===========================================================================
+   The search drawer
+   ---------------------------------------------------------------------------
+   It was a two-column grid: the heading in one, the field in the other, and
+   the suggestion chips dropped into column two where they wrapped onto their
+   own line inside a rounded box that looked like a second, empty field.
+
+   One centred column now — heading, field, suggestions — so it reads top to
+   bottom in the order you use it.
+   =========================================================================== */
+
+.search-drawer {
+  display: block;
+  padding: clamp(1.4rem, 3vw, 2.4rem) max(1.15rem, 6vw) clamp(1.6rem, 3vw, 2.6rem);
+}
+.search-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.search-drawer label {
+  color: #3d282d;
+  font: 400 clamp(1.5rem, 2.4vw, 2rem) / 1.1 var(--font-cormorant), Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.search-drawer .search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 54px;
+  padding: 0.35rem 0.35rem 0.35rem 1.1rem;
+  border: 1px solid #e0c8c2;
+  border-radius: 999px;
+  background: #fffaf8;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.search-drawer .search-field:focus-within {
+  border-color: #8d5261;
+  box-shadow: 0 0 0 3px rgb(141 82 97 / 14%);
+}
+.search-drawer .search-field > svg {
+  width: 1.05rem;
+  flex: none;
+  color: #8d5261;
+}
+.search-drawer input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #3d282d;
+  font-size: 0.95rem;
+}
+.search-drawer input::placeholder {
+  color: #a98d88;
+}
+.search-submit {
+  align-self: stretch;
+  padding-inline: 1.4rem !important;
+  border-radius: 999px !important;
+  background: #4a2029 !important;
+}
+
+/* The chips sit on the page, not inside a bordered box that read as a second
+   empty field. */
+.search-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.7rem;
+  grid-column: auto;
+}
+.search-quick > span {
+  color: #9a7b78;
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.search-quick-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.search-quick a {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #e6d2cc;
+  border-radius: 999px;
+  background: #fdf5f2;
+  color: #5c4148;
+  font-size: 0.74rem;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+.search-quick a:hover {
+  border-color: #8d5261;
+  background: #f7e7e2;
+  color: #8d5261;
+}
+
+@media (width <= 640px) {
+  .search-drawer .search-field {
+    min-height: 48px;
+  }
+  .search-submit {
+    padding-inline: 1rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-drawer .search-field,
+  .search-quick a {
+    transition: none;
+  }
+}

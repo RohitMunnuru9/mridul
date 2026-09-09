@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Star } from 'lucide-react';
 import type { Testimonial } from '@mridul/types';
 import { Botanical } from './botanical';
@@ -27,10 +28,26 @@ export function TestimonialsSection({ reviews }: { reviews: Testimonial[] }) {
       <ul className="reviews-grid">
         {reviews.map((review, index) => (
           <li
-            className={`review-card ${index % 2 === 0 ? 'is-blush' : 'is-cream'}`}
+            className={`review-card ${index % 2 === 0 ? 'is-blush' : 'is-cream'}${
+              review.media ? ' has-photo' : ''
+            }`}
             key={review.id}
           >
-            <Botanical variant={index % 2 === 0 ? 'bloom' : 'sprig'} />
+            {/* The drawing is what fills an empty corner. A review with its own
+                picture does not need one, and two together is clutter. */}
+            {review.media ? (
+              <div className="review-photo">
+                <Image
+                  alt={review.media.alt}
+                  fill
+                  sizes="(max-width: 720px) 40vw, 12rem"
+                  src={review.media.url}
+                  style={{ objectPosition: review.media.focal }}
+                />
+              </div>
+            ) : (
+              <Botanical variant={index % 2 === 0 ? 'bloom' : 'sprig'} />
+            )}
 
             <div className="review-stars" aria-label={`${review.rating} out of 5`}>
               {Array.from({ length: 5 }, (_, star) => (

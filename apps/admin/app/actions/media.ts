@@ -447,6 +447,81 @@ export async function uploadHeroImage(formData: FormData): Promise<ActionResult>
 }
 
 /**
+ * Uploads a picture for a customer review and points the review at it.
+ *
+ * Goes to the `media` bucket rather than `products`: it is editorial, not
+ * catalogue, and the content_manager role owns that bucket. Optional
+ * throughout — a review without a picture renders a line drawing instead.
+ */
+export async function uploadTestimonialImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "content_manager")) return FAIL("You cannot change review pictures.");
+
+  const testimonialId = String(formData.get("testimonial_id") ?? "");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "").trim() || "50% center";
+  const file = formData.get("file");
+
+  if (!testimonialId) return FAIL("Missing review.");
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
+  if (!alt) return FAIL("Describe the picture so screen readers can announce it.");
+
+  const db = await sessionClient();
+  const path = `reviews/${Date.now()}-${safeName(file.name)}`;
+  const { error: uploadError } = await db.storage
+    .from("media")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
+
+  const { data: media, error: mediaError } = await db
+    .from("media")
+    .insert({
+      bucket: "media",
+      path,
+      alt,
+      focal,
+      mime_type: file.type,
+      byte_size: file.size,
+      uploaded_by: admin?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (mediaError) return FAIL(mediaError.message);
+
+  const { error: linkError } = await db
+    .from("testimonials")
+    .update({ media_id: media.id })
+    .eq("id", testimonialId);
+  if (linkError) return FAIL(linkError.message);
+
+  revalidatePath("/homepage");
+  revalidatePath("/");
+  return OK("Picture added to the review.");
+}
+
+/** Takes the picture off a review. The file stays in the library. */
+export async function removeTestimonialImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "content_manager")) return FAIL("You cannot change review pictures.");
+
+  const testimonialId = String(formData.get("testimonial_id") ?? "");
+  if (!testimonialId) return FAIL("Missing review.");
+
+  const db = await sessionClient();
+  const { error } = await db
+    .from("testimonials")
+    .update({ media_id: null })
+    .eq("id", testimonialId);
+  if (error) return FAIL(error.message);
+
+  revalidatePath("/homepage");
+  revalidatePath("/");
+  return OK("Picture removed.");
+}
+
+/**
  * Replaces the file behind an existing media row.
  *
  * Everything already pointing at the row follows automatically, which is the
