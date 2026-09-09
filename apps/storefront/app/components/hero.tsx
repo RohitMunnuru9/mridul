@@ -26,7 +26,14 @@ export function Hero({ slides }: { slides: HeroSlide[] }) {
   }
 
   return (
-    <section className="hero editorial-hero" aria-roledescription="carousel" aria-label="Featured collections"
+    // `tabIndex` is what makes the arrow keys reachable: without it the handler
+    // only fired if focus happened to be on one of the dots, so a keyboard user
+    // tabbing through the page could never drive the carousel.
+    <section
+      aria-label="Featured collections"
+      aria-roledescription="carousel"
+      className="hero editorial-hero"
+      tabIndex={0}
       onKeyDown={(event) => {
         if (event.key === 'ArrowLeft') { event.preventDefault(); move(-1); }
         if (event.key === 'ArrowRight') { event.preventDefault(); move(1); }
