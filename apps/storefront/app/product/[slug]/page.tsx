@@ -94,14 +94,18 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="pdp-heading">
             {label && <span className="product-badge">{label}</span>}
             <h1>{product.name}</h1>
-            <p className="pdp-subtitle">{product.subtitle}</p>
-            {product.rating && (
-              <p className="pdp-rating">
-                <Star aria-hidden="true" fill="currentColor" />
-                {product.rating.average.toFixed(1)}
-                <small>({product.rating.count} reviews)</small>
-              </p>
-            )}
+            {/* What the piece is and what people made of it belong together:
+                three stacked scraps of small text read as leftovers. */}
+            <div className="pdp-meta">
+              <p className="pdp-subtitle">{product.subtitle}</p>
+              {product.rating && (
+                <p className="pdp-rating">
+                  <Star aria-hidden="true" fill="currentColor" />
+                  {product.rating.average.toFixed(1)}
+                  <small>({product.rating.count})</small>
+                </p>
+              )}
+            </div>
           </div>
 
           <p className="pdp-description">{product.description}</p>
