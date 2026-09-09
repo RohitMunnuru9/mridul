@@ -386,7 +386,7 @@ export async function fetchTestimonials(
     .from("testimonials")
     .select(
       "id, author, location, body, rating, position, is_published, " +
-        "product:products(name, slug)",
+        "media(id, bucket, path, alt, focal), product:products(name, slug)",
     )
     .order("position");
 
@@ -398,6 +398,7 @@ export async function fetchTestimonials(
     location: row.location,
     body: row.body,
     rating: Number(row.rating),
+    media: toAsset(row.media) ?? undefined,
     productName: row.product?.name ?? undefined,
     productSlug: row.product?.slug ?? undefined,
     position: row.position,
