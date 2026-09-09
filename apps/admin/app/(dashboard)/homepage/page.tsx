@@ -24,6 +24,7 @@ import { ImageUploadField } from '../../components/image-upload';
 import {
   createTestimonial,
   deleteTestimonial,
+  setTestimonialPublished,
   updateHeroSlide,
   updateTestimonial,
   updateHomepageSection,
@@ -113,9 +114,19 @@ export default async function HomepagePage() {
                 <Pill tone={review.isPublished ? 'ok' : 'low'}>
                   {review.isPublished ? 'On the website' : 'Draft — not on the website'}
                 </Pill>
-                {!review.isPublished && (
-                  <small>Tick Published below, then Save, to show it.</small>
-                )}
+                <EditForm
+                  action={setTestimonialPublished}
+                  submitLabel={review.isPublished ? 'Take off the website' : 'Publish now'}
+                  compact
+                  danger={review.isPublished}
+                >
+                  <input name="id" type="hidden" value={review.id} />
+                  <input
+                    name="published"
+                    type="hidden"
+                    value={review.isPublished ? 'false' : 'true'}
+                  />
+                </EditForm>
               </div>
 
               <div className="review-editor-photo">
@@ -180,11 +191,13 @@ export default async function HomepagePage() {
                   defaultValue={review.position}
                 />
               </FieldRow>
-              <Toggle
-                label="Published"
+              {/* Publishing is the button above. A second control for the same
+                  state, saved by a different button, is what made this
+                  confusing — so the form keeps the state it was given. */}
+              <input
                 name="is_published"
-                defaultChecked={review.isPublished}
-                hint="Off keeps it off the website"
+                type="hidden"
+                value={review.isPublished ? 'on' : ''}
               />
               </EditForm>
             </div>

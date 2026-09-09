@@ -117,6 +117,33 @@ export async function updateTestimonial(formData: FormData): Promise<ActionResul
   return OK('Review saved.');
 }
 
+/**
+ * Publishes or unpublishes a review, and nothing else.
+ *
+ * The card carries two forms — one for the picture, one for the words — so a
+ * Published tick inside the second only takes effect if you press *its* Save.
+ * That is easy to get wrong and gives no sign it went wrong. This is its own
+ * button doing one thing.
+ */
+export async function setTestimonialPublished(formData: FormData): Promise<ActionResult> {
+  if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');
+
+  const id = String(formData.get('id') ?? '');
+  const published = formData.get('published') === 'true';
+  if (!id) return FAIL('Missing review.');
+
+  const db = await sessionClient();
+  const { error } = await db
+    .from('testimonials')
+    .update({ is_published: published })
+    .eq('id', id);
+  if (error) return FAIL(error.message);
+
+  revalidatePath('/homepage');
+  revalidatePath('/');
+  return OK(published ? 'Published — it is on the website now.' : 'Taken off the website.');
+}
+
 /** Removes a review outright. Unlike a product, there is nothing to archive. */
 export async function deleteTestimonial(formData: FormData): Promise<ActionResult> {
   if (!(await requireContentRole())) return FAIL('You cannot edit the homepage.');
