@@ -55,7 +55,11 @@ export function SiteFooter({
               placeholder="Your email address"
               required
             />
-            <Button type="submit" size="icon-lg" aria-label="Join the newsletter">
+            <Button
+              type="submit"
+              size="icon-lg"
+              aria-label="Join the newsletter"
+            >
               <ArrowRight aria-hidden="true" />
             </Button>
           </form>
@@ -67,10 +71,20 @@ export function SiteFooter({
           <BrandMark />
           <p>{copy.footer_brand_line}</p>
           <div className="social-links">
-            <a href={settings.contact.instagram} aria-label="Instagram" rel="noreferrer noopener" target="_blank">
+            <a
+              href={settings.contact.instagram}
+              aria-label="Instagram"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
               <Camera aria-hidden="true" />
             </a>
-            <a href={settings.contact.youtube} aria-label="YouTube" rel="noreferrer noopener" target="_blank">
+            <a
+              href={settings.contact.youtube}
+              aria-label="YouTube"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
               <Play aria-hidden="true" />
             </a>
           </div>
@@ -127,7 +141,9 @@ export function SiteFooter({
 
       <div className="footer-bottom">
         <p>© 2026 {settings.brandName}. All rights reserved.</p>
-        <p className="footer-note">Policy pages arrive with the content module.</p>
+        <p className="footer-note">
+          Policy pages arrive with the content module.
+        </p>
       </div>
     </footer>
   );
