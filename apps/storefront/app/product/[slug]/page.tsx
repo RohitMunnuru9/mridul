@@ -39,7 +39,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${product.name} | Mridul by MR`,
-    description: product.description,
+    // The description is optional, so the search-result snippet falls back to
+    // the subtitle rather than going out empty.
+    description: product.description.trim() || product.subtitle,
   };
 }
 
@@ -108,7 +110,11 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
           </div>
 
-          <p className="pdp-description">{product.description}</p>
+          {/* Optional. Left empty in the admin, the panel does not render at
+              all — an empty decorated box says less than nothing. */}
+          {product.description.trim() && (
+            <p className="pdp-description">{product.description}</p>
+          )}
 
           <ProductPurchase
             product={product}

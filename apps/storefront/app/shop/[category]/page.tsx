@@ -57,7 +57,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         title={category.name}
         intro={category.intro}
         note={category.description}
-        heroImage={category.heroImage}
         searchParams={await searchParams}
         emptyBody={`Try widening the price band or clearing a colour — the rest of the ${category.name.toLowerCase()} are still here.`}
       />

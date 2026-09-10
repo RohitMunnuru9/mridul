@@ -11,12 +11,11 @@
  */
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { countActiveFilters, parseProductQuery } from '@mridul/validation';
 import type { RawSearchParams } from '@mridul/validation';
 import { listProducts } from '@mridul/database';
-import type { ProductImage, ProductScope } from '@mridul/types';
+import type { ProductScope } from '@mridul/types';
 import { ProductCard } from './product-card';
 import {
   ActiveFilters,
@@ -35,7 +34,6 @@ type ListingProps = {
   intro: string;
   /** Longer copy rendered under the grid, mainly for search engines. */
   note?: string;
-  heroImage?: ProductImage;
   searchParams: RawSearchParams;
   /** Shown instead of the grid when the scope itself yields nothing. */
   emptyTitle?: string;
@@ -74,7 +72,6 @@ export async function ProductListing({
   title,
   intro,
   note,
-  heroImage,
   searchParams,
   emptyTitle = 'Nothing matches that combination',
   emptyBody,
@@ -89,24 +86,17 @@ export async function ProductListing({
 
   return (
     <>
-      <header className={`listing-header${heroImage ? '' : ' is-plain'}`}>
+      {/* Copy only. A category hero photograph used to sit beside this and
+          stack above the grid on a narrow screen, pushing the first product
+          off-screen — on a page whose whole job is to show the products. The
+          photograph is still the category's own on /shop, where browsing
+          categories is the point. */}
+      <header className="listing-header">
         <div className="listing-header-copy">
           <p className="eyebrow">{eyebrow}</p>
           <h1>{title}</h1>
           <p className="listing-intro">{intro}</p>
         </div>
-        {heroImage && (
-          <div className="listing-header-image">
-            <Image
-              src={heroImage.url}
-              alt={heroImage.alt}
-              fill
-              sizes="(max-width: 900px) 100vw, 38vw"
-              priority
-              style={{ objectPosition: heroImage.focal }}
-            />
-          </div>
-        )}
       </header>
 
       <div className="listing-toolbar">

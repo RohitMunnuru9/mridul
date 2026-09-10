@@ -247,6 +247,7 @@ export default async function ProductEditPage({ params }: PageProps) {
             name="description"
             defaultValue={product.description}
             rows={4}
+            hint="Optional. Leave it empty and no description shows on the website."
           />
 
           <TextArea
