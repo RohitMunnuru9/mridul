@@ -34,6 +34,12 @@ For each project, in the Vercel dashboard → **Add New → Project** → import
 Leave **Include files outside the root directory** switched **on** — this is a
 npm workspaces monorepo and the build needs `packages/*` and the root lockfile.
 
+Leave the Install Command alone. Vercel sees the `workspaces` field in the root
+`package.json` and installs from the root lockfile; overriding it with a plain
+`npm install` would install only the one app and miss the workspace packages.
+The Build Command comes from each app's `vercel.json` and runs in the Root
+Directory, which is where Nitro writes `.vercel/output` for Vercel to pick up.
+
 ### Environment variables
 
 Set these in **Settings → Environment Variables** on *both* projects, for
