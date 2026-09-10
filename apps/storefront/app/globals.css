@@ -874,34 +874,23 @@ img { display: block; max-width: 100%; }
 .breadcrumb span[aria-current] { color: var(--ink); }
 
 .listing-header {
-  display: grid;
-  grid-template-columns: 1fr 0.62fr;
-  align-items: center;
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  margin: 1.4rem 0 2.2rem;
+  margin: 1.1rem 0 1.4rem;
 }
 .listing-header-copy h1 {
   margin: 0.5rem 0 0;
   font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
-  font-size: clamp(2.9rem, 5.4vw, 5.2rem);
+  font-size: clamp(2.3rem, 4vw, 3.6rem);
   font-weight: 400;
   line-height: 0.9;
   letter-spacing: -0.02em;
 }
 .listing-intro {
   max-width: 34rem;
-  margin: 1rem 0 0;
+  margin: 0.7rem 0 0;
   color: var(--muted-foreground);
   font-size: 0.85rem;
   line-height: 1.6;
 }
-.listing-header-image {
-  position: relative;
-  aspect-ratio: 1.35;
-  overflow: hidden;
-  background: #ead8d1;
-}
-.listing-header-image img { object-fit: cover; }
 
 .listing-toolbar {
   display: flex;
@@ -1055,10 +1044,10 @@ img { display: block; max-width: 100%; }
 .pdp-layout { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(1.5rem, 4vw, 4rem); margin-top: 1.4rem; }
 
 .pdp-gallery { display: flex; flex-direction: column; gap: 0.6rem; }
-.pdp-stage { position: relative; aspect-ratio: 0.78; overflow: hidden; background: #ead8d1; }
+.pdp-stage { position: relative; aspect-ratio: 0.78; overflow: hidden; border: 2px solid #cfaea3; border-radius: 4px; background: #ead8d1; }
 .pdp-stage img { object-fit: cover; }
 .pdp-thumbs { display: flex; gap: 0.5rem; }
-.pdp-thumbs button { position: relative; width: 4.4rem; aspect-ratio: 0.78; padding: 0; overflow: hidden; border: 1px solid transparent; background: #ead8d1; cursor: pointer; }
+.pdp-thumbs button { position: relative; width: 4.4rem; aspect-ratio: 0.78; padding: 0; overflow: hidden; border: 2px solid #cfaea3; border-radius: 3px; background: #ead8d1; cursor: pointer; }
 .pdp-thumbs button img { object-fit: cover; }
 .pdp-thumbs button.is-active { border-color: var(--cocoa); }
 
@@ -1149,8 +1138,6 @@ img { display: block; max-width: 100%; }
 
 @media (width <= 720px) {
   .listing-page, .pdp { padding-bottom: 6.5rem; }
-  .listing-header { grid-template-columns: 1fr; gap: 1.2rem; }
-  .listing-header-image { aspect-ratio: 1.8; }
   .listing-toolbar { position: sticky; z-index: 30; top: 101px; background: var(--background); }
   .product-grid, .listing-results .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pdp-specs { grid-template-columns: 1fr; }
@@ -1443,7 +1430,6 @@ img { display: block; max-width: 100%; }
 
 /* --- Listing additions ---------------------------------------------------- */
 
-.listing-header.is-plain { grid-template-columns: 1fr; }
 .grid-density { display: none; border: 1px solid var(--border); }
 .grid-density button {
   display: grid;
@@ -1656,12 +1642,33 @@ img { display: block; max-width: 100%; }
   border: 1px solid var(--border);
   background: var(--paper);
   box-shadow: 0 18px 36px rgb(57 37 35 / 16%);
+  animation: toast-in 240ms cubic-bezier(0.22, 0.68, 0, 1);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
 }
 .toast > svg { width: 1rem; flex: none; color: #2f6f4f; }
 .toast p { margin: 0; flex: 1; font-size: 0.74rem; }
 .toast a { text-decoration: underline; white-space: nowrap; font-size: 0.7rem; font-weight: 650; }
 .toast button { display: grid; width: 1.3rem; height: 1.3rem; flex: none; place-items: center; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
 .toast button svg { width: 0.75rem; }
+
+/* A toast arrives and leaves under its own steam; `is-leaving` is set a beat
+   before it is removed so it fades instead of blinking out. */
+.toast.is-leaving {
+  /* Cleared so the entry keyframes cannot outrank the fade. */
+  animation: none;
+  opacity: 0;
+  transform: translateY(6px);
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; transition: opacity 260ms ease; }
+  .toast.is-leaving { transform: none; }
+}
 
 /* --- WhatsApp float --------------------------------------------------------------- */
 
@@ -2032,10 +2039,6 @@ img { display: block; max-width: 100%; }
 }
 .listing-header-copy .eyebrow {
   color: var(--berry);
-}
-.listing-header-image {
-  border-radius: 2px;
-  box-shadow: 0 14px 30px rgb(74 32 41 / 12%);
 }
 
 .listing-toolbar {

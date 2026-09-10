@@ -22,7 +22,6 @@ import {
   ChevronDown,
   Heart,
   LogIn,
-  Menu,
   MessageCircle,
   Search,
   ShoppingBag,
@@ -271,7 +270,18 @@ export function StorefrontHeader({
                   />
                 }
               >
-                <Menu aria-hidden="true" />
+                {/* The official logo opens the menu, in place of the
+                    hamburger. The aria-label on the button still says
+                    "Open navigation", so nothing is lost to a screen reader. */}
+                <Image
+                  alt=""
+                  className="header-emblem"
+                  height={256}
+                  priority
+                  sizes="44px"
+                  src="/images/brand/mridul-emblem.png"
+                  width={256}
+                />
               </SheetTrigger>
               <SheetContent
                 side="left"

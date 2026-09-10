@@ -131,10 +131,10 @@ export function SilkInteractions() {
         <span className="page-fabric-mark">
           <Image
             alt=""
-            height={336}
-            sizes="220px"
-            src="/images/brand/mridul-wordmark.png"
-            width={1100}
+            height={880}
+            sizes="240px"
+            src="/images/brand/mridul-logo.jpg"
+            width={880}
           />
           <span className="page-fabric-rule" />
         </span>
