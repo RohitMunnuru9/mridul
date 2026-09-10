@@ -19,7 +19,9 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "typecheck": "tsc --noEmit -p apps/storefront && tsc --noEmit -p apps/admin",
-    "seed": "tsx scripts/seed-supabase.ts"
+    "seed": "tsx scripts/seed-supabase.ts",
+    "build:vercel": "npm run build:vercel --workspace apps/storefront",
+    "build:vercel:admin": "npm run build:vercel --workspace apps/admin"
   },
   "devDependencies": {
     "@types/node": "22.19.19",

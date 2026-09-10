@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vinext dev --port 3001",
     "build": "vinext build",
-    "start": "wrangler dev --config dist/server/wrangler.json"
+    "start": "wrangler dev --config dist/server/wrangler.json",
+    "build:vercel": "vite build"
   },
   "dependencies": {
     "@mridul/database": "*",
@@ -28,12 +29,13 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
     "@cloudflare/workers-types": "4.20260515.1",
-    "@tailwindcss/postcss": "4.2.1",
+    "@tailwindcss/vite": "4.3.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
-    "tailwindcss": "4.2.1",
+    "nitro": "3.0.260903-beta",
+    "tailwindcss": "4.3.3",
     "vite": "8.0.13",
     "wrangler": "4.92.0"
   }

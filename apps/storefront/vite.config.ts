@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { config as loadEnv } from 'dotenv';
-import { sites } from '@openai/sites-vite-plugin';
-import tailwindcss from '@tailwindcss/postcss';
+import tailwindcss from '@tailwindcss/vite';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
@@ -40,6 +39,13 @@ const { d1, r2 } = hostingConfig;
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
 
+// Deployment target. Cloudflare Workers is vinext's native target and what the
+// Codex preview and `wrangler` run. Vercel — or any other Nitro platform — is
+// chosen automatically inside Vercel's build environment, or by hand with
+// NITRO_PRESET=<preset> for a local build. Nothing in the app itself changes;
+// only the plugin that turns the build into something a host can run.
+const useNitro = process.env.VERCEL === '1' || Boolean(process.env.NITRO_PRESET);
+
 const localBindingConfig = {
   main: 'vinext/server/fetch-handler',
   compatibility_flags: ['nodejs_compat'],
@@ -66,6 +72,24 @@ const localBindingConfig = {
 // duplicated per app and cannot drift apart.
 loadEnv({ path: fileURLToPath(new URL('../../.env.local', import.meta.url)) });
 
+// These two are inlined into the bundle by `define` below, so they are read at
+// build time, not at run time. On a host they come from the project's
+// environment rather than a .env file — and if they are missing the build still
+// succeeds and ships a site that cannot reach Supabase on any page. Failing the
+// build instead turns a silent broken deploy into an obvious error.
+function requirePublicEnv() {
+  const missing = [
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  ].filter((name) => !process.env[name]);
+  if (missing.length === 0) return;
+  throw new Error(
+    `Cannot build without ${missing.join(' and ')}. Set them in the ` +
+      'environment variables of the project you are building (on Vercel: ' +
+      'Settings → Environment Variables), or in .env.local for a local build.',
+  );
+}
+
 // Only the public values are inlined. The service-role key is never given to
 // a bundle — it belongs to the seed script and, later, to server routes.
 const publicEnv = {
@@ -77,30 +101,44 @@ const publicEnv = {
   ),
 };
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ command }) => {
+  if (command === 'build') requirePublicEnv();
+
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= 'false';
   process.env.WRANGLER_LOG_PATH ??= '.wrangler/logs';
   process.env.MINIFLARE_REGISTRY_PATH ??= '.wrangler/registry';
 
-  // Wrangler snapshots its log path while the Cloudflare plugin is imported.
-  const { cloudflare } = await import('@cloudflare/vite-plugin');
+  // Each target's plugin is imported only on its own branch: Wrangler
+  // snapshots its log path the moment the Cloudflare plugin is imported, and
+  // neither host needs the other's plugin loaded at all.
+  const targetPlugins = useNitro
+    ? [(await import('nitro/vite')).nitro()]
+    : await (async () => {
+        const [{ cloudflare }, { sites }] = await Promise.all([
+          import('@cloudflare/vite-plugin'),
+          import('@openai/sites-vite-plugin'),
+        ]);
+        return [
+          sites(),
+          cloudflare({
+            viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
+            config: localBindingConfig,
+          }),
+        ];
+      })();
 
   return {
     define: publicEnv,
     resolve: { alias: workspaceAliases },
-    css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,
-    plugins: [
-      vinext(),
-      sites(),
-      cloudflare({
-        viteEnvironment: { name: 'rsc', childEnvironments: ['ssr'] },
-        config: localBindingConfig,
-      }),
-    ],
+    // Tailwind first: it registers the resolver for `@import "tailwindcss"`,
+    // which Vite's own postcss-import would otherwise try to open as a file.
+    // The same pipeline serves both targets, so the CSS cannot drift between
+    // the Cloudflare and the Vercel build.
+    plugins: [tailwindcss(), vinext(), ...targetPlugins],
   };
 });
