@@ -745,3 +745,37 @@
     transform: none;
   }
 }
+
+/* ===========================================================================
+   The moment after something goes into the bag
+   ---------------------------------------------------------------------------
+   Built and removed by `bagFlourish()` in silk-interactions. Never interactive
+   and never announced: the toast beside it is what carries the message.
+   ========================================================================= */
+.bag-flourish {
+  position: fixed;
+  z-index: 95;
+  display: grid;
+  place-items: center;
+  inset: 0;
+  background: radial-gradient(
+    38% 38% at 50% 50%,
+    rgb(253 247 243 / 92%) 0%,
+    rgb(253 247 243 / 72%) 55%,
+    rgb(253 247 243 / 0%) 100%
+  );
+  color: var(--cocoa);
+  pointer-events: none;
+}
+.bag-flourish svg {
+  width: clamp(96px, 22vw, 148px);
+  height: auto;
+  filter: drop-shadow(0 6px 18px rgb(74 32 41 / 18%));
+}
+/* Anyone who asked for less motion never reaches this: flyToBag returns before
+   it is built. The rule is here so the element is inert if that ever changes. */
+@media (prefers-reduced-motion: reduce) {
+  .bag-flourish {
+    display: none;
+  }
+}

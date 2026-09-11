@@ -1043,11 +1043,15 @@ img { display: block; max-width: 100%; }
 .pdp { max-width: 1440px; margin: 0 auto; padding: 1.6rem 3.2vw 4rem; }
 .pdp-layout { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(1.5rem, 4vw, 4rem); margin-top: 1.4rem; }
 
-.pdp-gallery { display: flex; flex-direction: column; gap: 0.6rem; }
+/* Thumbnails beside the photograph rather than beneath it, so the main image
+   keeps the height it deserves and the strip does not push the buy box down. */
+.pdp-gallery { display: grid; grid-template-columns: 4.6rem 1fr; align-items: start; gap: 0.6rem; }
+.pdp-gallery > .pdp-stage { grid-column: 2; grid-row: 1; }
+.pdp-gallery > .pdp-thumbs { grid-column: 1; grid-row: 1; }
 .pdp-stage { position: relative; aspect-ratio: 0.78; overflow: hidden; border: 2px solid #cfaea3; border-radius: 4px; background: #ead8d1; }
 .pdp-stage img { object-fit: cover; }
-.pdp-thumbs { display: flex; gap: 0.5rem; }
-.pdp-thumbs button { position: relative; width: 4.4rem; aspect-ratio: 0.78; padding: 0; overflow: hidden; border: 2px solid #cfaea3; border-radius: 3px; background: #ead8d1; cursor: pointer; }
+.pdp-thumbs { display: flex; flex-direction: column; gap: 0.5rem; }
+.pdp-thumbs button { position: relative; width: 100%; aspect-ratio: 0.78; padding: 0; overflow: hidden; border: 2px solid #cfaea3; border-radius: 3px; background: #ead8d1; cursor: pointer; }
 .pdp-thumbs button img { object-fit: cover; }
 .pdp-thumbs button.is-active { border-color: var(--cocoa); }
 
@@ -1106,6 +1110,52 @@ img { display: block; max-width: 100%; }
 .pdp-add { flex: 1; height: auto !important; gap: 0.5rem; border-radius: 0 !important; background: var(--cocoa) !important; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.13em; }
 .pdp-add svg { width: 0.95rem; }
 .pdp-wishlist { border-radius: 0 !important; background: transparent !important; color: var(--ink) !important; }
+
+/* Buy now sits under the row rather than in it: three controls across a narrow
+   column left none of them a readable width. */
+.pdp-buy-now {
+  order: 9;
+  /* A basis of 100% is what actually wraps it onto its own line. With only
+     `width: 100%` it stayed in the row and squeezed Add to bag to 26px. */
+  flex: 0 0 100%;
+  width: 100%;
+  height: auto !important;
+  margin-top: 0.5rem;
+  padding: 0.85rem !important;
+  border: 1px solid var(--cocoa) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--cocoa) !important;
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+  transition: background 200ms, color 200ms;
+}
+.pdp-buy-now:hover:not(:disabled) {
+  background: var(--cocoa) !important;
+  color: var(--paper) !important;
+}
+
+/* How much is actually left, against the threshold that made the line show.
+   Nothing here is a countdown and nothing is invented. */
+.pdp-stock-bar {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  height: 3px;
+  margin-top: 0.45rem;
+  border-radius: 999px;
+  background: rgb(74 32 41 / 12%);
+}
+.pdp-stock-bar::before {
+  display: block;
+  width: var(--left, 100%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--berry), var(--gold));
+  content: '';
+}
+
 
 .pdp-assurances { display: flex; flex-direction: column; gap: 0.55rem; margin: 1.3rem 0 0; padding: 0; list-style: none; }
 .pdp-assurances li { display: flex; gap: 0.5rem; color: var(--muted-foreground); font-size: 0.68rem; line-height: 1.5; }
@@ -2339,8 +2389,37 @@ img { display: block; max-width: 100%; }
   background: currentColor;
   content: '';
 }
-.pdp-stock.is-low { background: #fbeee0; color: #8a5a1c; }
 .pdp-stock.is-out { background: #f8e6e5; color: var(--destructive); }
+
+/* Low stock is the one case that carries a bar, so it becomes a block holding
+   the pill and the bar rather than being the pill itself. Without this the bar
+   inherits the pill's inline width and renders about a hundred pixels wide. */
+.pdp-stock.is-low {
+  display: block;
+  padding: 0;
+  background: none;
+}
+.pdp-stock.is-low::before {
+  display: none;
+}
+.pdp-stock.is-low > p {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.32rem 0.55rem;
+  border-radius: 2px;
+  background: #fbeee0;
+  color: #8a5a1c;
+  font-weight: 600;
+}
+.pdp-stock.is-low > p::before {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
 
 .pdp-add {
   min-height: 3rem;
@@ -2470,7 +2549,7 @@ img { display: block; max-width: 100%; }
  * left a stray square under a full-width button. Quantity, add and save all fit
  * on one row if the button is allowed to take whatever is left.
  */
-.pdp-actions { flex-wrap: nowrap; align-items: stretch; }
+.pdp-actions { flex-wrap: wrap; align-items: stretch; }
 .pdp-add { flex: 1 1 auto; min-width: 0; padding: 0 0.75rem !important; }
 .pdp-quantity, .pdp-wishlist { flex: 0 0 auto; }
 

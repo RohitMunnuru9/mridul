@@ -11,6 +11,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   Heart,
   Minus,
@@ -79,6 +80,7 @@ export function ProductPurchase({
   freeShippingThresholdPaise: number;
 }) {
   const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
+  const router = useRouter();
 
   // Default to the first variant that can actually be bought.
   const [variantId, setVariantId] = useState(
@@ -96,8 +98,8 @@ export function ProductPurchase({
   const liked = isWishlisted(product.id);
   const maxQuantity = Math.max(1, Math.min(variant.stock, 10));
 
-  function add(event: React.MouseEvent<HTMLButtonElement>) {
-    if (variant.stock <= 0) return;
+  /** Puts the line in the bag. Shared so Buy now cannot drift from Add to bag. */
+  function putInBag() {
     addLine(
       {
         productId: product.id,
@@ -114,12 +116,26 @@ export function ProductPurchase({
       },
       quantity,
     );
+  }
+
+  function add(event: React.MouseEvent<HTMLButtonElement>) {
+    if (variant.stock <= 0) return;
+    putInBag();
     setAdded(true);
     flyToBag(event.currentTarget, product.images[0].url);
     notify(`${product.name} added to bag.`, {
       label: 'View bag',
       href: '/bag',
     });
+  }
+
+  /* Straight to checkout. No toast and no fly-to-bag: both of those exist to
+     tell you something happened somewhere else on the page, and here the page
+     itself is about to change. */
+  function buyNow() {
+    if (variant.stock <= 0) return;
+    putInBag();
+    router.push('/checkout');
   }
 
   function chooseVariant(id: string) {
@@ -169,9 +185,20 @@ export function ProductPurchase({
       ) : variant.stock <= 0 ? (
         <p className="pdp-stock is-out">Sold out in this option</p>
       ) : variant.stock <= LOW_STOCK_THRESHOLD ? (
-        <p className="pdp-stock is-low">
-          Only {variant.stock} left — we weave these in small runs
-        </p>
+        <div className="pdp-stock is-low">
+          <p>Only {variant.stock} left — we weave these in small runs</p>
+          {/* The bar is the real count against the threshold that made this
+              line appear. It is not a countdown and nothing about it is
+              invented: a shop that fakes scarcity is lying to its customers. */}
+          <span
+            aria-hidden="true"
+            className="pdp-stock-bar"
+            style={{
+              // eslint-disable-next-line
+              ['--left' as string]: `${Math.round((variant.stock / LOW_STOCK_THRESHOLD) * 100)}%`,
+            }}
+          />
+        </div>
       ) : (
         <p className="pdp-stock">In stock, ready to ship</p>
       )}
@@ -207,6 +234,13 @@ export function ProductPurchase({
         >
           <ShoppingBag aria-hidden="true" />
           {added ? 'Added to bag' : 'Add to bag'}
+        </Button>
+        <Button
+          className="pdp-buy-now"
+          disabled={product.isSoldOut || variant.stock <= 0}
+          onClick={buyNow}
+        >
+          Buy now
         </Button>
         <Button
           variant="outline"
