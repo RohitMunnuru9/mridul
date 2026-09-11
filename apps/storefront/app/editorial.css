@@ -149,19 +149,26 @@ button:focus-visible,
   -webkit-background-clip: text;
   color: transparent;
   filter: drop-shadow(0 2px 16px rgb(25 12 16 / 55%));
-  transform: translateX(calc(var(--progress) * var(--progress) * -120vw));
+  transform: translateX(calc(var(--exit) * -120vw));
   will-change: transform;
 }
 .campaign-title span + span {
   margin-top: 0.08em;
-  transform: translateX(calc(var(--progress) * var(--progress) * 120vw));
+  transform: translateX(calc(var(--exit) * 120vw));
 }
 /* Transparent by about 59% of the scroll. The travel above is what carries the
    words off screen; the fade only keeps the last of it from looking abrupt. An
    earlier version bottomed out at 0.15 rather than 0, which left the headline
    sitting on the photograph for good. */
+/* The words do not move at all until 62% of the scroll, then leave over the
+   last third. Squaring the raw progress was not enough on its own: it still
+   had them halfway off the screen by the time you were halfway down, so the
+   headline was gone while there was plenty of hero left. `--exit` is the
+   travel's own clock, and it does not start until the reading is done. */
 .campaign-title {
-  opacity: clamp(0, calc((1 - var(--progress)) * 3), 1);
+  --exit: clamp(0, calc((var(--progress) - 0.62) * 2.63), 1);
+
+  opacity: clamp(0, calc((1 - var(--progress)) * 5), 1);
 }
 .campaign-subject {
   z-index: 3;
@@ -192,8 +199,8 @@ button:focus-visible,
 .campaign-bottom {
   position: absolute;
   z-index: 4;
-  opacity: clamp(0, calc((1 - var(--progress) * 1.6)), 1);
-  transform: translateY(calc(var(--progress) * 42px));
+  opacity: clamp(0, calc((1 - var(--progress)) * 3.2), 1);
+  transform: translateY(calc(var(--progress) * var(--progress) * 42px));
   will-change: transform;
   left: 4vw;
   right: 4vw;
