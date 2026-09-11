@@ -146,8 +146,12 @@ button:focus-visible,
   transform: scale(calc(1 + var(--progress)*0.6));
   pointer-events: none;
 }
+/* Reaches 0 at about 42% of the scroll, which is where .campaign-type-reveal
+   starts fading in — the two hand over rather than overlap. The old
+   `1 - progress*0.85` bottomed out at 0.15, so the white headline never left
+   and showed through the textured one as a ghost. */
 .campaign-title {
-  opacity: calc(1 - var(--progress)*0.85);
+  opacity: clamp(0, calc(1 - var(--progress) * 2.4), 1);
 }
 .campaign-subject {
   z-index: 3;
@@ -195,6 +199,49 @@ button:focus-visible,
   font-family: var(--font-cormorant), serif;
   font-size: 2.5rem;
 }
+/* The primary action, sitting on a photograph: a solid cream field is the
+   only treatment that holds its contrast wherever the image happens to be
+   light or dark behind it. Everything else on this screen is type on an
+   image, so the one filled shape reads as the thing to press. */
+.campaign-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.15rem;
+  padding: 1.15rem 2.5rem;
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--cocoa);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 12px 34px rgb(25 12 16 / 32%);
+  transition:
+    transform 300ms var(--silk-ease),
+    box-shadow 300ms var(--silk-ease),
+    background 250ms;
+}
+.campaign-cta:hover {
+  background: #fff;
+  box-shadow: 0 18px 44px rgb(25 12 16 / 40%);
+  transform: translateY(-3px);
+}
+.campaign-cta svg {
+  width: 19px;
+  flex: none;
+  transition: transform 250ms var(--silk-ease);
+}
+.campaign-cta:hover svg {
+  transform: translate(4px, -4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign-cta,
+  .campaign-cta:hover,
+  .campaign-cta:hover svg {
+    transform: none;
+  }
+}
+
 .campaign-scroll {
   display: flex;
   align-items: center;
@@ -564,9 +611,11 @@ button:hover .replacement span + span {
   .campaign-bottom p {
     display: none;
   }
-  .campaign-bottom .silk-link {
+  .campaign-cta {
     width: 100%;
     justify-content: space-between;
+    padding: 1.1rem 1.6rem;
+    font-size: 1.02rem;
   }
   .campaign-scroll {
     font-size: 0.7rem;
