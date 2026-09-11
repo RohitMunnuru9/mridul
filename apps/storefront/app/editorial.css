@@ -57,11 +57,12 @@ button:focus-visible,
 
 /* The camera and the two lines separate as the reader leaves the opening. */
 /* The stage below is sticky, so what the sequence has to play out in is this
-   height minus one screen. At 160svh that was about half a screen of scrolling
-   for the whole thing, which read as the hero snapping away rather than
-   unfolding. 250svh gives it roughly a screen and a half. */
+   height minus one screen. At 160svh the whole thing happened in about half a
+   screen of scrolling and read as the hero snapping away; 250svh was still
+   quick. 360svh gives it around two and a half screens, which is about as far
+   as this can go before the page feels stuck rather than unhurried. */
 .campaign-scene {
-  height: 250svh;
+  height: 360svh;
 }
 .campaign-stage {
   position: sticky;
@@ -587,7 +588,7 @@ button:hover .replacement span + span {
 
 @media (width <= 760px) {
   .campaign-scene {
-    height: 220svh;
+    height: 320svh;
   }
   .campaign-stage {
     min-height: 660px;
