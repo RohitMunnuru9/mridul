@@ -84,7 +84,11 @@ export function CampaignHero() {
               <br />
               <em>Felt.</em>
             </p>
-            <Link href="/shop/sarees" className="silk-link" data-magnetic>
+            {/* The one thing this screen is for. It keeps `data-magnetic` so
+                the cursor still pulls to it, but not `silk-link`: that is the
+                quiet underlined link used elsewhere, and the primary action on
+                the hero should not look like the rest of the page's links. */}
+            <Link href="/shop/sarees" className="campaign-cta" data-magnetic>
               Explore the sarees <ArrowUpRight />
             </Link>
             <a href="#occasions" className="campaign-scroll">
