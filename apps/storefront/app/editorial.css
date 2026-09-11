@@ -56,8 +56,12 @@ button:focus-visible,
 }
 
 /* The camera and the two lines separate as the reader leaves the opening. */
+/* The stage below is sticky, so what the sequence has to play out in is this
+   height minus one screen. At 160svh that was about half a screen of scrolling
+   for the whole thing, which read as the hero snapping away rather than
+   unfolding. 250svh gives it roughly a screen and a half. */
 .campaign-scene {
-  height: 160svh;
+  height: 250svh;
 }
 .campaign-stage {
   position: sticky;
@@ -119,33 +123,44 @@ button:focus-visible,
   width: 94%;
   z-index: 2;
 }
-/* The two lines leave by opposite edges. 120vw clears even the widest line
-   off screen before the scroll ends, so nothing is left hanging at an edge.
-   The fill is the drape photograph read through the letterforms — the gold
-   this headline used to turn as you scrolled, except it is the headline's own
-   colour now rather than a second copy laid over the top. It sits on each
-   span, not the block, so a line carries its fill with it as it travels.
-   The drop shadow is what keeps gold-on-ivory legible. */
+/* White at rest, the drape photograph as you scroll, then off opposite edges.
+   Both fills are stacked in one background: a flat white layer over the
+   photograph, clipped to the letterforms, and the white layer's alpha falls to
+   nothing by about a third of the scroll. That is a real cross-fade of the
+   headline's own colour, not a second copy laid over the top — which is what
+   the old version did, and why it could never leave the screen.
+
+   The travel is squared so the words hold still through the colour change and
+   only then accelerate away; linear travel took them off screen before the
+   gold had finished arriving. The drop shadow carries both phases: white and
+   gold are each close to the value of the saree in places. */
 .campaign-title span {
   display: block;
-  background: url('/images/products/drape-1.png') center / cover;
+  background-image:
+    linear-gradient(
+      rgb(255 252 250 / clamp(0%, calc((1 - var(--progress) * 3) * 100%), 100%)),
+      rgb(255 252 250 / clamp(0%, calc((1 - var(--progress) * 3) * 100%), 100%))
+    ),
+    url('/images/products/drape-1.png');
+  background-position: center, center;
+  background-size: cover, cover;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   filter: drop-shadow(0 2px 16px rgb(25 12 16 / 55%));
-  transform: translateX(calc(var(--progress) * -120vw));
+  transform: translateX(calc(var(--progress) * var(--progress) * -120vw));
   will-change: transform;
 }
 .campaign-title span + span {
   margin-top: 0.08em;
-  transform: translateX(calc(var(--progress) * 120vw));
+  transform: translateX(calc(var(--progress) * var(--progress) * 120vw));
 }
 /* Transparent by about 59% of the scroll. The travel above is what carries the
    words off screen; the fade only keeps the last of it from looking abrupt. An
    earlier version bottomed out at 0.15 rather than 0, which left the headline
    sitting on the photograph for good. */
 .campaign-title {
-  opacity: clamp(0, calc(1 - var(--progress) * 1.7), 1);
+  opacity: clamp(0, calc((1 - var(--progress)) * 3), 1);
 }
 .campaign-subject {
   z-index: 3;
@@ -176,6 +191,9 @@ button:focus-visible,
 .campaign-bottom {
   position: absolute;
   z-index: 4;
+  opacity: clamp(0, calc((1 - var(--progress) * 1.6)), 1);
+  transform: translateY(calc(var(--progress) * 42px));
+  will-change: transform;
   left: 4vw;
   right: 4vw;
   bottom: 3rem;
@@ -193,19 +211,20 @@ button:focus-visible,
   font-family: var(--font-cormorant), serif;
   font-size: 2.5rem;
 }
-/* The primary action, sitting on a photograph. Cream was too near the ivory
-   saree to read as a control; gold separates from it while staying warm, and
-   carries dark text rather than light so the contrast comes from the type.
-   Everything else here is type over a picture, so the one filled shape is the
-   thing to press. */
+/* The primary action, sitting on a photograph. A flat gold slab read as a
+   block of colour dropped on the picture; deep wine with a gold hairline is
+   the same brand warmth but behaves like a control, and the round end makes it
+   unmistakably a button rather than a panel. Everything else on this screen is
+   type over an image, so the one filled shape is the thing to press. */
 .campaign-cta {
   display: inline-flex;
   align-items: center;
   gap: 1.15rem;
-  padding: 1.15rem 2.5rem;
-  border-radius: 3px;
-  background: var(--gold);
-  color: #33161d;
+  padding: 1.15rem 2.6rem;
+  border: 1px solid rgb(201 169 97 / 55%);
+  border-radius: 999px;
+  background: var(--cocoa);
+  color: var(--paper);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -217,7 +236,8 @@ button:focus-visible,
     background 250ms;
 }
 .campaign-cta:hover {
-  background: #d8bb79;
+  border-color: var(--gold);
+  background: #5d2833;
   box-shadow: 0 18px 44px rgb(25 12 16 / 45%);
   transform: translateY(-3px);
 }
@@ -567,7 +587,7 @@ button:hover .replacement span + span {
 
 @media (width <= 760px) {
   .campaign-scene {
-    height: 125svh;
+    height: 220svh;
   }
   .campaign-stage {
     min-height: 660px;
