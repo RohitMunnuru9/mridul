@@ -57,10 +57,6 @@ export function CampaignHero() {
             />
           </div>
           <div className="campaign-shade" />
-          <div className="campaign-type-reveal" aria-hidden="true">
-            WEAR
-            <br />A STORY.
-          </div>
           <div className="campaign-kicker">
             <span>THE ART OF THE DRAPE</span>
             <span>INDIAN ROOTS. YOUR EXPRESSION.</span>

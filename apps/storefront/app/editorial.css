@@ -119,39 +119,23 @@ button:focus-visible,
   width: 94%;
   z-index: 2;
 }
+/* The two lines leave by opposite edges. 120vw clears even the widest line
+   off screen before the scroll ends, so nothing is left hanging at an edge. */
 .campaign-title span {
   display: block;
-  transform: translateX(calc(var(--progress)*-12vw));
+  transform: translateX(calc(var(--progress) * -120vw));
+  will-change: transform;
 }
 .campaign-title span + span {
   margin-top: 0.08em;
-  transform: translateX(calc(var(--progress)*14vw));
+  transform: translateX(calc(var(--progress) * 120vw));
 }
-.campaign-type-reveal {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 3vw;
-  font:
-    18vw/0.85 var(--font-cormorant),
-    serif;
-  letter-spacing: -0.06em;
-  color: transparent;
-  background: url('/images/products/drape-1.png') center/cover;
-  background-clip: text;
-  -webkit-background-clip: text;
-  z-index: 4;
-  opacity: clamp(0, calc((var(--progress) - 0.4) *1.7), 1);
-  transform: scale(calc(1 + var(--progress)*0.6));
-  pointer-events: none;
-}
-/* Reaches 0 at about 42% of the scroll, which is where .campaign-type-reveal
-   starts fading in — the two hand over rather than overlap. The old
-   `1 - progress*0.85` bottomed out at 0.15, so the white headline never left
-   and showed through the textured one as a ghost. */
+/* Transparent by about 59% of the scroll. The travel above is what carries the
+   words off screen; the fade only keeps the last of it from looking abrupt. An
+   earlier version bottomed out at 0.15 rather than 0, which left the headline
+   sitting on the photograph for good. */
 .campaign-title {
-  opacity: clamp(0, calc(1 - var(--progress) * 2.4), 1);
+  opacity: clamp(0, calc(1 - var(--progress) * 1.7), 1);
 }
 .campaign-subject {
   z-index: 3;
@@ -199,18 +183,19 @@ button:focus-visible,
   font-family: var(--font-cormorant), serif;
   font-size: 2.5rem;
 }
-/* The primary action, sitting on a photograph: a solid cream field is the
-   only treatment that holds its contrast wherever the image happens to be
-   light or dark behind it. Everything else on this screen is type on an
-   image, so the one filled shape reads as the thing to press. */
+/* The primary action, sitting on a photograph. Cream on the pale end of that
+   photograph was too near the saree to read as a control, so it is the brand
+   wine instead: the darkest thing on the screen, against an image that is
+   mostly ivory. Everything else here is type over a picture, so the one
+   filled shape is the thing to press. */
 .campaign-cta {
   display: inline-flex;
   align-items: center;
   gap: 1.15rem;
   padding: 1.15rem 2.5rem;
   border-radius: 3px;
-  background: var(--paper);
-  color: var(--cocoa);
+  background: var(--cocoa);
+  color: var(--paper);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -222,8 +207,8 @@ button:focus-visible,
     background 250ms;
 }
 .campaign-cta:hover {
-  background: #fff;
-  box-shadow: 0 18px 44px rgb(25 12 16 / 40%);
+  background: var(--berry);
+  box-shadow: 0 18px 44px rgb(25 12 16 / 45%);
   transform: translateY(-3px);
 }
 .campaign-cta svg {
