@@ -3,8 +3,63 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+/**
+ * A moment of the brand's own drawing, over the page, when something is added
+ * to the bag.
+ *
+ * The toast says what happened and the flight says where it went; neither is
+ * much of an event. This is the pause between the two — a sprig drawn in a
+ * single stroke, the same line the journal panels use, then gone. It is
+ * deliberately short: this sits between a shopper and the next thing they
+ * meant to do, so it must not become a thing to wait through.
+ *
+ * `pointer-events: none` throughout, so it never swallows a click.
+ */
+function bagFlourish() {
+  const scrim = document.createElement('div');
+  scrim.className = 'bag-flourish';
+  scrim.setAttribute('aria-hidden', 'true');
+  scrim.innerHTML = `
+    <svg viewBox="0 0 120 120" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M60 104 C60 74 60 50 60 24" />
+      <path d="M60 84 C44 82 34 72 32 56 C48 58 58 68 60 84 Z" />
+      <path d="M60 70 C76 68 86 58 88 42 C72 44 62 54 60 70 Z" />
+      <path d="M60 52 C46 50 38 41 36 27 C50 29 58 38 60 52 Z" />
+      <circle cx="60" cy="20" r="5" />
+    </svg>`;
+  document.body.appendChild(scrim);
+  const paths = scrim.querySelectorAll<SVGGeometryElement>('path, circle');
+  paths.forEach((path, index) => {
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = String(length);
+    path.style.strokeDashoffset = String(length);
+    path.animate(
+      [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
+      {
+        duration: 420,
+        delay: index * 70,
+        easing: 'cubic-bezier(.3,.7,.2,1)',
+        fill: 'forwards',
+      },
+    );
+  });
+  const done = scrim.animate(
+    [
+      { opacity: 0, transform: 'scale(.94)' },
+      { opacity: 1, transform: 'scale(1)', offset: 0.18 },
+      { opacity: 1, transform: 'scale(1)', offset: 0.72 },
+      { opacity: 0, transform: 'scale(1.04)' },
+    ],
+    { duration: 1150, easing: 'ease-out' },
+  );
+  done.onfinish = () => scrim.remove();
+  done.oncancel = () => scrim.remove();
+}
+
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  bagFlourish();
   const target = document.querySelector('[data-bag-target]');
   if (!target) return;
   const from = source.getBoundingClientRect(),

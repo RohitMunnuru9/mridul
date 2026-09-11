@@ -13,20 +13,12 @@
  */
 
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { badgeLabel, formatPaise } from '@mridul/utils';
 import type { ProductListItem } from '@mridul/types';
 import { useStore } from '../providers/store-provider';
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
 import { flyToBag } from './silk-interactions';
 
 export function ProductCard({
@@ -39,7 +31,6 @@ export function ProductCard({
   const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
   const liked = isWishlisted(product.id);
   const card = useRef<HTMLElement>(null);
-  const [selectedVariant, setSelectedVariant] = useState('');
   const [primary, secondary] = product.images;
   const label = badgeLabel(product.badge);
   const href = `/product/${product.slug}`;
@@ -177,97 +168,6 @@ export function ProductCard({
           </div>
         </div>
       </div>
-      <Sheet>
-        <SheetTrigger
-          className="quick-view-trigger"
-          aria-label={`Quick view ${product.name}`}
-        >
-          <span>QUICK VIEW</span>
-          <span aria-hidden="true">↗</span>
-        </SheetTrigger>
-        <SheetContent side="right" className="quick-view-panel">
-          <SheetHeader>
-            <SheetTitle>{product.name}</SheetTitle>
-            <SheetDescription>
-              {product.fabric} · {product.subtitle}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="quick-view-photo">
-            <Image
-              src={primary.url}
-              alt={primary.alt}
-              fill
-              sizes="580px"
-              style={{ objectPosition: primary.focal }}
-            />
-          </div>
-          <p className="quick-view-price">
-            {formatPaise(
-              product.pricePaise +
-                (product.variants.find((item) => item.id === selectedVariant)
-                  ?.priceDeltaPaise ?? 0),
-            )}
-          </p>
-          <fieldset className="quick-view-options">
-            <legend>Select your finish</legend>
-            {product.variants.map((variant) => (
-              <button
-                type="button"
-                key={variant.id}
-                disabled={!product.inStock || variant.stock <= 0}
-                aria-pressed={selectedVariant === variant.id}
-                onClick={() => setSelectedVariant(variant.id)}
-              >
-                {variant.label}
-                {variant.stock <= 0 ? ' — sold out' : ''}
-              </button>
-            ))}
-          </fieldset>
-          <button
-            type="button"
-            className="quick-view-add"
-            disabled={
-              !product.inStock ||
-              !product.variants.some(
-                (item) => item.id === selectedVariant && item.stock > 0,
-              )
-            }
-            onClick={(event) => {
-              const variant = product.variants.find(
-                (item) => item.id === selectedVariant && item.stock > 0,
-              );
-              if (!variant || !product.inStock) return;
-              addLine({
-                productId: product.id,
-                productSlug: product.slug,
-                variantId: variant.id,
-                name: product.name,
-                variantLabel: variant.label,
-                unitPricePaise: product.pricePaise + variant.priceDeltaPaise,
-                image: {
-                  url: primary.url,
-                  alt: primary.alt,
-                  focal: primary.focal,
-                },
-              });
-              flyToBag(event.currentTarget, primary.url);
-              notify(`${product.name} added to bag.`, {
-                label: 'View bag',
-                href: '/bag',
-              });
-            }}
-          >
-            {!product.inStock
-              ? 'SOLD OUT'
-              : selectedVariant
-                ? 'ADD TO BAG'
-                : 'SELECT A FINISH'}
-          </button>
-          <Link className="silk-link" href={href}>
-            Explore the piece <span aria-hidden="true">↗</span>
-          </Link>
-        </SheetContent>
-      </Sheet>
     </article>
   );
 }
