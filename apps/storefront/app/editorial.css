@@ -120,9 +120,19 @@ button:focus-visible,
   z-index: 2;
 }
 /* The two lines leave by opposite edges. 120vw clears even the widest line
-   off screen before the scroll ends, so nothing is left hanging at an edge. */
+   off screen before the scroll ends, so nothing is left hanging at an edge.
+   The fill is the drape photograph read through the letterforms — the gold
+   this headline used to turn as you scrolled, except it is the headline's own
+   colour now rather than a second copy laid over the top. It sits on each
+   span, not the block, so a line carries its fill with it as it travels.
+   The drop shadow is what keeps gold-on-ivory legible. */
 .campaign-title span {
   display: block;
+  background: url('/images/products/drape-1.png') center / cover;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 16px rgb(25 12 16 / 55%));
   transform: translateX(calc(var(--progress) * -120vw));
   will-change: transform;
 }
@@ -183,19 +193,19 @@ button:focus-visible,
   font-family: var(--font-cormorant), serif;
   font-size: 2.5rem;
 }
-/* The primary action, sitting on a photograph. Cream on the pale end of that
-   photograph was too near the saree to read as a control, so it is the brand
-   wine instead: the darkest thing on the screen, against an image that is
-   mostly ivory. Everything else here is type over a picture, so the one
-   filled shape is the thing to press. */
+/* The primary action, sitting on a photograph. Cream was too near the ivory
+   saree to read as a control; gold separates from it while staying warm, and
+   carries dark text rather than light so the contrast comes from the type.
+   Everything else here is type over a picture, so the one filled shape is the
+   thing to press. */
 .campaign-cta {
   display: inline-flex;
   align-items: center;
   gap: 1.15rem;
   padding: 1.15rem 2.5rem;
   border-radius: 3px;
-  background: var(--cocoa);
-  color: var(--paper);
+  background: var(--gold);
+  color: #33161d;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -207,7 +217,7 @@ button:focus-visible,
     background 250ms;
 }
 .campaign-cta:hover {
-  background: var(--berry);
+  background: #d8bb79;
   box-shadow: 0 18px 44px rgb(25 12 16 / 45%);
   transform: translateY(-3px);
 }
