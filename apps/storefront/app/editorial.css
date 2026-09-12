@@ -449,12 +449,26 @@ button:hover .replacement span + span {
 .bag-rocket {
   position: fixed;
   z-index: 100;
-  margin-left: -0.65em;
-  margin-top: -0.65em;
-  font-size: 1.9rem;
-  line-height: 1;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  margin-top: -15px;
   pointer-events: none;
-  filter: drop-shadow(0 3px 8px rgb(25 12 16 / 45%));
+  filter: drop-shadow(0 3px 9px rgb(25 12 16 / 42%));
+}
+.bag-rocket svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* One dart, lit from one side: the brand wine on the lit face and a deeper
+   tone on the folded one. Wine rather than gold because most of the flight
+   path crosses cream, where gold all but disappears. */
+.bag-rocket .dart-lit {
+  fill: #63293a;
+}
+.bag-rocket .dart-shade {
+  fill: #3a171f;
 }
 .bag-spark {
   position: fixed;
