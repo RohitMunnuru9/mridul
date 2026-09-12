@@ -4,7 +4,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 /**
- * A rocket flies from the button to the bag.
+ * A paper dart flies from the button to the bag.
+ *
+ * Drawn rather than an emoji: the emoji rocket is a cartoon, and it is a
+ * different cartoon on every operating system. Two flat faces with a crease
+ * between them read as folded paper and look the same everywhere.
  *
  * Asked for directly, after five quieter ideas and one very loud one were
  * turned down: a sprig, a cross-stitched lotus, a loom, a band of light on the
@@ -32,7 +36,14 @@ export function flyToBag(source: HTMLElement) {
   const rocket = document.createElement('div');
   rocket.className = 'bag-rocket';
   rocket.setAttribute('aria-hidden', 'true');
-  rocket.textContent = '🚀';
+  // Drawn nose-right, so the bank angle below needs no correction. The two
+  // faces are the same dart lit from opposite sides, which is what makes it
+  // read as paper rather than a flat triangle.
+  rocket.innerHTML =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path class="dart-lit" d="M23 12 L1 3.6 L8.4 12 Z" />' +
+    '<path class="dart-shade" d="M23 12 L8.4 12 L1 20.4 Z" />' +
+    '</svg>';
   rocket.style.left = startX + 'px';
   rocket.style.top = startY + 'px';
   document.body.appendChild(rocket);
@@ -48,10 +59,9 @@ export function flyToBag(source: HTMLElement) {
   const DURATION = 820;
   const frames = [0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => {
     const p = at(t);
-    // The nose points along the path, so it banks through the turn. The emoji
-    // is drawn pointing up-right, hence the 45 degree correction.
+    // The nose points along the path, so it banks through the turn.
     const ahead = at(Math.min(1, t + 0.06));
-    const angle = (Math.atan2(ahead.y - p.y, ahead.x - p.x) * 180) / Math.PI + 45;
+    const angle = (Math.atan2(ahead.y - p.y, ahead.x - p.x) * 180) / Math.PI;
     const scale = t < 0.15 ? 0.6 + t * 2.6 : 1.15 - t * 0.6;
     return {
       offset: t,
