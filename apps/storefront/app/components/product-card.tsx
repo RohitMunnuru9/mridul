@@ -76,7 +76,7 @@ export function ProductCard({
           bottom of the picture rather than the bottom of the whole card —
           where it was covering the name and price. */}
       <div className="product-media">
-        <Link className="product-photo" href={href} data-cursor="VIEW">
+        <Link className="product-photo" href={href}>
           <Image
             src={primary.url}
             alt={primary.alt}
@@ -96,6 +96,14 @@ export function ProductCard({
               style={{ objectPosition: secondary.focal }}
             />
           )}
+          {/* What the cloth is, over the photograph on hover. It replaced a
+              round "VIEW" cursor that followed the pointer and said nothing
+              the photograph did not. This is hidden from assistive tech: the
+              same fabric is in the card body below. */}
+          <span aria-hidden="true" className="product-peek">
+            {product.fabric}
+            {product.technique ? ` · ${product.technique}` : ''}
+          </span>
           <span className="product-flags">
             {label && <span className="product-badge">{label}</span>}
             {product.discountPercent > 0 && (

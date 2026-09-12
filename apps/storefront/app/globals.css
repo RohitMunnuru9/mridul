@@ -2846,3 +2846,44 @@ img { display: block; max-width: 100%; }
 @media (width <= 720px) {
   .pdp-description { font-size: 0.9rem; }
 }
+
+/* What the cloth is, shown over a card's photograph on hover. Sits at the top
+   left so it never meets the add-to-bag bar that rises from the bottom. Only
+   where there is a pointer to hover with: on touch the same fabric is already
+   printed in the card body. */
+.product-peek {
+  position: absolute;
+  z-index: 2;
+  top: 0.6rem;
+  left: 0.6rem;
+  max-width: calc(100% - 1.2rem);
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(253 249 245 / 92%);
+  color: var(--cocoa);
+  font-size: 0.66rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .product-card:hover .product-peek,
+  .product-card:focus-within .product-peek {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-peek {
+    transition: none;
+    transform: none;
+  }
+}

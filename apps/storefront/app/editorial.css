@@ -443,95 +443,6 @@ button:hover .replacement span + span {
   border: 0;
   cursor: pointer;
 }
-.quick-view-panel {
-  width: min(580px, 100vw) !important;
-  max-width: none !important;
-  padding: 1.4rem 2rem 2rem;
-  overflow-y: auto;
-  background: var(--paper) !important;
-  transition-duration: 650ms !important;
-  transition-timing-function: var(--silk-ease) !important;
-}
-.quick-view-panel[data-starting-style],
-.quick-view-panel[data-ending-style] {
-  transform: translateX(100%);
-}
-.quick-view-photo {
-  position: relative;
-  min-height: 340px;
-  height: 46svh;
-}
-.quick-view-photo img {
-  object-fit: cover;
-}
-.quick-view-panel [data-slot='sheet-title'] {
-  font:
-    2.5rem/1 var(--font-cormorant),
-    serif;
-}
-.quick-view-panel [data-slot='sheet-header'] {
-  padding: 0.5rem 0;
-}
-.quick-view-price {
-  font-size: 1rem;
-}
-.quick-view-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0;
-  border: 0;
-}
-.quick-view-options legend {
-  font-size: 0.8rem;
-  margin-bottom: 0.75rem;
-}
-.quick-view-options button {
-  padding: 0.75rem 1rem;
-  background: transparent;
-  border: 1px solid #3c233f50;
-  cursor: pointer;
-}
-.quick-view-options button[aria-pressed='true'] {
-  background: var(--cocoa);
-  color: white;
-}
-.quick-view-options button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.quick-view-add {
-  padding: 1rem;
-  background: var(--cocoa);
-  color: white;
-  border: 0;
-  cursor: pointer;
-}
-.quick-view-add:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.silk-cursor {
-  position: fixed;
-  z-index: 100;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
-  background: #f5f0e8;
-  color: #3e2031;
-  display: grid;
-  place-items: center;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-.silk-cursor.is-visible {
-  opacity: 1;
-}
 .bag-flight {
   position: fixed;
   z-index: 100;
@@ -657,18 +568,6 @@ button:hover .replacement span + span {
   transform: none;
   opacity: 1;
 }
-.quick-view-trigger {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.7rem 0;
-  border: 0;
-  border-top: 1px solid var(--border);
-  background: transparent;
-  color: var(--cocoa);
-  font-size: 0.72rem;
-  cursor: pointer;
-}
 .wishlist-button.is-on svg {
   animation: heart-thread 300ms ease;
 }
@@ -678,12 +577,6 @@ button:hover .replacement span + span {
   }
 }
 @media (width <= 760px) {
-  .silk-cursor {
-    display: none;
-  }
-  .quick-view-panel {
-    padding: 2rem 1.2rem;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -701,8 +594,5 @@ button:hover .replacement span + span {
   }
   .campaign-stage {
     position: relative;
-  }
-  .silk-cursor {
-    display: none;
   }
 }
