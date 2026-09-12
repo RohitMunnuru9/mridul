@@ -170,6 +170,24 @@ async function systemInstruction(): Promise<string> {
   ].join('\n');
 }
 
+/**
+ * One retry, then give up.
+ *
+ * Both halves of a reply cross a network — the catalogue from Supabase, the
+ * words from Google — and under load a small share of those calls simply fail.
+ * Measured at six concurrent questions, one came back empty. A single retry
+ * costs a second and turns most of those into an answer; retrying harder would
+ * only pile more load onto something already struggling.
+ */
+async function once<T>(what: string, fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    console.warn(`[assistant] ${what} failed, retrying:`, error instanceof Error ? error.message : error);
+    return await fn();
+  }
+}
+
 export type AssistantOutcome =
   | { kind: 'stream'; body: ReadableStream<Uint8Array> }
   | { kind: 'error'; status: number; message: string };
@@ -181,13 +199,21 @@ export type AssistantOutcome =
  */
 export async function answer(contents: Content[]): Promise<AssistantOutcome> {
   const ai = new GoogleGenAI({ apiKey: apiKey() });
-  const system = await systemInstruction();
+  // Before the model is even asked. A failure here used to reach the customer
+  // as "that didn't go through", with nothing to do about it.
+  const system = await once('reading the catalogue', systemInstruction);
 
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
       let wroteSomething = false;
-      try {
+
+      /**
+       * Runs the model and writes what it says. Safe to call twice only while
+       * nothing has been written yet — once a word has reached the customer,
+       * starting over would repeat it.
+       */
+      const speak = async (): Promise<FinishReason | undefined> => {
         const stream = await ai.models.generateContentStream({
           model: MODEL,
           contents,
@@ -202,14 +228,26 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
           },
         });
 
-        let finish: FinishReason | undefined;
+        let seen: FinishReason | undefined;
         for await (const chunk of stream) {
           const text = chunk.text;
           if (text) {
             wroteSomething = true;
             controller.enqueue(encoder.encode(text));
           }
-          finish = chunk.candidates?.[0]?.finishReason ?? finish;
+          seen = chunk.candidates?.[0]?.finishReason ?? seen;
+        }
+        return seen;
+      };
+
+      try {
+        let finish: FinishReason | undefined;
+        try {
+          finish = await speak();
+        } catch (error) {
+          if (wroteSomething) throw error;
+          console.warn('[assistant] the model failed, retrying:', error instanceof Error ? error.message : error);
+          finish = await speak();
         }
 
         if (finish === FinishReason.MAX_TOKENS) {
