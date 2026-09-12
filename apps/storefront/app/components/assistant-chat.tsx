@@ -30,18 +30,49 @@ const WA_TEXT = 'Hello! I have a question about a Mridul piece.';
 const MAX_TURNS = 20;
 const MAX_CHARS = 2000;
 
-/** Product paths the assistant writes become links; everything else is text. */
-function withLinks(text: string): ReactNode[] {
-  const parts = text.split(/(\/product\/[a-z0-9-]+)/g);
-  return parts.map((part, i) =>
-    /^\/product\/[a-z0-9-]+$/.test(part) ? (
-      <Link href={part} key={i}>
-        {part.replace('/product/', '').replace(/-/g, ' ')}
-      </Link>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
-  );
+/**
+ * Renders one reply: product paths become links, **bold** becomes bold, and
+ * any other markdown punctuation is dropped.
+ *
+ * The prompt asks for no markdown and mostly gets it, but a model that has
+ * read the whole internet will reach for asterisks sooner or later, and
+ * `**Haldi Bloom**` printed literally looks broken. Handling it here is the
+ * fix that always works; the prompt is only the first line of defence.
+ *
+ * A link is labelled "view" rather than the slug: the assistant names the
+ * product in the sentence immediately before it, so spelling it out again
+ * reads as a stutter. The name goes in `aria-label`, where a screen reader
+ * still gets a destination worth hearing.
+ */
+function render(text: string): ReactNode[] {
+  const clean = text
+    // list bullets and headings at the start of a line
+    .replace(/^[ \t]*[*-][ \t]+/gm, '')
+    .replace(/^#{1,6}[ \t]+/gm, '');
+
+  const out: ReactNode[] = [];
+  const pattern = /(\/product\/[a-z0-9-]+)|\*\*([^*]+)\*\*|\*([^*\n]+)\*/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = pattern.exec(clean)) !== null) {
+    if (match.index > last) out.push(<span key={key++}>{clean.slice(last, match.index)}</span>);
+    const [, href, bold, italic] = match;
+    if (href) {
+      const name = href.replace('/product/', '').replace(/-/g, ' ');
+      out.push(
+        <Link aria-label={name} href={href} key={key++}>
+          view
+        </Link>,
+      );
+    } else {
+      out.push(<strong key={key++}>{bold ?? italic}</strong>);
+    }
+    last = pattern.lastIndex;
+  }
+  if (last < clean.length) out.push(<span key={key++}>{clean.slice(last)}</span>);
+  return out;
 }
 
 export function AssistantChat({ whatsapp }: { whatsapp: string }) {
@@ -179,7 +210,7 @@ export function AssistantChat({ whatsapp }: { whatsapp: string }) {
                     }`}
                     key={i}
                   >
-                    {turn.content ? withLinks(turn.content) : <span aria-label="Thinking" />}
+                    {turn.content ? render(turn.content) : <span aria-label="Thinking" />}
                   </p>
                 ))}
                 {status === 'busy' && (
