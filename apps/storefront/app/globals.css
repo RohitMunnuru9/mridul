@@ -496,11 +496,16 @@ img { display: block; max-width: 100%; }
   background-color: #ead8d1;
 }
 .product-photo img { object-fit: cover; transition: opacity 260ms ease, transform 600ms ease; }
-/* The second shot fades in on hover; pointer-only so touch keeps the primary. */
-.product-photo-alt { opacity: 0; }
+/* Every photograph is stacked in the frame and only the current one is shown;
+   hovering advances it every five seconds. Crossfaded rather than cut, so a
+   grid of cards mid-slideshow does not flicker. */
+.product-frame { opacity: 0; }
+.product-frame.is-on { opacity: 1; }
 @media (hover: hover) {
-  .product-card:hover .product-photo-alt { opacity: 1; }
   .product-card:hover .product-photo img { transform: scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-photo img { transition: none; }
 }
 .product-flags { position: absolute; top: 0.65rem; left: 0.65rem; display: flex; flex-direction: column; gap: 0.3rem; align-items: flex-start; }
 .product-soldout {
@@ -1104,9 +1109,12 @@ img { display: block; max-width: 100%; }
 .pdp-stock.is-out { color: var(--destructive); }
 
 .pdp-actions { display: flex; align-items: stretch; gap: 0.5rem; margin-top: 1rem; }
-.pdp-quantity { display: flex; align-items: center; gap: 0.15rem; border: 1px solid var(--border); }
-.pdp-quantity span { min-width: 1.8rem; text-align: center; font-size: 0.75rem; }
-.pdp-quantity button { border-radius: 0 !important; background: transparent !important; color: var(--ink) !important; }
+/* One pill. The outer border plus a border on each button gave a box inside
+   a box, which is what made this look like a crate. */
+.pdp-quantity { display: flex; overflow: hidden; align-items: center; border: 1px solid var(--border); border-radius: 999px; }
+.pdp-quantity span { min-width: 2rem; text-align: center; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.pdp-quantity button { height: auto !important; align-self: stretch; border: 0 !important; border-radius: 0 !important; background: transparent !important; color: var(--ink) !important; }
+.pdp-quantity button:hover:not(:disabled) { background: var(--soft-rose) !important; }
 .pdp-quantity svg { width: 0.8rem; }
 .pdp-add { flex: 1; height: auto !important; gap: 0.5rem; border-radius: 0 !important; background: var(--cocoa) !important; text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.13em; }
 .pdp-add svg { width: 0.95rem; }
@@ -1557,8 +1565,9 @@ img { display: block; max-width: 100%; }
 .bag-line-remove:hover { color: var(--destructive); }
 .bag-line-remove svg { width: 0.85rem; }
 .bag-line-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
-.quantity-stepper { display: flex; align-items: center; border: 1px solid var(--border); }
+.quantity-stepper { display: flex; overflow: hidden; align-items: center; border: 1px solid var(--border); border-radius: 999px; }
 .quantity-stepper button { display: grid; width: 1.9rem; height: 1.9rem; place-items: center; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.quantity-stepper button:hover:not(:disabled) { background: var(--soft-rose); }
 .quantity-stepper button:disabled { color: #c2b1ad; cursor: not-allowed; }
 .quantity-stepper svg { width: 0.75rem; }
 .quantity-stepper span { min-width: 1.6rem; text-align: center; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
@@ -2417,7 +2426,6 @@ img { display: block; max-width: 100%; }
   border-color: var(--border) !important;
 }
 .pdp-wishlist:hover { background: var(--soft-rose) !important; color: var(--berry) !important; }
-.pdp-quantity { border-radius: 3px; }
 
 /* The assurances were two lines of grey text. As a panel with a zari edge they
    read as a promise rather than as small print. */

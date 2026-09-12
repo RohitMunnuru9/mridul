@@ -13,7 +13,7 @@
  */
 
 import Image from 'next/image';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { badgeLabel, formatPaise } from '@mridul/utils';
@@ -31,7 +31,40 @@ export function ProductCard({
   const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
   const liked = isWishlisted(product.id);
   const card = useRef<HTMLElement>(null);
-  const [primary, secondary] = product.images;
+  const [primary] = product.images;
+
+  /**
+   * Hovering plays the product's own photographs, one every five seconds.
+   *
+   * It replaces a single swap to the second picture, which showed one extra
+   * angle and then stopped. Anything past the second was unreachable without
+   * opening the product.
+   *
+   * Only while the pointer is actually over the card, and only for a product
+   * with more than one photograph — several here still have just the one, and
+   * for those this does nothing at all.
+   */
+  const [frame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!playing || product.images.length < 2) return undefined;
+    // Someone who asked for less motion gets the first photograph, still.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const tick = setInterval(
+      () => setFrame((n) => (n + 1) % product.images.length),
+      5000,
+    );
+    return () => clearInterval(tick);
+  }, [playing, product.images.length]);
+
+  function play() {
+    setPlaying(true);
+  }
+  function stop() {
+    setPlaying(false);
+    setFrame(0);
+  }
   const label = badgeLabel(product.badge);
   const href = `/product/${product.slug}`;
 
@@ -75,27 +108,30 @@ export function ProductCard({
       {/* Photo, heart and action share one box, so the action can sit at the
           bottom of the picture rather than the bottom of the whole card —
           where it was covering the name and price. */}
-      <div className="product-media">
+      <div
+        className="product-media"
+        onBlur={stop}
+        onFocus={play}
+        onMouseEnter={play}
+        onMouseLeave={stop}
+      >
         <Link className="product-photo" href={href}>
-          <Image
-            src={primary.url}
-            alt={primary.alt}
-            fill
-            sizes="(max-width: 720px) 50vw, 25vw"
-            priority={priority}
-            style={{ objectPosition: primary.focal }}
-          />
-          {secondary && (
+          {/* All of them stacked; the current one is the only one shown. Only
+              the first carries alt text — the rest are the same garment from
+              another angle, and reading every one aloud says nothing new. */}
+          {product.images.map((image, index) => (
             <Image
-              className="product-photo-alt"
-              src={secondary.url}
-              alt=""
-              aria-hidden="true"
+              alt={index === 0 ? primary.alt : ''}
+              aria-hidden={index === 0 ? undefined : true}
+              className={`product-frame${index === frame ? ' is-on' : ''}`}
               fill
+              key={image.id}
+              priority={priority && index === 0}
               sizes="(max-width: 720px) 50vw, 25vw"
-              style={{ objectPosition: secondary.focal }}
+              src={image.url}
+              style={{ objectPosition: image.focal }}
             />
-          )}
+          ))}
           {/* What the cloth is, over the photograph on hover. It replaced a
               round "VIEW" cursor that followed the pointer and said nothing
               the photograph did not. This is hidden from assistive tech: the

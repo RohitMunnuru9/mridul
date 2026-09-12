@@ -1,0 +1,282 @@
+[
+  {
+    "id": "3c35111e-1b60-4f7c-8b7c-059f80691e4e",
+    "product_id": "72013bd7-da77-4648-bf9b-e0089d97ccf4",
+    "media_id": "92806df1-9319-418c-a136-6255f78b0e40",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:40.342141+00:00"
+  },
+  {
+    "id": "26c82f59-92e1-4b3a-8dcb-81b3c7171010",
+    "product_id": "72013bd7-da77-4648-bf9b-e0089d97ccf4",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:40.383006+00:00"
+  },
+  {
+    "id": "9022f0c3-7527-4747-af1a-f31978258995",
+    "product_id": "72013bd7-da77-4648-bf9b-e0089d97ccf4",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 2,
+    "created_at": "2026-09-08T14:56:40.422464+00:00"
+  },
+  {
+    "id": "1b20b9c2-b96e-448a-9dee-3a095d45d26a",
+    "product_id": "6f0205ed-46ac-46d7-b976-a5b60b85499b",
+    "media_id": "e66ef675-3a4a-417e-8216-2ba75b779b9e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:40.871321+00:00"
+  },
+  {
+    "id": "44783d98-b812-4736-bcc0-5bfe640f5909",
+    "product_id": "6f0205ed-46ac-46d7-b976-a5b60b85499b",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:40.906114+00:00"
+  },
+  {
+    "id": "47cf873d-bee2-411e-b60d-5a5ca68250e0",
+    "product_id": "04210dab-ff1e-430b-9851-8b2405c2be37",
+    "media_id": "fcfdd5d3-09f8-4c99-af91-92e0d95e01b0",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:41.315011+00:00"
+  },
+  {
+    "id": "cca9ab53-f0dd-4dd7-9c44-48c86bf082e4",
+    "product_id": "04210dab-ff1e-430b-9851-8b2405c2be37",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:41.349192+00:00"
+  },
+  {
+    "id": "fdca84ac-ea70-4c70-8d00-f11284e21410",
+    "product_id": "ffdcbc3a-3a1f-4f07-b3d8-679c45bff3a3",
+    "media_id": "55f09131-2865-4cc9-b750-11e1a50a677e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:41.779665+00:00"
+  },
+  {
+    "id": "0054c4a0-b516-45e7-ac48-6e19c9928a61",
+    "product_id": "ffdcbc3a-3a1f-4f07-b3d8-679c45bff3a3",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:41.820711+00:00"
+  },
+  {
+    "id": "db9a1c2a-c1ac-45f4-9e37-8f86c8f05b91",
+    "product_id": "ffdcbc3a-3a1f-4f07-b3d8-679c45bff3a3",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 2,
+    "created_at": "2026-09-08T14:56:41.855303+00:00"
+  },
+  {
+    "id": "7878549d-ae04-46d6-b9e7-a45b5e01dffd",
+    "product_id": "c1e4c8c0-da59-4cfa-aac5-6df4175ae481",
+    "media_id": "92806df1-9319-418c-a136-6255f78b0e40",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:42.267115+00:00"
+  },
+  {
+    "id": "944364e8-5130-4492-aa1a-5022bb224a3b",
+    "product_id": "c1e4c8c0-da59-4cfa-aac5-6df4175ae481",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:42.304277+00:00"
+  },
+  {
+    "id": "cb16060a-b9b9-4abf-bc5f-0bc8a79454b2",
+    "product_id": "5fb78a82-0bbb-4be7-9a10-48020e321243",
+    "media_id": "e66ef675-3a4a-417e-8216-2ba75b779b9e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:42.725155+00:00"
+  },
+  {
+    "id": "26558106-4b37-40dd-96f3-88bc080b689f",
+    "product_id": "5fb78a82-0bbb-4be7-9a10-48020e321243",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:42.756626+00:00"
+  },
+  {
+    "id": "784146eb-6447-488b-97c4-2b64ea8eb7cf",
+    "product_id": "9c1f7840-011f-4773-a07e-a5387589da30",
+    "media_id": "fcfdd5d3-09f8-4c99-af91-92e0d95e01b0",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:43.163811+00:00"
+  },
+  {
+    "id": "bb22782d-d912-4382-a5df-ed9ff12ff989",
+    "product_id": "9c1f7840-011f-4773-a07e-a5387589da30",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:43.199099+00:00"
+  },
+  {
+    "id": "d24e445f-6115-4e84-a75c-0b49bcd5a7aa",
+    "product_id": "e52e4c69-a6fd-47ab-8c60-09fad0e55a79",
+    "media_id": "55f09131-2865-4cc9-b750-11e1a50a677e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:43.565298+00:00"
+  },
+  {
+    "id": "eb633916-795e-4702-b265-5c39d40ec0ef",
+    "product_id": "e52e4c69-a6fd-47ab-8c60-09fad0e55a79",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:43.606276+00:00"
+  },
+  {
+    "id": "d1d11d7e-1963-4455-9aaf-d317b90c97fb",
+    "product_id": "eac2ac1f-826d-4126-8e4b-9f3674de002d",
+    "media_id": "92806df1-9319-418c-a136-6255f78b0e40",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:44.034553+00:00"
+  },
+  {
+    "id": "8b2dd9ae-9633-43bc-8063-b9555dbc1a72",
+    "product_id": "eac2ac1f-826d-4126-8e4b-9f3674de002d",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:44.077323+00:00"
+  },
+  {
+    "id": "139d077d-c084-4f96-9e59-e7a12498a0a7",
+    "product_id": "eac2ac1f-826d-4126-8e4b-9f3674de002d",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 2,
+    "created_at": "2026-09-08T14:56:44.110227+00:00"
+  },
+  {
+    "id": "4024395e-90b3-4269-b6e2-698c62d1ade1",
+    "product_id": "978815f1-d9e2-44e9-b1c5-48af8c720c5e",
+    "media_id": "e66ef675-3a4a-417e-8216-2ba75b779b9e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:44.502047+00:00"
+  },
+  {
+    "id": "526bb093-de99-4f3e-8782-b2daeb9b4d94",
+    "product_id": "978815f1-d9e2-44e9-b1c5-48af8c720c5e",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:44.534374+00:00"
+  },
+  {
+    "id": "0e188412-8acd-400d-892a-eade6a21f806",
+    "product_id": "740136be-4f5a-4b40-9f2e-bef69d3cd252",
+    "media_id": "fcfdd5d3-09f8-4c99-af91-92e0d95e01b0",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:44.971234+00:00"
+  },
+  {
+    "id": "c902f600-5434-4d9b-81e3-df258efeb667",
+    "product_id": "740136be-4f5a-4b40-9f2e-bef69d3cd252",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:45.009678+00:00"
+  },
+  {
+    "id": "0450ed45-0de2-455f-ad01-9a3deb8f1767",
+    "product_id": "21d4b021-f1d5-4020-9506-1cc3d81bec83",
+    "media_id": "55f09131-2865-4cc9-b750-11e1a50a677e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:45.443606+00:00"
+  },
+  {
+    "id": "483460c7-b737-403f-8773-5aa2034de9fc",
+    "product_id": "21d4b021-f1d5-4020-9506-1cc3d81bec83",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:45.477461+00:00"
+  },
+  {
+    "id": "35f0c7a5-048f-4856-8476-124d0cf4fe91",
+    "product_id": "0a1d282f-8bc7-4c19-bee5-0f721eaa7b8f",
+    "media_id": "92806df1-9319-418c-a136-6255f78b0e40",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:45.890415+00:00"
+  },
+  {
+    "id": "378f6e6c-87e8-4769-8512-3a7a486cfc84",
+    "product_id": "0a1d282f-8bc7-4c19-bee5-0f721eaa7b8f",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:45.921429+00:00"
+  },
+  {
+    "id": "0e463450-4fd8-4b5d-9950-9db9e19ea78a",
+    "product_id": "7c380bd1-3415-4076-9e99-efdaa8f606fb",
+    "media_id": "e66ef675-3a4a-417e-8216-2ba75b779b9e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:47.380713+00:00"
+  },
+  {
+    "id": "87fb6841-03e4-4ba0-bcf3-d4a1779a938c",
+    "product_id": "7c380bd1-3415-4076-9e99-efdaa8f606fb",
+    "media_id": "0d94db17-7dab-449a-97d3-12de9604dddb",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:47.412594+00:00"
+  },
+  {
+    "id": "447e8434-01d0-4b4a-a114-43c21ae87f7c",
+    "product_id": "9d4c3370-c942-4819-92f7-42c02f2b2e70",
+    "media_id": "fcfdd5d3-09f8-4c99-af91-92e0d95e01b0",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:48.142177+00:00"
+  },
+  {
+    "id": "4dcd00da-8831-4ba6-b795-9df4eeaec9cc",
+    "product_id": "9f4107c6-6aa5-49a9-beb6-1fdf187a8af0",
+    "media_id": "55f09131-2865-4cc9-b750-11e1a50a677e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:48.97235+00:00"
+  },
+  {
+    "id": "6d01c0bc-777b-4e5d-b593-1839b971fbda",
+    "product_id": "9f4107c6-6aa5-49a9-beb6-1fdf187a8af0",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:49.007444+00:00"
+  },
+  {
+    "id": "ed7e0708-0d66-41f8-8925-1c4c945da035",
+    "product_id": "9eb3662c-4371-4400-839b-f7cd99d6a91d",
+    "media_id": "92806df1-9319-418c-a136-6255f78b0e40",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:49.81024+00:00"
+  },
+  {
+    "id": "cdcd88b5-e56c-48e9-a937-b00fedaed962",
+    "product_id": "0ee873da-76d5-4625-b7fa-c24fd0154a0d",
+    "media_id": "e66ef675-3a4a-417e-8216-2ba75b779b9e",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:50.528484+00:00"
+  },
+  {
+    "id": "b4297768-f0c0-41da-b3a2-511525b74b58",
+    "product_id": "0ee873da-76d5-4625-b7fa-c24fd0154a0d",
+    "media_id": "bfd67c9c-70e5-4e22-a42b-a90b5da9ff08",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:50.564901+00:00"
+  },
+  {
+    "id": "816896e7-0cbc-4182-8b24-1ce34b49cf35",
+    "product_id": "9b7faf7a-f8b6-4deb-98ef-910e24afc013",
+    "media_id": "fcfdd5d3-09f8-4c99-af91-92e0d95e01b0",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:51.308237+00:00"
+  },
+  {
+    "id": "b3616b67-f29d-4f75-8016-52ae1501368a",
+    "product_id": "6d91696f-8b29-412a-b08a-32d05c29763a",
+    "media_id": "69a11c72-67e8-48c6-9a87-a96ffc0ec6cc",
+    "position": 1,
+    "created_at": "2026-09-08T14:56:52.058195+00:00"
+  },
+  {
+    "id": "8ffdecf5-e65e-41df-8366-9886b0b3af73",
+    "product_id": "6d91696f-8b29-412a-b08a-32d05c29763a",
+    "media_id": "7e574dcb-d490-4bf2-8929-cd53daffc088",
+    "position": 0,
+    "created_at": "2026-09-08T14:56:52.091336+00:00"
+  }
+]
