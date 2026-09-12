@@ -497,7 +497,7 @@ img { display: block; max-width: 100%; }
 }
 .product-photo img { object-fit: cover; transition: opacity 260ms ease, transform 600ms ease; }
 /* Every photograph is stacked in the frame and only the current one is shown;
-   hovering advances it every five seconds. Crossfaded rather than cut, so a
+   hovering advances it every two seconds. Crossfaded rather than cut, so a
    grid of cards mid-slideshow does not flicker. */
 .product-frame { opacity: 0; }
 .product-frame.is-on { opacity: 1; }

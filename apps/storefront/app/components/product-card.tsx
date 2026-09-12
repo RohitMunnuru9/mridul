@@ -34,7 +34,7 @@ export function ProductCard({
   const [primary] = product.images;
 
   /**
-   * Hovering plays the product's own photographs, one every five seconds.
+   * Hovering plays the product's own photographs, one every two seconds.
    *
    * It replaces a single swap to the second picture, which showed one extra
    * angle and then stopped. Anything past the second was unreachable without
@@ -53,7 +53,7 @@ export function ProductCard({
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const tick = setInterval(
       () => setFrame((n) => (n + 1) % product.images.length),
-      5000,
+      2000,
     );
     return () => clearInterval(tick);
   }, [playing, product.images.length]);
