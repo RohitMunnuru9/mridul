@@ -443,37 +443,29 @@ button:hover .replacement span + span {
   border: 0;
   cursor: pointer;
 }
-/* The add-to-bag curtain: the same cloth as the page transition, carrying the
-   piece that was just chosen. Built and removed by flyToBag. */
-.bag-curtain {
+/* The rocket that carries an item to the bag, and the sparks behind it.
+   Both are built and removed by flyToBag; `left`/`top` are set there and the
+   translate happens on top of the centring, which is why both are needed. */
+.bag-rocket {
   position: fixed;
   z-index: 100;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  inset: 0;
+  margin-left: -0.65em;
+  margin-top: -0.65em;
+  font-size: 1.9rem;
+  line-height: 1;
   pointer-events: none;
+  filter: drop-shadow(0 3px 8px rgb(25 12 16 / 45%));
 }
-.bag-curtain-cloth {
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      rgb(226 190 160 / 8%) 0 1px,
-      transparent 1px 9px
-    ),
-    radial-gradient(120% 85% at 50% 8%, #64303f 0%, #4a2029 45%, #35131e 100%);
-}
-.bag-curtain-piece {
-  position: relative;
-  width: clamp(150px, 44vw, 232px);
-  aspect-ratio: 0.78;
-  border: 1px solid rgb(215 175 128 / 45%);
-  border-radius: 4px;
-  background-position: center;
-  background-size: cover;
-  box-shadow: 0 22px 52px rgb(24 8 14 / 55%);
+.bag-spark {
+  position: fixed;
+  z-index: 99;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold) 0%, rgb(201 169 97 / 0%) 70%);
+  pointer-events: none;
 }
 .page-fabric {
   position: fixed;
