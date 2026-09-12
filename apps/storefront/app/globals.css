@@ -1727,35 +1727,8 @@ img { display: block; max-width: 100%; }
   .toast.is-leaving { transform: none; }
 }
 
-/* --- WhatsApp float --------------------------------------------------------------- */
 
-.whatsapp-float {
-  position: fixed;
-  z-index: 70;
-  right: 1.1rem;
-  bottom: 1.1rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.6rem 1rem;
-  border: 1px solid rgb(255 252 250 / 22%);
-  border-radius: 999px;
-  background: linear-gradient(160deg, #2a8f4c, #1c6b39);
-  color: #fff;
-  box-shadow: 0 10px 26px rgb(28 107 57 / 30%);
-  font-size: 0.74rem;
-  font-weight: 650;
-  /* Kept out of the way until the visitor has actually started reading. */
-  opacity: 0;
-  transform: translateY(10px) scale(0.96);
-  pointer-events: none;
-  transition: opacity 240ms ease, transform 240ms ease, background 200ms ease;
-}
-.whatsapp-float.is-shown { opacity: 1; transform: none; pointer-events: auto; }
-.whatsapp-float svg { width: 1rem; }
-.whatsapp-float:hover { background: linear-gradient(160deg, #2f9c54, #196033); }
 @media (prefers-reduced-motion: reduce) {
-  .whatsapp-float { transition: opacity 120ms linear; transform: none; }
 }
 
 /* --- Footer ------------------------------------------------------------------------ */
@@ -1793,8 +1766,6 @@ img { display: block; max-width: 100%; }
   .toast { max-width: none; }
   /* Above the bottom bar, and on the opposite side to the bag so the two do
      not sit on top of each other. */
-  .whatsapp-float { right: 0.75rem; bottom: 4.9rem; padding: 0.5rem 0.75rem; }
-  .whatsapp-float span { display: none; }
   .account-hero { flex-direction: column; gap: 0.8rem; }
   .product-rail { margin-top: 2.8rem; }
 }
@@ -2538,14 +2509,6 @@ img { display: block; max-width: 100%; }
 /* It was a neon green circle on a warm cream site — the one saturated thing on
    the page and from a completely different family. A deep forest green keeps
    the signal without shouting over everything else. */
-.whatsapp-float {
-  background: linear-gradient(160deg, #35704b, #245136);
-  border-color: rgb(255 253 252 / 18%);
-  box-shadow: 0 10px 24px rgb(36 81 54 / 28%);
-}
-.whatsapp-float:hover {
-  background: linear-gradient(160deg, #3d7f55, #1f4830);
-}
 
 @media (width <= 560px) {
   .pdp-specs { grid-template-columns: 1fr; }
