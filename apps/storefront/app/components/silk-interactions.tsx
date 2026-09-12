@@ -3,12 +3,22 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+/** Counts darts sent, only to keep each one's gradient ids to itself. */
+let dartsFlown = 0;
+
 /**
  * A paper dart flies from the button to the bag.
  *
+ *
  * Drawn rather than an emoji: the emoji rocket is a cartoon, and it is a
- * different cartoon on every operating system. Two flat faces with a crease
- * between them read as folded paper and look the same everywhere.
+ * different cartoon on every operating system.
+ *
+ * Three surfaces make the fold read as solid: an upper wing catching the
+ * light, a lower one turned away from it, and a keel beneath. Each is shaded
+ * across its own length rather than filled flat, a gold crease runs the length
+ * of the fold, and the leading edge carries a rim light — which together is
+ * what gives it depth at thirty pixels, where a flat triangle reads as a
+ * triangle.
  *
  * Asked for directly, after five quieter ideas and one very loud one were
  * turned down: a sprig, a cross-stitched lotus, a loom, a band of light on the
@@ -39,10 +49,39 @@ export function flyToBag(source: HTMLElement) {
   // Drawn nose-right, so the bank angle below needs no correction. The two
   // faces are the same dart lit from opposite sides, which is what makes it
   // read as paper rather than a flat triangle.
+  // Gradient ids must be unique: two darts can be in the air at once, and a
+  // repeated id would send both to the first one's gradients.
+  const uid = 'dart' + (dartsFlown += 1);
   rocket.innerHTML =
     '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-    '<path class="dart-lit" d="M23 12 L1 3.6 L8.4 12 Z" />' +
-    '<path class="dart-shade" d="M23 12 L8.4 12 L1 20.4 Z" />' +
+      '<defs>' +
+        '<linearGradient id="' + uid + 'a" x1="0" y1="0" x2="0.9" y2="1">' +
+          '<stop offset="0" stop-color="#c86f88" />' +
+          '<stop offset="0.5" stop-color="#7d3446" />' +
+          '<stop offset="1" stop-color="#4a2029" />' +
+        '</linearGradient>' +
+        '<linearGradient id="' + uid + 'b" x1="0" y1="1" x2="1" y2="0.2">' +
+          '<stop offset="0" stop-color="#240d12" />' +
+          '<stop offset="1" stop-color="#4a1d27" />' +
+        '</linearGradient>' +
+        '<linearGradient id="' + uid + 'c" x1="0" y1="0" x2="1" y2="0">' +
+          '<stop offset="0" stop-color="#150609" />' +
+          '<stop offset="1" stop-color="#39161e" />' +
+        '</linearGradient>' +
+      '</defs>' +
+      // Keel underneath, drawn first so the wings sit over it.
+      '<path d="M23 12 L8.2 12 L5.6 16.2 Z" fill="url(#' + uid + 'c)" />' +
+      // The far wing, swept back into the light. Longer than the near one:
+      // seen from slightly above, the two are never the same length, and
+      // making them equal is what turned this into an arrowhead.
+      '<path d="M23 12 L0.8 2.2 L8.2 12 Z" fill="url(#' + uid + 'a)" />' +
+      // The near wing, shorter and turned away from the light.
+      '<path d="M23 12 L8.2 12 L5 19.6 Z" fill="url(#' + uid + 'b)" />' +
+      // the fold itself, and a rim light along the leading edge
+      '<path d="M23 12 L8.2 12" stroke="#c9a961" stroke-width="0.8"' +
+        ' stroke-linecap="round" opacity="0.95" />' +
+      '<path d="M23 12 L0.8 2.2" stroke="#e8cf98" stroke-width="0.55"' +
+        ' stroke-linecap="round" opacity="0.6" />' +
     '</svg>';
   rocket.style.left = startX + 'px';
   rocket.style.top = startY + 'px';
