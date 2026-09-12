@@ -3,60 +3,91 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-/**
- * A moment over the page when something goes into the bag.
- *
- * The button that was pressed carries the wait, not the page.
- *
- * This began as a full-screen panel with a drawing in it — a sprig, then a
- * cross-stitched lotus, then a loom weaving cloth. All three were wrong for
- * the same reason rather than three different ones: a scrim over the
- * photograph of the thing being bought reads as something gone wrong with the
- * page, and no motif fixes that. Adding to a bag is a half-second of work and
- * does not deserve a takeover.
- *
- * So the feedback sits where the hand already is: a band of light crossing the
- * button, once, the way light crosses silk. Beside it the product's own
- * photograph still flies to the bag and the toast still names what happened,
- * which between them is the whole message.
- */
-function markPressed(source: HTMLElement) {
-  source.classList.add('is-adding');
-  const sweep = source.animate(
-    [{ offset: 0 }, { offset: 1 }],
-    { duration: 620, easing: 'cubic-bezier(.33,0,.2,1)' },
-  );
-  const clear = () => source.classList.remove('is-adding');
-  sweep.onfinish = clear;
-  sweep.oncancel = clear;
-}
+const PLEATS = 9;
+const FOLD_W = 84;
+const FOLD_H = 112;
 
+/**
+ * The piece is pleated into the bag.
+ *
+ * A saree is put away by pleating it, so that is what this does: the
+ * photograph is cut into nine vertical panels, each one folds in turn from the
+ * outside edges inward the way cloth is gathered over an arm, and the gathered
+ * bundle travels to the bag.
+ *
+ * Earlier attempts drew a motif in a panel over the page — a sprig, a lotus, a
+ * loom. All of them covered the garment and none of them belonged to the act
+ * of adding it. This uses the product's own photograph as the material, which
+ * is the only thing on screen that is actually about this purchase.
+ *
+ * `pointer-events: none` throughout, and skipped entirely for anyone who asked
+ * for less motion.
+ */
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  markPressed(source);
   const target = document.querySelector('[data-bag-target]');
   if (!target) return;
-  const from = source.getBoundingClientRect(),
-    to = target.getBoundingClientRect();
-  const photo = document.createElement('img');
-  photo.src = imageUrl;
-  photo.alt = '';
-  photo.className = 'bag-flight';
-  photo.style.left = `${from.left + from.width / 2 - 30}px`;
-  photo.style.top = `${from.top}px`;
-  document.body.appendChild(photo);
-  const animation = photo.animate(
-    [
-      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+
+  const from = source.getBoundingClientRect();
+  const to = target.getBoundingClientRect();
+
+  const fold = document.createElement('div');
+  fold.className = 'bag-fold';
+  fold.setAttribute('aria-hidden', 'true');
+  fold.style.left = `${from.left + from.width / 2 - FOLD_W / 2}px`;
+  fold.style.top = `${from.top - FOLD_H / 2}px`;
+  fold.style.width = `${FOLD_W}px`;
+  fold.style.height = `${FOLD_H}px`;
+
+  for (let i = 0; i < PLEATS; i += 1) {
+    const pleat = document.createElement('span');
+    pleat.style.backgroundImage = `url(${imageUrl})`;
+    // Each panel shows its own slice of the one photograph, so the strips read
+    // as a picture being folded rather than nine unrelated bars.
+    pleat.style.backgroundSize = `${PLEATS * 100}% 100%`;
+    pleat.style.backgroundPosition = `${(i / (PLEATS - 1)) * 100}% 50%`;
+    fold.appendChild(pleat);
+  }
+  document.body.appendChild(fold);
+
+  const middle = (PLEATS - 1) / 2;
+  fold.querySelectorAll<HTMLSpanElement>('span').forEach((pleat, i) => {
+    // Outermost panels fold first; the centre is the last to close.
+    const fromEdge = middle - Math.abs(i - middle);
+    pleat.animate(
+      [
+        { transform: 'perspective(320px) rotateY(0deg)', filter: 'brightness(1)' },
+        {
+          transform: `perspective(320px) rotateY(${i < middle ? 74 : -74}deg)`,
+          filter: `brightness(${i % 2 ? 0.74 : 1.12})`,
+        },
+      ],
       {
-        transform: `translate(${to.left - from.left - from.width / 2 + 30}px,${to.top - from.top}px) scale(.15)`,
-        opacity: 0.2,
+        duration: 380,
+        delay: fromEdge * 42,
+        easing: 'cubic-bezier(.5,0,.4,1)',
+        fill: 'both',
+      },
+    );
+  });
+
+  const travel = fold.animate(
+    [
+      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
+      { transform: 'translate(0,-14px) scale(1.04) rotate(-3deg)', opacity: 1, offset: 0.3 },
+      {
+        transform:
+          `translate(${to.left + to.width / 2 - from.left - from.width / 2}px,` +
+          `${to.top + to.height / 2 - from.top + FOLD_H / 2}px) scale(.12) rotate(9deg)`,
+        opacity: 0.15,
+        offset: 1,
       },
     ],
-    { duration: 700, easing: 'cubic-bezier(.25,.6,.3,1)' },
+    { duration: 900, easing: 'cubic-bezier(.36,.02,.2,1)' },
   );
-  animation.onfinish = () => photo.remove();
-  animation.oncancel = () => photo.remove();
+  const clear = () => fold.remove();
+  travel.onfinish = clear;
+  travel.oncancel = clear;
 }
 
 export function SilkInteractions() {
