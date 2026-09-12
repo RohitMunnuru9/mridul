@@ -6,88 +6,34 @@ import Image from 'next/image';
 /**
  * A moment over the page when something goes into the bag.
  *
- * A lotus, worked in cross stitch: each mark is two crossing strokes, and they
- * land row by row the way a row of stitches is actually sewn. The motif is the
- * one already in the shop's own mark rather than a borrowed heart, and the
- * stitch is the point — a drawn outline would have been quicker to write, but
- * this is a shop that sells cloth.
+ * The button that was pressed carries the wait, not the page.
  *
- * The toast beside it says what happened; this says nothing, which is why it
- * is `aria-hidden` and inert to the pointer. It is short on purpose: it sits
- * between a shopper and the next thing they meant to do.
+ * This began as a full-screen panel with a drawing in it — a sprig, then a
+ * cross-stitched lotus, then a loom weaving cloth. All three were wrong for
+ * the same reason rather than three different ones: a scrim over the
+ * photograph of the thing being bought reads as something gone wrong with the
+ * page, and no motif fixes that. Adding to a bag is a half-second of work and
+ * does not deserve a takeover.
+ *
+ * So the feedback sits where the hand already is: a band of light crossing the
+ * button, once, the way light crosses silk. Beside it the product's own
+ * photograph still flies to the bag and the toast still names what happened,
+ * which between them is the whole message.
  */
-/** A bloom on a stitch grid: petal tips at the top, opening to the full width,
-    then tapering to the base. Symmetric, so it reads as a flower at any size. */
-const LOTUS_GRID = [
-  '....X....',
-  '..X.X.X..',
-  '.XXXXXXX.',
-  'XXXXXXXXX',
-  '.XXXXXXX.',
-  '..XXXXX..',
-  '...XXX...',
-];
-const CELL = 12;
-
-function bagFlourish() {
-  const scrim = document.createElement('div');
-  scrim.className = 'bag-flourish';
-  scrim.setAttribute('aria-hidden', 'true');
-
-  const stitches: string[] = [];
-  LOTUS_GRID.forEach((row, y) => {
-    [...row].forEach((cell, x) => {
-      if (cell !== 'X') return;
-      const left = x * CELL;
-      const top = y * CELL;
-      // One group per stitch so each can arrive on its own.
-      stitches.push(
-        `<g class="stitch">` +
-          `<path d="M${left + 2.6} ${top + 2.6} L${left + 9.4} ${top + 9.4}" />` +
-          `<path d="M${left + 9.4} ${top + 2.6} L${left + 2.6} ${top + 9.4}" />` +
-        `</g>`,
-      );
-    });
-  });
-
-  scrim.innerHTML =
-    `<svg viewBox="-7 -7 ${LOTUS_GRID[0].length * CELL + 14} ${LOTUS_GRID.length * CELL + 14}"` +
-    ` fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">` +
-    stitches.join('') +
-    `</svg>`;
-  document.body.appendChild(scrim);
-
-  scrim.querySelectorAll<SVGGElement>('.stitch').forEach((stitch, index) => {
-    stitch.animate(
-      [
-        { opacity: 0, transform: 'scale(.4)' },
-        { opacity: 1, transform: 'scale(1)' },
-      ],
-      {
-        duration: 260,
-        delay: index * 17,
-        easing: 'cubic-bezier(.2,.9,.3,1.4)',
-        fill: 'both',
-      },
-    );
-  });
-
-  const done = scrim.animate(
-    [
-      { opacity: 0 },
-      { opacity: 1, offset: 0.12 },
-      { opacity: 1, offset: 0.74 },
-      { opacity: 0 },
-    ],
-    { duration: 1400, easing: 'ease-out' },
+function markPressed(source: HTMLElement) {
+  source.classList.add('is-adding');
+  const sweep = source.animate(
+    [{ offset: 0 }, { offset: 1 }],
+    { duration: 620, easing: 'cubic-bezier(.33,0,.2,1)' },
   );
-  done.onfinish = () => scrim.remove();
-  done.oncancel = () => scrim.remove();
+  const clear = () => source.classList.remove('is-adding');
+  sweep.onfinish = clear;
+  sweep.oncancel = clear;
 }
 
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  bagFlourish();
+  markPressed(source);
   const target = document.querySelector('[data-bag-target]');
   if (!target) return;
   const from = source.getBoundingClientRect(),
