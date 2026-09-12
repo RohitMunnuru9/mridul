@@ -1,5 +1,5 @@
 import 'server-only';
-import { GoogleGenAI, type Content, FinishReason } from '@google/genai';
+import { GoogleGenAI, type Content, FinishReason, ThinkingLevel } from '@google/genai';
 import { getAllProducts, getSiteSettings } from '@mridul/database';
 import { formatPaise } from '@mridul/utils';
 
@@ -23,10 +23,12 @@ import { formatPaise } from '@mridul/utils';
 
 /**
  * Overridable without a code change, because model names come and go faster
- * than deploys do. Flash is the right tier for a shop chat: quick, cheap, and
- * the work here is reading a catalogue rather than reasoning hard about it.
+ * than deploys do — this default was already once removed under us, and Google
+ * named its replacement in the 404 it returned. Flash is the right tier for a
+ * shop chat: quick, cheap, and the work here is reading a catalogue rather
+ * than reasoning hard about it.
  */
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
 /** A public endpoint that spends money per call gets a hard ceiling. */
 const MAX_OUTPUT_TOKENS = 1024;
@@ -191,9 +193,11 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
           config: {
             systemInstruction: system,
             maxOutputTokens: MAX_OUTPUT_TOKENS,
-            // Off. This is a catalogue lookup in a chat bubble; thinking would
-            // buy nothing and the customer would watch the pause.
-            thinkingConfig: { thinkingBudget: 0 },
+            // As little as the model allows. This is a catalogue lookup in a
+            // chat bubble: thinking buys nothing here and the customer would
+            // only watch the pause. Gemini 3 takes a level; the older
+            // `thinkingBudget: 0` is rejected outright by it.
+            thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
           },
         });
 
