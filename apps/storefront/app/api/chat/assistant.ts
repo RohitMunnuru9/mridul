@@ -1,5 +1,5 @@
 import 'server-only';
-import { GoogleGenAI, type Content, FinishReason, ThinkingLevel } from '@google/genai';
+import { ApiError, GoogleGenAI, type Content, FinishReason, ThinkingLevel } from '@google/genai';
 import { getAllProducts, getSiteSettings } from '@mridul/database';
 import { formatPaise } from '@mridul/utils';
 
@@ -171,6 +171,20 @@ async function systemInstruction(): Promise<string> {
 }
 
 /**
+ * Is this Google saying "too many, too fast"?
+ *
+ * Worth knowing apart from every other failure, because the one thing that
+ * must not happen to a rate limit is a retry — that is two requests where one
+ * was already too many. The SDK puts the status on ApiError but wraps some
+ * failures in a plain Error carrying the JSON body, so both are checked.
+ */
+function rateLimited(error: unknown): boolean {
+  if (error instanceof ApiError && error.status === 429) return true;
+  const text = error instanceof Error ? error.message : String(error);
+  return text.includes('429') && /RESOURCE_EXHAUSTED|rate limit|quota/i.test(text);
+}
+
+/**
  * One retry, then give up.
  *
  * Both halves of a reply cross a network — the catalogue from Supabase, the
@@ -183,6 +197,7 @@ async function once<T>(what: string, fn: () => Promise<T>): Promise<T> {
   try {
     return await fn();
   } catch (error) {
+    if (rateLimited(error)) throw error;
     console.warn(`[assistant] ${what} failed, retrying:`, error instanceof Error ? error.message : error);
     return await fn();
   }
@@ -245,7 +260,7 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
         try {
           finish = await speak();
         } catch (error) {
-          if (wroteSomething) throw error;
+          if (wroteSomething || rateLimited(error)) throw error;
           console.warn('[assistant] the model failed, retrying:', error instanceof Error ? error.message : error);
           finish = await speak();
         }
@@ -262,14 +277,26 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
           );
         }
       } catch (error) {
-        // A failure mid-stream: end the reply cleanly with a line the customer
-        // can act on, and log the class of failure without the key.
-        console.error('[assistant] stream failed:', error instanceof Error ? error.message : error);
-        controller.enqueue(
-          encoder.encode(
-            `${wroteSomething ? '\n\n' : ''}Something went wrong on my side. Please try again, or message the shop on WhatsApp.`,
-          ),
-        );
+        // End the reply with a line the customer can act on, and log the class
+        // of failure without the key. A rate limit is worth saying plainly:
+        // "wait a moment" is true and actionable, where "something went wrong"
+        // is neither and invites the retry that caused it.
+        const lead = wroteSomething ? '\n\n' : '';
+        if (rateLimited(error)) {
+          console.warn('[assistant] rate limited by the model provider');
+          controller.enqueue(
+            encoder.encode(
+              `${lead}A lot of people are asking at once. Give it a moment and ask again, or message the shop on WhatsApp.`,
+            ),
+          );
+        } else {
+          console.error('[assistant] stream failed:', error instanceof Error ? error.message : error);
+          controller.enqueue(
+            encoder.encode(
+              `${lead}Something went wrong on my side. Please try again, or message the shop on WhatsApp.`,
+            ),
+          );
+        }
       } finally {
         controller.close();
       }
