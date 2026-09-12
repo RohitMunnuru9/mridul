@@ -138,7 +138,10 @@ export function AssistantChat({ whatsapp }: { whatsapp: string }) {
       });
 
       if (!res.ok || !res.body) {
-        setTurns(history);
+        // Put the question back in the box. Whatever went wrong, retyping it
+        // is not the customer's job — and every one of these is retryable.
+        setTurns(turns);
+        setDraft(text);
         setStatus(res.status === 503 ? 'unconfigured' : res.status === 429 ? 'busy' : 'failed');
         return;
       }
@@ -156,7 +159,8 @@ export function AssistantChat({ whatsapp }: { whatsapp: string }) {
       setStatus('idle');
     } catch (error) {
       if ((error as Error).name === 'AbortError') return;
-      setTurns(history);
+      setTurns(turns);
+      setDraft(text);
       setStatus('failed');
     }
   }
@@ -219,7 +223,9 @@ export function AssistantChat({ whatsapp }: { whatsapp: string }) {
                   <p className="assistant-note">A lot of questions at once — give it a moment.</p>
                 )}
                 {status === 'failed' && (
-                  <p className="assistant-note">{"That didn't go through. Try again, or use WhatsApp above."}</p>
+                  <p className="assistant-note">
+                    {'That didn’t go through — your question is still in the box, press send to try again.'}
+                  </p>
                 )}
               </div>
 
