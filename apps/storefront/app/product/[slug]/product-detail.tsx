@@ -122,7 +122,7 @@ export function ProductPurchase({
     if (variant.stock <= 0) return;
     putInBag();
     setAdded(true);
-    flyToBag(event.currentTarget, product.images[0].url);
+    flyToBag(event.currentTarget);
     notify(`${product.name} added to bag.`, {
       label: 'View bag',
       href: '/bag',

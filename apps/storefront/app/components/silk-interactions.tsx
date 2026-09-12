@@ -4,72 +4,103 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 /**
- * A curtain of cloth passes over the screen, and the piece is behind it.
+ * A rocket flies from the button to the bag.
  *
- * This is the one transition already approved here — the wine curtain with the
- * warp threads that covers a page change — cut short and given the product to
- * carry. Five quieter ideas were rejected before it: a sprig, a cross-stitched
- * lotus, a loom, a band of light on the button, and the photograph pleating
- * itself. The lesson taken is that this moment is wanted as an event, not a
- * detail, so it is now the boldest thing the shop does.
+ * Asked for directly, after five quieter ideas and one very loud one were
+ * turned down: a sprig, a cross-stitched lotus, a loom, a band of light on the
+ * button, the photograph pleating itself, and a full curtain.
  *
- * The curtain rises from the bottom, holds the photograph for a beat, then
- * leaves upward with it, and the bag mark is struck as it passes.
+ * It leaves the button, arcs — the apex sits above both ends, so it climbs
+ * before it drops rather than sliding along a ruler — and banks into the bag,
+ * which is struck as it lands. Sparks fall behind it along the way.
  *
- * Inert to the pointer, removed when it finishes, skipped entirely for anyone
- * who asked for less motion.
+ * Inert to the pointer, removed when it lands, skipped for anyone who asked
+ * for less motion.
  */
-export function flyToBag(source: HTMLElement, imageUrl: string) {
+export function flyToBag(source: HTMLElement) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const stage = document.createElement('div');
-  stage.className = 'bag-curtain';
-  stage.setAttribute('aria-hidden', 'true');
-  stage.innerHTML =
-    '<span class="bag-curtain-cloth"></span>' +
-    `<span class="bag-curtain-piece" style="background-image:url(${imageUrl})"></span>`;
-  document.body.appendChild(stage);
-
-  const cloth = stage.querySelector<HTMLElement>('.bag-curtain-cloth');
-  const piece = stage.querySelector<HTMLElement>('.bag-curtain-piece');
-
-  // The cloth: up over the screen, hold, then away off the top.
-  cloth?.animate(
-    [
-      { transform: 'translateY(101%)', offset: 0 },
-      { transform: 'translateY(0%)', offset: 0.3 },
-      { transform: 'translateY(0%)', offset: 0.58 },
-      { transform: 'translateY(-101%)', offset: 1 },
-    ],
-    { duration: 1050, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' },
-  );
-
-  // The piece rides it: lifted into view, held, carried out.
-  piece?.animate(
-    [
-      { transform: 'translateY(70vh) scale(.9)', opacity: 0, offset: 0 },
-      { transform: 'translateY(0) scale(1)', opacity: 1, offset: 0.34 },
-      { transform: 'translateY(0) scale(1)', opacity: 1, offset: 0.56 },
-      { transform: 'translateY(-70vh) scale(.72)', opacity: 0, offset: 1 },
-    ],
-    { duration: 1050, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' },
-  );
-
-  // The bag is struck as the cloth goes past, so the eye is told where it went.
   const bag = document.querySelector<HTMLElement>('[data-bag-target]');
-  bag?.animate(
+  if (!bag) return;
+
+  const from = source.getBoundingClientRect();
+  const to = bag.getBoundingClientRect();
+  const startX = from.left + from.width / 2;
+  const startY = from.top + from.height / 2;
+  const endX = to.left + to.width / 2;
+  const endY = to.top + to.height / 2;
+
+  const rocket = document.createElement('div');
+  rocket.className = 'bag-rocket';
+  rocket.setAttribute('aria-hidden', 'true');
+  rocket.textContent = '🚀';
+  rocket.style.left = startX + 'px';
+  rocket.style.top = startY + 'px';
+  document.body.appendChild(rocket);
+
+  // A curve, not a line: the apex sits above both ends.
+  const apexX = (startX + endX) / 2;
+  const apexY = Math.min(startY, endY) - Math.max(90, Math.abs(endY - startY) * 0.5);
+  const at = (t: number) => ({
+    x: (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * apexX + t * t * endX,
+    y: (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * apexY + t * t * endY,
+  });
+
+  const DURATION = 820;
+  const frames = [0, 0.2, 0.4, 0.6, 0.8, 1].map((t) => {
+    const p = at(t);
+    // The nose points along the path, so it banks through the turn. The emoji
+    // is drawn pointing up-right, hence the 45 degree correction.
+    const ahead = at(Math.min(1, t + 0.06));
+    const angle = (Math.atan2(ahead.y - p.y, ahead.x - p.x) * 180) / Math.PI + 45;
+    const scale = t < 0.15 ? 0.6 + t * 2.6 : 1.15 - t * 0.6;
+    return {
+      offset: t,
+      opacity: t > 0.92 ? 0 : 1,
+      transform:
+        'translate(' + (p.x - startX) + 'px,' + (p.y - startY) + 'px) ' +
+        'rotate(' + angle + 'deg) scale(' + scale + ')',
+    };
+  });
+
+  const flight = rocket.animate(frames, {
+    duration: DURATION,
+    easing: 'cubic-bezier(.35,.02,.5,1)',
+  });
+
+  // Sparks dropped along the path.
+  for (let i = 1; i <= 5; i += 1) {
+    const t = i / 6;
+    const p = at(t);
+    const spark = document.createElement('div');
+    spark.className = 'bag-spark';
+    spark.setAttribute('aria-hidden', 'true');
+    spark.style.left = p.x + 'px';
+    spark.style.top = p.y + 'px';
+    document.body.appendChild(spark);
+    const puff = spark.animate(
+      [
+        { opacity: 0.9, transform: 'scale(1)' },
+        { opacity: 0, transform: 'scale(.2) translateY(14px)' },
+      ],
+      { duration: 420, delay: DURATION * t, easing: 'ease-out', fill: 'both' },
+    );
+    const drop = () => spark.remove();
+    puff.onfinish = drop;
+    puff.oncancel = drop;
+  }
+
+  bag.animate(
     [
       { transform: 'scale(1)' },
-      { transform: 'scale(1.28)', offset: 0.72 },
+      { transform: 'scale(1.3)', offset: 0.55 },
       { transform: 'scale(1)' },
     ],
-    { duration: 520, delay: 620, easing: 'cubic-bezier(.3,1.6,.4,1)' },
+    { duration: 460, delay: DURATION - 120, easing: 'cubic-bezier(.3,1.7,.4,1)' },
   );
 
-  const done = stage.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 1060 });
-  const clear = () => stage.remove();
-  done.onfinish = clear;
-  done.oncancel = clear;
+  const land = () => rocket.remove();
+  flight.onfinish = land;
+  flight.oncancel = land;
 }
 
 export function SilkInteractions() {

@@ -87,7 +87,7 @@ export function ProductCard({
       label: 'View bag',
       href: '/bag',
     });
-    if (card.current) flyToBag(card.current, primary.url);
+    if (card.current) flyToBag(card.current);
   }
 
   function onWishlist() {
