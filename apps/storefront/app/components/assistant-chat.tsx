@@ -39,10 +39,12 @@ const MAX_CHARS = 2000;
  * `**Haldi Bloom**` printed literally looks broken. Handling it here is the
  * fix that always works; the prompt is only the first line of defence.
  *
- * A link is labelled "view" rather than the slug: the assistant names the
- * product in the sentence immediately before it, so spelling it out again
- * reads as a stutter. The name goes in `aria-label`, where a screen reader
- * still gets a destination worth hearing.
+ * A link is labelled "view" rather than the slug, because the assistant names
+ * the product in the sentence just before it and spelling it out again reads
+ * as a stutter. It is drawn as a chip rather than as inline text: the model
+ * drops the url mid-sentence as often as it brackets it, and a bare word there
+ * reads as prose — "a luminous choice view." The name goes on `aria-label`, so
+ * a screen reader still hears a destination worth having.
  */
 function render(text: string): ReactNode[] {
   const clean = text
@@ -62,7 +64,7 @@ function render(text: string): ReactNode[] {
     if (href) {
       const name = href.replace('/product/', '').replace(/-/g, ' ');
       out.push(
-        <Link aria-label={name} href={href} key={key++}>
+        <Link aria-label={name} className="assistant-link" href={href} key={key++}>
           view
         </Link>,
       );
