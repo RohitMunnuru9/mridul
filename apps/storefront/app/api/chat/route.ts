@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { ApiError } from '@google/genai';
 import { NextResponse } from 'next/server';
 import { answer, isConfigured, parseTurns, throttled } from './assistant';
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const outcome = await answer(parsed.messages);
+    const outcome = await answer(parsed.contents);
     if (outcome.kind === 'error') {
       return NextResponse.json({ error: outcome.message }, { status: outcome.status });
     }
@@ -52,16 +52,16 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    // Most specific first. The key is never in any of these messages, but the
-    // classes tell the log — and the panel — what actually went wrong.
-    if (error instanceof Anthropic.AuthenticationError) {
-      console.error('[assistant] the API key was rejected');
-      return NextResponse.json({ error: 'assistant_unconfigured' }, { status: 503 });
-    }
-    if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json({ error: 'assistant_busy' }, { status: 429 });
-    }
-    if (error instanceof Anthropic.APIError) {
+    // The key is never in any of these messages, but the status tells the log —
+    // and the panel — what actually went wrong.
+    if (error instanceof ApiError) {
+      if (error.status === 401 || error.status === 403) {
+        console.error('[assistant] the API key was rejected');
+        return NextResponse.json({ error: 'assistant_unconfigured' }, { status: 503 });
+      }
+      if (error.status === 429) {
+        return NextResponse.json({ error: 'assistant_busy' }, { status: 429 });
+      }
       console.error(`[assistant] API error ${error.status}: ${error.message}`);
       return NextResponse.json({ error: 'assistant_unavailable' }, { status: 502 });
     }
