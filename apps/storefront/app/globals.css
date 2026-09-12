@@ -691,7 +691,7 @@ img { display: block; max-width: 100%; }
   .site-header > .brand-mark small { display: none; }
   .desktop-navigation, .desktop-action { display: none !important; }
   .header-actions { grid-area: actions; gap: 0; }
-  .header-icon { width: 2.45rem !important; height: 2.45rem !important; }
+  .header-icon { width: 2.5rem !important; height: 2.5rem !important; }
   .header-icon svg { width: 1.14rem; }
   .mobile-category-nav {
     display: flex;
@@ -827,7 +827,8 @@ img { display: block; max-width: 100%; }
   .product-row { grid-auto-columns: calc((100vw - 2.5rem) / 2); gap: 0.72rem; }
   .product-photo { aspect-ratio: 0.67; }
   .product-badge { top: 0.45rem; left: 0.45rem; padding: 0.28rem 0.4rem; font-size: 0.43rem; }
-  .wishlist-button { top: 0.35rem; right: 0.35rem; width: 2rem !important; height: 2rem !important; }
+  /* 2.5rem is 40px: a thumb-sized target. 2rem was 32px, easy to miss. */
+  .wishlist-button { top: 0.35rem; right: 0.35rem; width: 2.5rem !important; height: 2.5rem !important; }
   .product-details h3 { font-size: 1rem; }
   .product-details p { min-height: 1.8em; font-size: 0.54rem; }
   .quick-add { width: 2rem !important; height: 2rem !important; }
@@ -1192,7 +1193,6 @@ img { display: block; max-width: 100%; }
   .product-grid, .listing-results .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .pdp-specs { grid-template-columns: 1fr; }
   .pdp-actions { flex-wrap: wrap; }
-  .pdp-add { flex-basis: 60%; }
   .listing-pagination { flex-wrap: wrap; gap: 0.8rem; }
 }
 
@@ -1220,8 +1220,10 @@ img { display: block; max-width: 100%; }
 .customer-input { display: flex; min-height: 3rem; align-items: center; gap: 0.6rem; padding: 0 0.8rem; border: 1px solid var(--border-strong); background: #fff; }
 .customer-input:focus-within { border-color: var(--berry); box-shadow: 0 0 0 3px rgb(139 50 80 / 9%); }
 .customer-input > svg { width: 1.05rem; flex: none; color: var(--muted-foreground); }
-.customer-input input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1rem; }
-.customer-input button { display: grid; padding: 0.35rem; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
+/* The wrapper is a span, not a label, so the input itself has to fill the box:
+   otherwise only the 24px line of text inside a 48px field responds to a tap. */
+.customer-input input { min-width: 0; min-height: 3rem; flex: 1; align-self: stretch; border: 0; outline: 0; background: transparent; font: inherit; font-size: 1rem; }
+.customer-input button { display: grid; min-width: 2.25rem; min-height: 2.25rem; padding: 0.35rem; place-items: center; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
 .customer-input button svg { width: 1rem; }
 .auth-submit, .delivery-submit { min-height: 3rem; border: 1px solid var(--cocoa); background: var(--cocoa); color: white; cursor: pointer; font: inherit; font-size: 0.86rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .auth-submit:hover, .delivery-submit:hover { background: var(--berry); }
@@ -1474,7 +1476,7 @@ img { display: block; max-width: 100%; }
   .product-card:hover .card-action { opacity: 1; transform: translateY(0); }
 }
 @media (hover: none) {
-  .card-action { position: static; margin-top: 0.6rem; opacity: 1; transform: none; border: 1px solid var(--border); background: transparent; }
+  .card-action { position: static; min-height: 2.5rem; margin-top: 0.6rem; opacity: 1; transform: none; border: 1px solid var(--border); background: transparent; }
 }
 .product-buy-row .swatches { margin-top: 0; }
 
@@ -1551,7 +1553,7 @@ img { display: block; max-width: 100%; }
 .bag-line-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
 .bag-line-head h2 { margin: 0; font-family: var(--font-cormorant), 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; line-height: 1.05; }
 .bag-line-head p { margin: 0.25rem 0 0; color: var(--muted-foreground); font-size: 0.68rem; }
-.bag-line-remove { display: grid; width: 1.7rem; height: 1.7rem; flex: none; place-items: center; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
+.bag-line-remove { display: grid; width: 2.25rem; height: 2.25rem; flex: none; place-items: center; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
 .bag-line-remove:hover { color: var(--destructive); }
 .bag-line-remove svg { width: 0.85rem; }
 .bag-line-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
@@ -1560,10 +1562,15 @@ img { display: block; max-width: 100%; }
 .quantity-stepper button:disabled { color: #c2b1ad; cursor: not-allowed; }
 .quantity-stepper svg { width: 0.75rem; }
 .quantity-stepper span { min-width: 1.6rem; text-align: center; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
-.bag-line-save { display: inline-flex; align-items: center; gap: 0.35rem; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; font-size: 0.68rem; }
+.bag-line-save { display: inline-flex; min-height: 2.25rem; align-items: center; gap: 0.35rem; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; font-size: 0.68rem; }
 .bag-line-save:hover { color: var(--berry); }
 .bag-line-save svg { width: 0.8rem; }
 .bag-line-total { margin-left: auto; font-size: 0.9rem; font-weight: 650; }
+/* Thumb-sized. The stepper's buttons were 30px, the remove cross 27px, and
+   "Save for later" only as tall as its text — all on the page where a mistap
+   changes what someone is about to pay for. */
+.quantity-stepper button { min-width: 2.25rem; min-height: 2.25rem; }
+.coupon-form button { min-height: 2.5rem; }
 
 .bag-summary { position: sticky; top: 7.5rem; padding: 1.2rem; border: 1px solid var(--border); background: var(--paper); }
 .bag-summary h2 { margin: 0 0 0.9rem; text-transform: uppercase; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; }
@@ -2554,8 +2561,14 @@ img { display: block; max-width: 100%; }
 .pdp-quantity, .pdp-wishlist { flex: 0 0 auto; }
 
 @media (width <= 720px) {
-  .pdp-actions { flex-wrap: nowrap; gap: 0.4rem; }
-  .pdp-add { flex-basis: auto; font-size: 0.58rem; letter-spacing: 0.09em; }
+  /* Wrap is what lets Buy now take its own line. A `nowrap` here once beat
+     every rule above it and pushed Buy now clean off the card. */
+  .pdp-actions { flex-wrap: wrap; gap: 0.4rem; }
+  .pdp-add { font-size: 0.58rem; letter-spacing: 0.09em; }
+  /* The strip stays vertical beside the photograph on a phone too — that is
+     the layout that was asked for — but narrower, so the image keeps as much
+     of the width as it can. */
+  .pdp-gallery { grid-template-columns: 3.6rem 1fr; gap: 0.45rem; }
   .pdp-wishlist { width: 2.9rem !important; height: auto !important; }
   .pdp-quantity button { width: 1.7rem; }
   .pdp-quantity span { min-width: 1.3rem; }
