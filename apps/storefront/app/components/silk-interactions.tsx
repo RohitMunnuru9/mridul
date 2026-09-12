@@ -114,7 +114,6 @@ export function flyToBag(source: HTMLElement, imageUrl: string) {
 }
 
 export function SilkInteractions() {
-  const cursor = useRef<HTMLDivElement>(null);
   const curtain = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -130,12 +129,6 @@ export function SilkInteractions() {
     const move = (event: PointerEvent) => {
       if (!fine.matches || reduced.matches) return;
       const element = event.target instanceof Element ? event.target : null;
-      const context = element?.closest<HTMLElement>('[data-cursor]');
-      if (cursor.current) {
-        cursor.current.style.transform = `translate(${event.clientX - 37}px,${event.clientY - 37}px)`;
-        cursor.current.textContent = context?.dataset.cursor ?? '';
-        cursor.current.classList.toggle('is-visible', Boolean(context));
-      }
       const button = element?.closest<HTMLElement>('[data-magnetic]') ?? null;
       if (magnetic && magnetic !== button) magnetic.style.translate = '';
       magnetic = button;
@@ -145,7 +138,6 @@ export function SilkInteractions() {
       }
     };
     const leave = () => {
-      cursor.current?.classList.remove('is-visible');
       if (magnetic) magnetic.style.translate = '';
     };
     const navigate = (event: MouseEvent) => {
@@ -206,7 +198,6 @@ export function SilkInteractions() {
   }, [router]);
   return (
     <>
-      <div ref={cursor} className="silk-cursor" aria-hidden="true" />
       <div ref={curtain} className="page-fabric" aria-hidden="true">
         {/* Warp threads, drawn rather than an image: two repeating gradients
             cost nothing and never wait on a request mid-navigation. */}
