@@ -1,10 +1,10 @@
 import 'server-only';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI, type Content, FinishReason } from '@google/genai';
 import { getAllProducts, getSiteSettings } from '@mridul/database';
 import { formatPaise } from '@mridul/utils';
 
 /**
- * The shop assistant, server side.
+ * The shop assistant, server side. Answered by Gemini.
  *
  * Everything it knows about the shop it reads from the database at request
  * time — products, prices, stock, the shipping threshold, the return window,
@@ -21,7 +21,12 @@ import { formatPaise } from '@mridul/utils';
  * quietly ending up in a bundle.
  */
 
-export const MODEL = 'claude-opus-5';
+/**
+ * Overridable without a code change, because model names come and go faster
+ * than deploys do. Flash is the right tier for a shop chat: quick, cheap, and
+ * the work here is reading a catalogue rather than reasoning hard about it.
+ */
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 /** A public endpoint that spends money per call gets a hard ceiling. */
 const MAX_OUTPUT_TOKENS = 1024;
@@ -51,20 +56,30 @@ export function throttled(ip: string): boolean {
   return entry.count > WINDOW_LIMIT;
 }
 
-export function isConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
+/** Either name works; the SDK reads both, and so does this. */
+function apiKey(): string | undefined {
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || undefined;
 }
 
-/** Turns the wire body into the SDK's own message type, or says why not. */
+export function isConfigured(): boolean {
+  return Boolean(apiKey());
+}
+
+/**
+ * Turns the wire body into Gemini's own `Content` shape, or says why not.
+ * The panel speaks in `assistant`; Gemini calls that role `model`, and this is
+ * the one place that translation happens.
+ */
 export function parseTurns(
   body: unknown,
-): { ok: true; messages: Anthropic.MessageParam[] } | { ok: false; reason: string } {
+): { ok: true; contents: Content[] } | { ok: false; reason: string } {
   const raw = (body as { messages?: unknown })?.messages;
   if (!Array.isArray(raw) || raw.length === 0) return { ok: false, reason: 'No messages.' };
   if (raw.length > MAX_TURNS) return { ok: false, reason: 'Too many messages.' };
 
-  const messages: Anthropic.MessageParam[] = [];
+  const contents: Content[] = [];
   let total = 0;
+  let lastRole = '';
   for (const item of raw) {
     const role = (item as { role?: unknown })?.role;
     const content = (item as { content?: unknown })?.content;
@@ -76,20 +91,22 @@ export function parseTurns(
       return { ok: false, reason: 'A message is empty or too long.' };
     }
     total += text.length;
-    messages.push({ role, content: text });
+    lastRole = role === 'assistant' ? 'model' : 'user';
+    contents.push({ role: lastRole, parts: [{ text }] });
   }
   if (total > MAX_TOTAL_CHARS) return { ok: false, reason: 'Conversation too long.' };
-  if (messages[0].role !== 'user' || messages[messages.length - 1].role !== 'user') {
+  if (contents[0].role !== 'user' || lastRole !== 'user') {
     return { ok: false, reason: 'Conversation must start and end with the customer.' };
   }
-  return { ok: true, messages };
+  return { ok: true, contents };
 }
 
 /**
  * The catalogue as the model sees it. Built in a fixed key order and sorted by
  * slug, with nothing time-dependent in it, so the block is byte-identical
- * between requests until something in the shop actually changes — which is
- * what lets the prompt cache serve it instead of re-reading it every message.
+ * between requests until something in the shop actually changes. Gemini caches
+ * repeated prefixes on its own, and a block that never varies gratuitously is
+ * what gives it something to cache.
  */
 async function catalogueBlock(): Promise<string> {
   const products = await getAllProducts();
@@ -121,21 +138,21 @@ async function catalogueBlock(): Promise<string> {
   return JSON.stringify(rows);
 }
 
-/** Stable instructions first, the catalogue after: the cache is a prefix match. */
-async function systemBlocks(): Promise<Anthropic.TextBlockParam[]> {
+/** Stable instructions first, the catalogue after — the shape a prefix cache likes. */
+async function systemInstruction(): Promise<string> {
   const [settings, catalogue] = await Promise.all([getSiteSettings(), catalogueBlock()]);
   const c = settings.contact;
 
-  const instructions = [
+  return [
     `You are the shopping assistant for ${settings.brandName}, an Indian saree and blouse shop. You help customers choose pieces, understand fabrics and care, and find their way around the shop.`,
     '',
     'Rules you never break:',
     '- Every product, price, option and stock figure you mention comes from the CATALOGUE below. If it is not there, it does not exist — say so rather than guess.',
-    '- Never promise a delivery date, a discount, a custom alteration or anything the catalogue and the facts below do not state. Delivery charges and dates are confirmed at checkout from the customer\'s pincode.',
+    "- Never promise a delivery date, a discount, a custom alteration or anything the catalogue and the facts below do not state. Delivery charges and dates are confirmed at checkout from the customer's pincode.",
     '- Do not invent reviews, awards, or claims about who made a piece.',
     `- When you cannot answer, or the customer wants a person, offer WhatsApp: ${c.whatsapp}. That is a real number that reaches the shop.`,
     '- Link a product by writing its url exactly as given, for example /product/some-slug, on its own or in a sentence. Do not make up urls.',
-    '- Be brief and warm. Two or three short sentences usually. No headings, no bullet lists longer than four items, no emoji.',
+    '- Be brief and warm. Two or three short sentences usually. No headings, no bullet lists longer than four items, no emoji, no markdown.',
     '- Stay on the shop. Politely decline anything unrelated to sarees, blouses, this shop, or an order from it.',
     '',
     'Shop facts:',
@@ -144,16 +161,10 @@ async function systemBlocks(): Promise<Anthropic.TextBlockParam[]> {
     '- Payment is taken securely at checkout. Order updates go out on WhatsApp.',
     `- Contact: WhatsApp ${c.whatsapp}${c.email ? `, email ${c.email}` : ''}${c.instagram ? `, Instagram ${c.instagram}` : ''}.`,
     '- Prices are in Indian rupees and include all taxes.',
+    '',
+    `CATALOGUE (JSON, one entry per product):`,
+    catalogue,
   ].join('\n');
-
-  return [
-    { type: 'text', text: instructions },
-    {
-      type: 'text',
-      text: `CATALOGUE (JSON, one entry per product):\n${catalogue}`,
-      cache_control: { type: 'ephemeral' },
-    },
-  ];
 }
 
 export type AssistantOutcome =
@@ -162,57 +173,63 @@ export type AssistantOutcome =
 
 /**
  * Streams the reply as plain UTF-8 text chunks. The client appends them to the
- * last assistant bubble as they arrive; a refusal is written into the same
+ * last assistant bubble as they arrive; a safety stop is written into the same
  * stream as a normal sentence, so the reader never has to special-case it.
  */
-export async function answer(messages: Anthropic.MessageParam[]): Promise<AssistantOutcome> {
-  const client = new Anthropic();
-  const system = await systemBlocks();
-
-  const stream = client.beta.messages.stream({
-    model: MODEL,
-    max_tokens: MAX_OUTPUT_TOKENS,
-    // If the model declines a message on policy grounds, the API re-runs it on
-    // a fallback model inside the same call, so the customer still gets an
-    // answer where one is possible. Routing is by refusal category.
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    // Thinking stays on (adaptive is the default on this model); low effort
-    // is the right setting for a chat turn — quick, and a one-word change here
-    // if the answers ever want more deliberation.
-    output_config: { effort: 'low' },
-    system,
-    messages,
-  });
+export async function answer(contents: Content[]): Promise<AssistantOutcome> {
+  const ai = new GoogleGenAI({ apiKey: apiKey() });
+  const system = await systemInstruction();
 
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let wroteSomething = false;
       try {
-        for await (const event of stream) {
-          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-            controller.enqueue(encoder.encode(event.delta.text));
+        const stream = await ai.models.generateContentStream({
+          model: MODEL,
+          contents,
+          config: {
+            systemInstruction: system,
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            // Off. This is a catalogue lookup in a chat bubble; thinking would
+            // buy nothing and the customer would watch the pause.
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        });
+
+        let finish: FinishReason | undefined;
+        for await (const chunk of stream) {
+          const text = chunk.text;
+          if (text) {
+            wroteSomething = true;
+            controller.enqueue(encoder.encode(text));
           }
+          finish = chunk.candidates?.[0]?.finishReason ?? finish;
         }
-        const final = await stream.finalMessage();
-        if (final.stop_reason === 'refusal') {
-          controller.enqueue(
-            encoder.encode("I can't help with that one, but the shop can — message us on WhatsApp and a person will pick it up."),
-          );
-        } else if (final.stop_reason === 'max_tokens') {
+
+        if (finish === FinishReason.MAX_TOKENS) {
           controller.enqueue(encoder.encode(' …'));
+        } else if (!wroteSomething) {
+          // SAFETY, RECITATION, or a turn that produced nothing at all. The
+          // customer gets a way forward either way.
+          controller.enqueue(
+            encoder.encode(
+              "I can't help with that one, but the shop can — message us on WhatsApp and a person will pick it up.",
+            ),
+          );
         }
       } catch (error) {
-        // A failure mid-stream: end the reply cleanly with a line the
-        // customer can act on, and log the class of failure without the key.
+        // A failure mid-stream: end the reply cleanly with a line the customer
+        // can act on, and log the class of failure without the key.
         console.error('[assistant] stream failed:', error instanceof Error ? error.message : error);
-        controller.enqueue(encoder.encode('\n\nSomething went wrong on my side. Please try again, or message the shop on WhatsApp.'));
+        controller.enqueue(
+          encoder.encode(
+            `${wroteSomething ? '\n\n' : ''}Something went wrong on my side. Please try again, or message the shop on WhatsApp.`,
+          ),
+        );
       } finally {
         controller.close();
       }
-    },
-    cancel() {
-      stream.abort();
     },
   });
 
