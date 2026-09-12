@@ -3,91 +3,73 @@ import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-const PLEATS = 9;
-const FOLD_W = 84;
-const FOLD_H = 112;
-
 /**
- * The piece is pleated into the bag.
+ * A curtain of cloth passes over the screen, and the piece is behind it.
  *
- * A saree is put away by pleating it, so that is what this does: the
- * photograph is cut into nine vertical panels, each one folds in turn from the
- * outside edges inward the way cloth is gathered over an arm, and the gathered
- * bundle travels to the bag.
+ * This is the one transition already approved here — the wine curtain with the
+ * warp threads that covers a page change — cut short and given the product to
+ * carry. Five quieter ideas were rejected before it: a sprig, a cross-stitched
+ * lotus, a loom, a band of light on the button, and the photograph pleating
+ * itself. The lesson taken is that this moment is wanted as an event, not a
+ * detail, so it is now the boldest thing the shop does.
  *
- * Earlier attempts drew a motif in a panel over the page — a sprig, a lotus, a
- * loom. All of them covered the garment and none of them belonged to the act
- * of adding it. This uses the product's own photograph as the material, which
- * is the only thing on screen that is actually about this purchase.
+ * The curtain rises from the bottom, holds the photograph for a beat, then
+ * leaves upward with it, and the bag mark is struck as it passes.
  *
- * `pointer-events: none` throughout, and skipped entirely for anyone who asked
- * for less motion.
+ * Inert to the pointer, removed when it finishes, skipped entirely for anyone
+ * who asked for less motion.
  */
 export function flyToBag(source: HTMLElement, imageUrl: string) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const target = document.querySelector('[data-bag-target]');
-  if (!target) return;
 
-  const from = source.getBoundingClientRect();
-  const to = target.getBoundingClientRect();
+  const stage = document.createElement('div');
+  stage.className = 'bag-curtain';
+  stage.setAttribute('aria-hidden', 'true');
+  stage.innerHTML =
+    '<span class="bag-curtain-cloth"></span>' +
+    `<span class="bag-curtain-piece" style="background-image:url(${imageUrl})"></span>`;
+  document.body.appendChild(stage);
 
-  const fold = document.createElement('div');
-  fold.className = 'bag-fold';
-  fold.setAttribute('aria-hidden', 'true');
-  fold.style.left = `${from.left + from.width / 2 - FOLD_W / 2}px`;
-  fold.style.top = `${from.top - FOLD_H / 2}px`;
-  fold.style.width = `${FOLD_W}px`;
-  fold.style.height = `${FOLD_H}px`;
+  const cloth = stage.querySelector<HTMLElement>('.bag-curtain-cloth');
+  const piece = stage.querySelector<HTMLElement>('.bag-curtain-piece');
 
-  for (let i = 0; i < PLEATS; i += 1) {
-    const pleat = document.createElement('span');
-    pleat.style.backgroundImage = `url(${imageUrl})`;
-    // Each panel shows its own slice of the one photograph, so the strips read
-    // as a picture being folded rather than nine unrelated bars.
-    pleat.style.backgroundSize = `${PLEATS * 100}% 100%`;
-    pleat.style.backgroundPosition = `${(i / (PLEATS - 1)) * 100}% 50%`;
-    fold.appendChild(pleat);
-  }
-  document.body.appendChild(fold);
-
-  const middle = (PLEATS - 1) / 2;
-  fold.querySelectorAll<HTMLSpanElement>('span').forEach((pleat, i) => {
-    // Outermost panels fold first; the centre is the last to close.
-    const fromEdge = middle - Math.abs(i - middle);
-    pleat.animate(
-      [
-        { transform: 'perspective(320px) rotateY(0deg)', filter: 'brightness(1)' },
-        {
-          transform: `perspective(320px) rotateY(${i < middle ? 74 : -74}deg)`,
-          filter: `brightness(${i % 2 ? 0.74 : 1.12})`,
-        },
-      ],
-      {
-        duration: 380,
-        delay: fromEdge * 42,
-        easing: 'cubic-bezier(.5,0,.4,1)',
-        fill: 'both',
-      },
-    );
-  });
-
-  const travel = fold.animate(
+  // The cloth: up over the screen, hold, then away off the top.
+  cloth?.animate(
     [
-      { transform: 'translate(0,0) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
-      { transform: 'translate(0,-14px) scale(1.04) rotate(-3deg)', opacity: 1, offset: 0.3 },
-      {
-        transform:
-          `translate(${to.left + to.width / 2 - from.left - from.width / 2}px,` +
-          `${to.top + to.height / 2 - from.top + FOLD_H / 2}px) scale(.12) rotate(9deg)`,
-        opacity: 0.15,
-        offset: 1,
-      },
+      { transform: 'translateY(101%)', offset: 0 },
+      { transform: 'translateY(0%)', offset: 0.3 },
+      { transform: 'translateY(0%)', offset: 0.58 },
+      { transform: 'translateY(-101%)', offset: 1 },
     ],
-    { duration: 900, easing: 'cubic-bezier(.36,.02,.2,1)' },
+    { duration: 1050, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' },
   );
-  const clear = () => fold.remove();
-  travel.onfinish = clear;
-  travel.oncancel = clear;
+
+  // The piece rides it: lifted into view, held, carried out.
+  piece?.animate(
+    [
+      { transform: 'translateY(70vh) scale(.9)', opacity: 0, offset: 0 },
+      { transform: 'translateY(0) scale(1)', opacity: 1, offset: 0.34 },
+      { transform: 'translateY(0) scale(1)', opacity: 1, offset: 0.56 },
+      { transform: 'translateY(-70vh) scale(.72)', opacity: 0, offset: 1 },
+    ],
+    { duration: 1050, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'both' },
+  );
+
+  // The bag is struck as the cloth goes past, so the eye is told where it went.
+  const bag = document.querySelector<HTMLElement>('[data-bag-target]');
+  bag?.animate(
+    [
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.28)', offset: 0.72 },
+      { transform: 'scale(1)' },
+    ],
+    { duration: 520, delay: 620, easing: 'cubic-bezier(.3,1.6,.4,1)' },
+  );
+
+  const done = stage.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 1060 });
+  const clear = () => stage.remove();
+  done.onfinish = clear;
+  done.oncancel = clear;
 }
 
 export function SilkInteractions() {

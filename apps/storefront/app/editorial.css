@@ -443,22 +443,37 @@ button:hover .replacement span + span {
   border: 0;
   cursor: pointer;
 }
-/* The pleating fold: nine panels of the product's own photograph, gathered and
-   carried to the bag. Sized in JS from the card it left. */
-.bag-fold {
+/* The add-to-bag curtain: the same cloth as the page transition, carrying the
+   piece that was just chosen. Built and removed by flyToBag. */
+.bag-curtain {
   position: fixed;
   z-index: 100;
-  display: flex;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  inset: 0;
   pointer-events: none;
-  filter: drop-shadow(0 10px 24px rgb(25 12 16 / 35%));
 }
-.bag-fold span {
-  flex: 1;
-  min-width: 0;
-  background-repeat: no-repeat;
-  /* Each panel hinges on its own inner edge, the way a pleat is creased. */
-  transform-origin: center left;
-  backface-visibility: hidden;
+.bag-curtain-cloth {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgb(226 190 160 / 8%) 0 1px,
+      transparent 1px 9px
+    ),
+    radial-gradient(120% 85% at 50% 8%, #64303f 0%, #4a2029 45%, #35131e 100%);
+}
+.bag-curtain-piece {
+  position: relative;
+  width: clamp(150px, 44vw, 232px);
+  aspect-ratio: 0.78;
+  border: 1px solid rgb(215 175 128 / 45%);
+  border-radius: 4px;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 22px 52px rgb(24 8 14 / 55%);
 }
 .page-fabric {
   position: fixed;
