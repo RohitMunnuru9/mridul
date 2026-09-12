@@ -913,13 +913,31 @@
   background: var(--cocoa);
   color: var(--paper);
 }
-.assistant-msg a {
+/* A chip, not a word. The assistant drops product urls mid-sentence as often
+   as it brackets them, and an inline "view" there reads as part of the
+   sentence rather than as something to press. */
+.assistant-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  margin: 0 0.12rem;
+  padding: 0.08rem 0.5rem;
+  border: 1px solid rgb(139 50 80 / 35%);
+  border-radius: 999px;
+  background: rgb(139 50 80 / 7%);
   color: var(--berry);
+  font-size: 0.78rem;
   font-weight: 650;
-  text-decoration: underline;
-  text-transform: capitalize;
+  text-decoration: none;
+  vertical-align: baseline;
+  white-space: nowrap;
 }
-.assistant-msg.is-user a {
+.assistant-link::after {
+  content: '↗';
+  font-size: 0.72em;
+}
+.assistant-link:hover {
+  background: var(--berry);
   color: var(--paper);
 }
 /* Three dots while the first tokens are on their way. */
