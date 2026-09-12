@@ -443,13 +443,22 @@ button:hover .replacement span + span {
   border: 0;
   cursor: pointer;
 }
-.bag-flight {
+/* The pleating fold: nine panels of the product's own photograph, gathered and
+   carried to the bag. Sized in JS from the card it left. */
+.bag-fold {
   position: fixed;
   z-index: 100;
-  width: 60px;
-  height: 80px;
-  object-fit: cover;
+  display: flex;
   pointer-events: none;
+  filter: drop-shadow(0 10px 24px rgb(25 12 16 / 35%));
+}
+.bag-fold span {
+  flex: 1;
+  min-width: 0;
+  background-repeat: no-repeat;
+  /* Each panel hinges on its own inner edge, the way a pleat is creased. */
+  transform-origin: center left;
+  backface-visibility: hidden;
 }
 .page-fabric {
   position: fixed;
