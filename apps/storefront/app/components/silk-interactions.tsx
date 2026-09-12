@@ -4,54 +4,82 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 /**
- * A moment of the brand's own drawing, over the page, when something is added
- * to the bag.
+ * A moment over the page when something goes into the bag.
  *
- * The toast says what happened and the flight says where it went; neither is
- * much of an event. This is the pause between the two — a sprig drawn in a
- * single stroke, the same line the journal panels use, then gone. It is
- * deliberately short: this sits between a shopper and the next thing they
- * meant to do, so it must not become a thing to wait through.
+ * A lotus, worked in cross stitch: each mark is two crossing strokes, and they
+ * land row by row the way a row of stitches is actually sewn. The motif is the
+ * one already in the shop's own mark rather than a borrowed heart, and the
+ * stitch is the point — a drawn outline would have been quicker to write, but
+ * this is a shop that sells cloth.
  *
- * `pointer-events: none` throughout, so it never swallows a click.
+ * The toast beside it says what happened; this says nothing, which is why it
+ * is `aria-hidden` and inert to the pointer. It is short on purpose: it sits
+ * between a shopper and the next thing they meant to do.
  */
+/** A bloom on a stitch grid: petal tips at the top, opening to the full width,
+    then tapering to the base. Symmetric, so it reads as a flower at any size. */
+const LOTUS_GRID = [
+  '....X....',
+  '..X.X.X..',
+  '.XXXXXXX.',
+  'XXXXXXXXX',
+  '.XXXXXXX.',
+  '..XXXXX..',
+  '...XXX...',
+];
+const CELL = 12;
+
 function bagFlourish() {
   const scrim = document.createElement('div');
   scrim.className = 'bag-flourish';
   scrim.setAttribute('aria-hidden', 'true');
-  scrim.innerHTML = `
-    <svg viewBox="0 0 120 120" fill="none" stroke="currentColor"
-         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M60 104 C60 74 60 50 60 24" />
-      <path d="M60 84 C44 82 34 72 32 56 C48 58 58 68 60 84 Z" />
-      <path d="M60 70 C76 68 86 58 88 42 C72 44 62 54 60 70 Z" />
-      <path d="M60 52 C46 50 38 41 36 27 C50 29 58 38 60 52 Z" />
-      <circle cx="60" cy="20" r="5" />
-    </svg>`;
+
+  const stitches: string[] = [];
+  LOTUS_GRID.forEach((row, y) => {
+    [...row].forEach((cell, x) => {
+      if (cell !== 'X') return;
+      const left = x * CELL;
+      const top = y * CELL;
+      // One group per stitch so each can arrive on its own.
+      stitches.push(
+        `<g class="stitch">` +
+          `<path d="M${left + 2.6} ${top + 2.6} L${left + 9.4} ${top + 9.4}" />` +
+          `<path d="M${left + 9.4} ${top + 2.6} L${left + 2.6} ${top + 9.4}" />` +
+        `</g>`,
+      );
+    });
+  });
+
+  scrim.innerHTML =
+    `<svg viewBox="-7 -7 ${LOTUS_GRID[0].length * CELL + 14} ${LOTUS_GRID.length * CELL + 14}"` +
+    ` fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">` +
+    stitches.join('') +
+    `</svg>`;
   document.body.appendChild(scrim);
-  const paths = scrim.querySelectorAll<SVGGeometryElement>('path, circle');
-  paths.forEach((path, index) => {
-    const length = path.getTotalLength();
-    path.style.strokeDasharray = String(length);
-    path.style.strokeDashoffset = String(length);
-    path.animate(
-      [{ strokeDashoffset: length }, { strokeDashoffset: 0 }],
+
+  scrim.querySelectorAll<SVGGElement>('.stitch').forEach((stitch, index) => {
+    stitch.animate(
+      [
+        { opacity: 0, transform: 'scale(.4)' },
+        { opacity: 1, transform: 'scale(1)' },
+      ],
       {
-        duration: 420,
-        delay: index * 70,
-        easing: 'cubic-bezier(.3,.7,.2,1)',
-        fill: 'forwards',
+        duration: 260,
+        delay: index * 17,
+        easing: 'cubic-bezier(.2,.9,.3,1.4)',
+        fill: 'both',
       },
     );
   });
+
   const done = scrim.animate(
     [
-      { opacity: 0, transform: 'scale(.94)' },
-      { opacity: 1, transform: 'scale(1)', offset: 0.18 },
-      { opacity: 1, transform: 'scale(1)', offset: 0.72 },
-      { opacity: 0, transform: 'scale(1.04)' },
+      { opacity: 0 },
+      { opacity: 1, offset: 0.12 },
+      { opacity: 1, offset: 0.74 },
+      { opacity: 0 },
     ],
-    { duration: 1150, easing: 'ease-out' },
+    { duration: 1400, easing: 'ease-out' },
   );
   done.onfinish = () => scrim.remove();
   done.oncancel = () => scrim.remove();
