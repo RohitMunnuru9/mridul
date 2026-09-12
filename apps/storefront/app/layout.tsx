@@ -10,7 +10,7 @@ import { SiteFooter } from './components/site-footer';
 import { StorefrontHeader } from './components/storefront-header';
 import { SilkInteractions } from './components/silk-interactions';
 import { ToastHost } from './components/toast-host';
-import { WhatsAppButton } from './components/whatsapp-button';
+import { AssistantChat } from './components/assistant-chat';
 import { StoreProvider } from './providers/store-provider';
 import {
   getCategories,
@@ -72,7 +72,7 @@ export default async function RootLayout({
             settings={settings}
             copy={copy}
           />
-          <WhatsAppButton phone={settings.contact.whatsapp} />
+          <AssistantChat whatsapp={settings.contact.whatsapp} />
           <ToastHost />
         </StoreProvider>
       </body>
