@@ -40,6 +40,10 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+# Wrangler's secret file. The storefront dev server runs on workerd, which does
+# not see .env.local — server-side secrets reach it through this instead.
+.dev.vars
+.dev.vars.*
 
 # deployment and generated files
 .vercel/
