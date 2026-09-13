@@ -185,3 +185,17 @@
   .account-order-list svg { display: none; }
   .account-details dl { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* The contact pair on an order: a delivery number and an account email are
+   two different things, so each says which it is rather than sitting in an
+   unlabelled list that reads like a mistake. */
+.order-contact li span {
+  display: grid;
+  gap: 0.1rem;
+}
+.order-contact small {
+  color: var(--muted-foreground);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
