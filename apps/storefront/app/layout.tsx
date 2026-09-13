@@ -11,7 +11,7 @@ import { SiteFooter } from './components/site-footer';
 import { StorefrontHeader } from './components/storefront-header';
 import { SilkInteractions } from './components/silk-interactions';
 import { ToastHost } from './components/toast-host';
-import { AssistantChat } from './components/assistant-chat';
+import { HelpChat } from './components/help-chat';
 import { StoreProvider } from './providers/store-provider';
 import {
   getCategories,
@@ -91,7 +91,17 @@ export default async function RootLayout({
             settings={settings}
             copy={copy}
           />
-          <AssistantChat whatsapp={settings.contact.whatsapp} />
+          {/* Every figure comes from Settings, so the answers cannot drift
+              from what checkout actually charges. */}
+          <HelpChat
+            facts={{
+              freeShippingThresholdPaise: settings.freeShippingThresholdPaise,
+              flatShippingPaise: settings.flatShippingPaise,
+              returnWindowDays: settings.returnWindowDays,
+              email: settings.contact.email,
+              whatsapp: settings.contact.whatsapp,
+            }}
+          />
           <ToastHost />
         </StoreProvider>
       </body>
