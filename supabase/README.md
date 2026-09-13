@@ -1,6 +1,6 @@
 # Supabase schema
 
-Eight migrations, applied in filename order. Every table has row-level security
+Sixteen migrations, applied in filename order. Every table has row-level security
 enabled, and a table with RLS on and no matching policy denies by default — so
 a table I forgot to write a policy for fails closed, not open.
 
@@ -14,6 +14,14 @@ a table I forgot to write a policy for fails closed, not open.
 | `0006_orders.sql` | Orders, order items, payments, shipments, tracking, stock movement |
 | `0007_ops.sql` | Notifications, webhook events, audit log, shipping rules, `media_usage` |
 | `0008_storage.sql` | Storage buckets and their policies |
+| `0009_editorial.sql` | The last of the hardcoded content, and the shipping figures |
+| `0010_nav_and_quotes.sql` | Which collections appear in the nav, and the header quotes |
+| `0011_sold_out.sql` | Mark a product sold out without touching its stock |
+| `0012_testimonials.sql` | Customer reviews |
+| `0013_testimonials_section.sql` | The reviews row on the homepage |
+| `0014_testimonial_media.sql` | A photo on a review |
+| `0015_order_numbers.sql` | `next_order_number()` — the human-facing reference |
+| `0016_order_placement.sql` | `place_order`, `admin_set_order_status`, `admin_customers` |
 
 ## The four rules this schema enforces
 
@@ -25,9 +33,22 @@ validated the coupon and calculated shipping. There is no code path where a
 request body decides an amount.
 
 On top of that, `0006` revokes `UPDATE` on `orders` and grants it back only on
-`status`, `notes` and `cancelled_at`. RLS chooses rows; column privileges
-choose columns. An order manager can advance an order but cannot rewrite what
-it cost.
+`status`, `notes` and `cancelled_at` — `0016` adds `payment_method` and
+`staff_notes` to that list and nothing else. RLS chooses rows; column
+privileges choose columns. An order manager can advance an order but cannot
+rewrite what it cost.
+
+`0016` is where an order actually gets created, and it did not need the
+service-role key to do it. `place_order` is a SECURITY DEFINER function granted
+to `authenticated`: the customer still has no `INSERT` on any of these tables,
+and all they can do is ask for that one transaction. It reads the unit price
+from `products`, re-validates the discount code against its own subtotal, reads
+the shipping charge from `settings`, locks and decrements `inventory` row by
+row, and writes the total itself. The browser chooses which variant and how
+many; everything else it sends is ignored or re-derived. The same shape covers
+the admin: `admin_customers()` reads the `auth.users` columns no client role
+can see and checks the caller's role itself, so the admin app never needs a key
+that bypasses these policies.
 
 **2. A customer sees only their own data.**
 `profiles`, `addresses`, `carts`, `cart_items`, `wishlists`, `orders` and

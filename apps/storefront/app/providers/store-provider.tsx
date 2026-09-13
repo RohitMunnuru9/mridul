@@ -47,10 +47,16 @@ export type CartLine = {
 type State = {
   lines: CartLine[];
   wishlist: string[];
+  /**
+   * The code the customer applied in the bag, carried to checkout so they do
+   * not retype it. The discount it is worth is never stored — checkout sends
+   * the code and the database decides again what, if anything, it takes off.
+   */
+  couponCode: string;
 };
 
 /** What the server renders, and the fallback whenever storage is unreadable. */
-const EMPTY: State = { lines: [], wishlist: [] };
+const EMPTY: State = { lines: [], wishlist: [], couponCode: '' };
 
 const listeners = new Set<() => void>();
 let snapshot: State = EMPTY;
@@ -64,6 +70,7 @@ function read(): State {
     return {
       lines: Array.isArray(parsed.lines) ? parsed.lines : [],
       wishlist: Array.isArray(parsed.wishlist) ? parsed.wishlist : [],
+      couponCode: typeof parsed.couponCode === 'string' ? parsed.couponCode : '',
     };
   } catch {
     // A corrupt or blocked store should never take the storefront down.
@@ -120,6 +127,7 @@ export type Toast = {
 type StoreValue = {
   lines: CartLine[];
   wishlist: string[];
+  couponCode: string;
   cartCount: number;
   /** Indicative subtotal in paise; the server recomputes it at checkout. */
   subtotalPaise: number;
@@ -128,6 +136,7 @@ type StoreValue = {
   setQuantity: (variantId: string, quantity: number) => void;
   removeLine: (variantId: string) => void;
   clearBag: () => void;
+  setCouponCode: (code: string) => void;
   /** Takes a line out of the bag and saves the product instead. */
   moveLineToWishlist: (variantId: string) => void;
   toggleWishlist: (productId: string) => boolean;
@@ -195,7 +204,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearBag = useCallback(() => {
-    update({ ...getSnapshot(), lines: [] });
+    // The code goes with the lines it was applied to. Leaving it behind would
+    // quietly attach it to whatever the customer puts in the bag next.
+    update({ ...getSnapshot(), lines: [], couponCode: '' });
+  }, []);
+
+  const setCouponCode = useCallback((code: string) => {
+    update({ ...getSnapshot(), couponCode: code });
   }, []);
 
   const moveLineToWishlist = useCallback((variantId: string) => {
@@ -203,6 +218,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const line = current.lines.find((item) => item.variantId === variantId);
     if (!line) return;
     update({
+      ...current,
       lines: current.lines.filter((item) => item.variantId !== variantId),
       wishlist: current.wishlist.includes(line.productId)
         ? current.wishlist
@@ -226,6 +242,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       lines: state.lines,
       wishlist: state.wishlist,
+      couponCode: state.couponCode,
       cartCount: state.lines.reduce((total, line) => total + line.quantity, 0),
       subtotalPaise: state.lines.reduce(
         (total, line) => total + line.unitPricePaise * line.quantity,
@@ -236,6 +253,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setQuantity,
       removeLine,
       clearBag,
+      setCouponCode,
       moveLineToWishlist,
       toggleWishlist,
       isWishlisted: (productId: string) => state.wishlist.includes(productId),
@@ -249,6 +267,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setQuantity,
       removeLine,
       clearBag,
+      setCouponCode,
       moveLineToWishlist,
       toggleWishlist,
       notify,

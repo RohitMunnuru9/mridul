@@ -865,10 +865,12 @@ export type Database = {
           id: string
           notes: string | null
           order_number: string
+          payment_method: string
           phone: string | null
           placed_at: string
           shipping_address: Json
           shipping_paise: number
+          staff_notes: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal_paise: number
           total_paise: number
@@ -888,10 +890,12 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number: string
+          payment_method?: string
           phone?: string | null
           placed_at?: string
           shipping_address: Json
           shipping_paise?: number
+          staff_notes?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_paise: number
           total_paise: number
@@ -911,10 +915,12 @@ export type Database = {
           id?: string
           notes?: string | null
           order_number?: string
+          payment_method?: string
           phone?: string | null
           placed_at?: string
           shipping_address?: Json
           shipping_paise?: number
+          staff_notes?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_paise?: number
           total_paise?: number
@@ -1673,12 +1679,49 @@ export type Database = {
       }
     }
     Functions: {
+      admin_customers: {
+        Args: never
+        Returns: {
+          accepts_marketing: boolean
+          city: string | null
+          email: string | null
+          email_confirmed_at: string | null
+          full_name: string | null
+          id: string
+          is_staff: boolean
+          last_order_at: string | null
+          last_sign_in_at: string | null
+          orders_count: number
+          phone: string | null
+          sign_in_method: string | null
+          signed_up_at: string
+          spend_paise: number
+          state: string | null
+        }[]
+      }
+      admin_set_order_status: {
+        Args: {
+          p_order_id: string
+          p_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
+      }
       has_admin_role: {
         Args: { required: Database["public"]["Enums"]["admin_role"][] }
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
       mark_order_paid: { Args: { p_order_id: string }; Returns: undefined }
+      next_order_number: { Args: never; Returns: string }
+      place_order: {
+        Args: {
+          p_address: Json
+          p_coupon?: string | null
+          p_items: Json
+          p_notes?: string | null
+        }
+        Returns: Json
+      }
       restore_order_stock: { Args: { p_order_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

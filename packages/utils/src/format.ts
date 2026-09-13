@@ -37,3 +37,44 @@ const BADGE_LABELS: Record<string, string> = {
 export function badgeLabel(badge?: string): string | undefined {
   return badge ? BADGE_LABELS[badge] : undefined;
 }
+
+/* ---------------------------------------------------------------------------
+ * Dates
+ *
+ * Every timestamp in the database is `timestamptz`, stored in UTC. The shop,
+ * its customers and whoever is packing the parcel are all in India, so these
+ * format in Asia/Kolkata explicitly rather than in whatever zone the server
+ * that happens to render the page is set to.
+ * ------------------------------------------------------------------------- */
+
+const IST = 'Asia/Kolkata';
+
+const DAY = new Intl.DateTimeFormat('en-IN', {
+  timeZone: IST,
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+const DAY_AND_TIME = new Intl.DateTimeFormat('en-IN', {
+  timeZone: IST,
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+/** "12 Sep 2026". Returns an em dash for a missing timestamp. */
+export function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? '—' : DAY.format(date);
+}
+
+/** "12 Sep 2026, 6:40 pm". Returns an em dash for a missing timestamp. */
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? '—' : DAY_AND_TIME.format(date);
+}

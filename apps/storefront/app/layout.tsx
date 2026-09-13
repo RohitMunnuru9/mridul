@@ -6,6 +6,7 @@ import './header-refinement.css';
 import './curated-edits.css';
 import './journal-story.css';
 import './footer-reviews.css';
+import './orders.css';
 import { SiteFooter } from './components/site-footer';
 import { StorefrontHeader } from './components/storefront-header';
 import { SilkInteractions } from './components/silk-interactions';
