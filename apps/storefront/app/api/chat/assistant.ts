@@ -140,12 +140,30 @@ async function catalogueBlock(): Promise<string> {
   return JSON.stringify(rows);
 }
 
+/**
+ * What to tell somebody when the assistant cannot help.
+ *
+ * Every failure sentence below used to end "message the shop on WhatsApp",
+ * which stopped being true the moment the number turned out to be a
+ * placeholder — the link is hidden everywhere else on the site, and the model
+ * is told not to give the number out. Telling a customer to do something
+ * impossible is worse than telling them nothing, so the sentence is built from
+ * whatever contact actually exists.
+ */
+function handoffPhrase(contact: { whatsapp: string; email: string }): string {
+  if (!isPlaceholderPhone(contact.whatsapp)) {
+    return 'message the shop on WhatsApp';
+  }
+  if (contact.email) return `email the shop at ${contact.email}`;
+  return 'try again in a moment';
+}
+
 /** Stable instructions first, the catalogue after — the shape a prefix cache likes. */
-async function systemInstruction(): Promise<string> {
+async function systemInstruction(): Promise<{ text: string; handoff: string }> {
   const [settings, catalogue] = await Promise.all([getSiteSettings(), catalogueBlock()]);
   const c = settings.contact;
 
-  return [
+  const text = [
     `You are the shopping assistant for ${settings.brandName}, an Indian saree and blouse shop. You help customers choose pieces, understand fabrics and care, and find their way around the shop.`,
     '',
     'Rules you never break:',
@@ -184,6 +202,8 @@ async function systemInstruction(): Promise<string> {
     `CATALOGUE (JSON, one entry per product):`,
     catalogue,
   ].join('\n');
+
+  return { text, handoff: handoffPhrase(c) };
 }
 
 /**
@@ -232,7 +252,7 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
   const ai = new GoogleGenAI({ apiKey: apiKey() });
   // Before the model is even asked. A failure here used to reach the customer
   // as "that didn't go through", with nothing to do about it.
-  const system = await once('reading the catalogue', systemInstruction);
+  const { text: system, handoff } = await once('reading the catalogue', systemInstruction);
 
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
@@ -288,7 +308,7 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
           // customer gets a way forward either way.
           controller.enqueue(
             encoder.encode(
-              "I can't help with that one, but the shop can — message us on WhatsApp and a person will pick it up.",
+              `I can't help with that one, but the shop can — ${handoff} and a person will pick it up.`,
             ),
           );
         }
@@ -302,14 +322,14 @@ export async function answer(contents: Content[]): Promise<AssistantOutcome> {
           console.warn('[assistant] rate limited by the model provider');
           controller.enqueue(
             encoder.encode(
-              `${lead}A lot of people are asking at once. Give it a moment and ask again, or message the shop on WhatsApp.`,
+              `${lead}A lot of people are asking at once. Give it a moment and ask again, or ${handoff}.`,
             ),
           );
         } else {
           console.error('[assistant] stream failed:', error instanceof Error ? error.message : error);
           controller.enqueue(
             encoder.encode(
-              `${lead}Something went wrong on my side. Please try again, or message the shop on WhatsApp.`,
+              `${lead}Something went wrong on my side. Please try again, or ${handoff}.`,
             ),
           );
         }
