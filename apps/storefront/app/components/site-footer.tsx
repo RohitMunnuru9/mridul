@@ -10,6 +10,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { whatsappLink } from '@mridul/utils';
 import { ArrowRight, Camera, Play } from 'lucide-react';
 import { Botanical } from './botanical';
 import { BrandMark } from './brand-mark';
@@ -118,13 +119,17 @@ export function SiteFooter({
           <Link href="/account">Account</Link>
           <Link href="/bag">Bag</Link>
           <Link href="/wishlist">Wishlist</Link>
-          <a
-            href={`https://wa.me/${settings.contact.whatsapp.replace(/\D/g, '')}`}
-            rel="noreferrer noopener"
-            target="_blank"
-          >
-            Contact on WhatsApp
-          </a>
+          {/* Nothing rather than a chat with a number nobody answers. It
+              comes back by itself once Settings holds a real one. */}
+          {whatsappLink(settings.contact.whatsapp) && (
+            <a
+              href={whatsappLink(settings.contact.whatsapp) ?? undefined}
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              Contact on WhatsApp
+            </a>
+          )}
         </div>
 
         <div>

@@ -20,7 +20,7 @@ import {
   type Order,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
-import { formatDateTime, formatPaise } from '@mridul/utils';
+import { formatDateTime, formatPaise, whatsappLink } from '@mridul/utils';
 
 export const metadata: Metadata = {
   title: 'Your order | Mridul by MR',
@@ -84,7 +84,12 @@ export default async function OrderPage({ params }: PageProps) {
   if (!order) notFound();
 
   const cash = order.paymentMethod === 'cod';
-  const whatsapp = settings.contact.whatsapp.replace(/[^\d]/g, '');
+  // Null while the shop's number is still the seed value, so the order page
+  // never offers a chat with a number that does not exist.
+  const askHref = whatsappLink(
+    settings.contact.whatsapp,
+    `Hello, I have a question about order ${order.number}.`,
+  );
 
   return (
     <div className="order-page page-shell">
@@ -245,12 +250,10 @@ export default async function OrderPage({ params }: PageProps) {
                   : 'Your parcel arrives at the address above.'}
               </li>
             </ol>
-            {whatsapp && (
+            {askHref && (
               <a
                 className="order-help"
-                href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                  `Hello, I have a question about order ${order.number}.`,
-                )}`}
+                href={askHref}
                 rel="noreferrer noopener"
                 target="_blank"
               >

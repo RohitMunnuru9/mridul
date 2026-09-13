@@ -78,3 +78,38 @@ export function formatDateTime(iso: string | null | undefined): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? '—' : DAY_AND_TIME.format(date);
 }
+
+/* ---------------------------------------------------------------------------
+ * Contact
+ *
+ * The shop's WhatsApp number is seeded as +91 90000 00000 and stays that way
+ * until somebody saves a real one in Settings. Every surface that offers to
+ * open a chat has to decide what to do about that, and each deciding for
+ * itself is how you end up with a button that opens a conversation with
+ * nobody. So the decision lives here, once.
+ * ------------------------------------------------------------------------- */
+
+/** True while the number is still the seed value, or simply absent. */
+export function isPlaceholderPhone(value: string | null | undefined): boolean {
+  const digits = (value ?? '').replace(/\D/g, '');
+  if (digits.length === 0) return true;
+  if (/^(91)?0+$/.test(digits)) return true;
+  // Six zeroes in a row at the end is not a number anybody was given.
+  return /0{6,}$/.test(digits);
+}
+
+/**
+ * A wa.me link, or null when there is no real number to link to. Callers
+ * render nothing on null rather than a dead button — the link reappears by
+ * itself the moment a real number is saved, with no deploy.
+ */
+export function whatsappLink(
+  value: string | null | undefined,
+  message?: string,
+): string | null {
+  if (isPlaceholderPhone(value)) return null;
+  const digits = (value ?? '').replace(/\D/g, '');
+  return message
+    ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/${digits}`;
+}

@@ -18,6 +18,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import Link from 'next/link';
+import { whatsappLink } from '@mridul/utils';
 import { usePathname } from 'next/navigation';
 import { MessageCircle, SendHorizontal, X } from 'lucide-react';
 
@@ -111,8 +112,7 @@ export function AssistantChat({ whatsapp }: { whatsapp: string }) {
 
   if (pathname.startsWith('/bag')) return null;
 
-  const digits = whatsapp.replace(/\D/g, '');
-  const waHref = digits ? `https://wa.me/${digits}?text=${encodeURIComponent(WA_TEXT)}` : null;
+  const waHref = whatsappLink(whatsapp, WA_TEXT);
 
   async function send(event: FormEvent) {
     event.preventDefault();
