@@ -68,24 +68,56 @@ export type AdminIdentity = {
 };
 
 /**
- * The signed-in admin, or null.
+ * Why a person is or is not an admin.
  *
- * Reads `admin_roles` through the user's own session, so a signed-in customer
- * with no admin role gets an empty list and is treated as not an admin.
+ * There are four answers and they are not interchangeable. In particular,
+ * "your role could not be read" is not "you have no role" — the first is a
+ * session that has gone stale, the second is a permission decision. Collapsing
+ * them tells a super admin they have been demoted, which is alarming and
+ * false, and leaves them with nothing useful to do about it.
  */
-export async function currentAdmin(): Promise<AdminIdentity | null> {
+export type AdminAccess =
+  | { state: 'signed_out' }
+  | { state: 'ok'; identity: AdminIdentity }
+  /** Signed in, `admin_roles` has nothing for them. A customer account. */
+  | { state: 'no_role'; email: string }
+  /** Signed in, but the role query itself failed. Almost always an expired
+   *  session: the cookie still names them, the token no longer authorises
+   *  anything. Signing out and back in fixes it. */
+  | { state: 'unreadable'; email: string; reason: string };
+
+export async function adminAccess(): Promise<AdminAccess> {
   const db = await sessionClient();
 
   const {
     data: { user },
   } = await db.auth.getUser();
-  if (!user) return null;
+  if (!user) return { state: 'signed_out' };
 
-  const { data } = await db.from('admin_roles').select('role').eq('user_id', user.id);
+  const { data, error } = await db
+    .from('admin_roles')
+    .select('role')
+    .eq('user_id', user.id);
+
+  if (error) {
+    return { state: 'unreadable', email: user.email ?? '', reason: error.message };
+  }
+
   const roles = (data ?? []).map((row) => row.role as AdminRole);
-  if (roles.length === 0) return null;
+  if (roles.length === 0) return { state: 'no_role', email: user.email ?? '' };
 
-  return { id: user.id, email: user.email ?? '', roles };
+  return { state: 'ok', identity: { id: user.id, email: user.email ?? '', roles } };
+}
+
+/**
+ * The signed-in admin, or null.
+ *
+ * The gate's question, which only has two answers. Anything that wants to
+ * explain *why* somebody is not an admin should call `adminAccess` instead.
+ */
+export async function currentAdmin(): Promise<AdminIdentity | null> {
+  const access = await adminAccess();
+  return access.state === 'ok' ? access.identity : null;
 }
 
 /** super_admin passes every check, as it does in the database policies. */
