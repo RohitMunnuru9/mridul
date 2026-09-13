@@ -74,10 +74,20 @@ function FreeShippingMeter({
 }
 
 export function BagView({ rates }: { rates: ShippingRates }) {
-  const { lines, subtotalPaise, setQuantity, removeLine, moveLineToWishlist, notify } =
-    useStore();
+  const {
+    lines,
+    subtotalPaise,
+    couponCode,
+    setQuantity,
+    removeLine,
+    moveLineToWishlist,
+    setCouponCode,
+    notify,
+  } = useStore();
 
-  const [code, setCode] = useState('');
+  // Seeded from the store so a code applied here survives a reload and is
+  // still attached when the customer reaches checkout.
+  const [code, setCode] = useState(couponCode);
   const [coupon, setCoupon] = useState<CouponResult | null>(null);
   const [checking, setChecking] = useState(false);
 
@@ -91,6 +101,9 @@ export function BagView({ rates }: { rates: ShippingRates }) {
     try {
       const result = await applyCoupon(code, subtotalPaise);
       setCoupon(result);
+      // Only the code travels to checkout. What it is worth is decided again
+      // by the database against the server's own subtotal.
+      setCouponCode(result.ok ? result.coupon.code : '');
       if (result.ok) notify(`${result.coupon.code} applied.`);
     } finally {
       setChecking(false);
@@ -265,7 +278,7 @@ export function BagView({ rates }: { rates: ShippingRates }) {
         <ul className="bag-assurances">
           <li>
             <ShieldCheck aria-hidden="true" />
-            Secure payment through Razorpay
+            Pay cash when your parcel arrives
           </li>
           <li>
             <Truck aria-hidden="true" />

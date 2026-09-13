@@ -9,13 +9,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, Package, Settings, Tags, type LucideIcon } from "lucide-react";
+import {
+  Home,
+  LayoutDashboard,
+  Package,
+  Receipt,
+  Settings,
+  Tags,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 
 type Section = { href: string; label: string; icon: LucideIcon; group: string };
 
 const SECTIONS: Section[] = [
   { href: "/", label: "Start", icon: LayoutDashboard, group: "Everyday" },
+  { href: "/orders", label: "Orders", icon: Receipt, group: "Everyday" },
   { href: "/products", label: "All products", icon: Package, group: "Everyday" },
+  { href: "/customers", label: "Customers", icon: Users, group: "Everyday" },
   { href: "/categories", label: "Categories", icon: Tags, group: "Occasional" },
   { href: "/homepage", label: "Homepage", icon: Home, group: "Occasional" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Occasional" },
