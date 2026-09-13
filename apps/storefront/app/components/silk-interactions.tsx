@@ -248,7 +248,7 @@ export function SilkInteractions() {
             alt=""
             height={880}
             sizes="240px"
-            src="/images/brand/mridul-logo.jpg"
+            src="/images/brand/mridul-logo.webp"
             width={880}
           />
           <span className="page-fabric-rule" />

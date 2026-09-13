@@ -142,7 +142,7 @@ button:focus-visible,
       rgb(255 252 250 / clamp(0%, calc((1 - var(--progress) * 3) * 100%), 100%)),
       rgb(255 252 250 / clamp(0%, calc((1 - var(--progress) * 3) * 100%), 100%))
     ),
-    url('/images/products/drape-1.png');
+    url('/images/products/drape-1.webp');
   background-position: center, center;
   background-size: cover, cover;
   background-clip: text;

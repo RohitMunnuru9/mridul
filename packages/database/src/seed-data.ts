@@ -21,14 +21,14 @@ import type {
 
 /** One file per drape, the way Supabase Storage will hold them. */
 const DRAPE = [
-  '/images/products/drape-1.png',
-  '/images/products/drape-2.png',
-  '/images/products/drape-3.png',
-  '/images/products/drape-4.png',
+  '/images/products/drape-1.webp',
+  '/images/products/drape-2.webp',
+  '/images/products/drape-3.webp',
+  '/images/products/drape-4.webp',
 ];
 const CENTRE = '50% center';
-const PORTRAIT = '/images/saree-homepage-hero.png';
-const LOOM = '/images/artisan-loom-story.png';
+const PORTRAIT = '/images/saree-homepage-hero.webp';
+const LOOM = '/images/artisan-loom-story.webp';
 
 function img(
   id: string,

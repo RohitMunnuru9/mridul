@@ -19,9 +19,9 @@ import type {
   ValueProp,
 } from '@mridul/types';
 
-const HERO_IMAGE = '/images/saree-homepage-hero.png';
-const LOOM_IMAGE = '/images/artisan-loom-story.png';
-const SHEET_IMAGE = '/images/saree-catalog-four-panel.png';
+const HERO_IMAGE = '/images/saree-homepage-hero.webp';
+const LOOM_IMAGE = '/images/artisan-loom-story.webp';
+const SHEET_IMAGE = '/images/saree-catalog-four-panel.webp';
 
 function asset(
   id: string,

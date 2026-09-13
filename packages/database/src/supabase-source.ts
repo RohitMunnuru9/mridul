@@ -67,7 +67,7 @@ function toAsset(media: MediaRow): MediaAsset | null {
 /** Placeholder used only if a row somehow has no image, so nothing crashes. */
 const MISSING_IMAGE: ProductImage = {
   id: "missing",
-  url: "/images/saree-homepage-hero.png",
+  url: "/images/saree-homepage-hero.webp",
   alt: "",
   focal: "50% center",
   position: 0,

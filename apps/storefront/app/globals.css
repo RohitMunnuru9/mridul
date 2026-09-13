@@ -430,7 +430,7 @@ img { display: block; max-width: 100%; }
 }
 .occasion-section article { position: relative; display: flex; min-width: 0; flex-direction: column; justify-content: flex-end; overflow: hidden; padding: clamp(2rem, 4vw, 4.5rem); }
 .occasion-visual {
-  background-image: linear-gradient(90deg, rgb(55 31 28 / 84%), rgb(55 31 28 / 8%) 75%), url('/images/saree-catalog-four-panel.png');
+  background-image: linear-gradient(90deg, rgb(55 31 28 / 84%), rgb(55 31 28 / 8%) 75%), url('/images/saree-catalog-four-panel.webp');
   background-position: 15% center;
   background-size: 400% auto;
   color: white;
@@ -459,7 +459,7 @@ img { display: block; max-width: 100%; }
 .occasion-impact {
   background:
     linear-gradient(0deg, rgb(79 43 41 / 82%), rgb(79 43 41 / 4%) 76%),
-    url('/images/artisan-loom-story.png') 70% center / cover;
+    url('/images/artisan-loom-story.webp') 70% center / cover;
   color: white;
 }
 
