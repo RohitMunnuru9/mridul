@@ -13,8 +13,18 @@ import type { ReactNode } from 'react';
  * move to Supabase Storage the URLs become absolute and this prefix stops
  * being applied.
  */
+/**
+ * Where the storefront lives, for "View on site" links and for any media still
+ * served from its `public` folder.
+ *
+ * `NEXT_PUBLIC_STOREFRONT_ORIGIN` is the answer; set it on both apps. The
+ * fallback is the deployed shop rather than localhost, because getting it
+ * wrong in production means every View link opens a dead tab, while getting it
+ * wrong locally is obvious the moment you click one.
+ */
 const MEDIA_ORIGIN =
-  process.env.NEXT_PUBLIC_STOREFRONT_ORIGIN ?? 'http://localhost:3000';
+  process.env.NEXT_PUBLIC_STOREFRONT_ORIGIN ??
+  'https://mridul-storefront.vercel.app';
 
 export function mediaUrl(url: string): string {
   return url.startsWith('/') ? `${MEDIA_ORIGIN}${url}` : url;
