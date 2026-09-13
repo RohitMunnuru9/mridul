@@ -24,7 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatPaise } from '@mridul/utils';
+import { formatPaise, imageAtWidth } from '@mridul/utils';
 import {
   amountToFreeShipping,
   estimateShipping,
@@ -140,7 +140,7 @@ export function BagView({ rates }: { rates: ShippingRates }) {
           <article className="bag-line" key={line.variantId}>
             <Link className="bag-line-photo" href={`/product/${line.productSlug}`}>
               <Image
-                src={line.image.url}
+                src={imageAtWidth(line.image.url, 240)}
                 alt={line.image.alt}
                 fill
                 sizes="120px"

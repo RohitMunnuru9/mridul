@@ -18,7 +18,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, BadgeIndianRupee, MapPin, Wallet } from 'lucide-react';
-import { formatPaise } from '@mridul/utils';
+import { formatPaise, imageAtWidth } from '@mridul/utils';
 import { estimateShipping, type ShippingRates } from '@mridul/shipping';
 import { useStore } from '../providers/store-provider';
 import { placeOrder } from './actions';
@@ -130,7 +130,7 @@ export function PlaceOrderPanel({
           <li key={line.variantId}>
             <span className="review-photo">
               <Image
-                src={line.image.url}
+                src={imageAtWidth(line.image.url, 240)}
                 alt={line.image.alt}
                 fill
                 sizes="72px"

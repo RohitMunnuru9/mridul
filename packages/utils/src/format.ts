@@ -113,3 +113,28 @@ export function whatsappLink(
     ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
     : `https://wa.me/${digits}`;
 }
+
+/* ---------------------------------------------------------------------------
+ * Images
+ *
+ * Storage URLs carry the width they were asked for. A product card on a phone
+ * is about 170px across, and handing it a 1200px image costs twice: the bytes
+ * on the way down, and then the decode — which on a cheap phone is the part
+ * that actually drops frames and eats the memory it does not have.
+ *
+ * So each slot asks for roughly what it will display, doubled for a retina
+ * screen and rounded to a handful of sizes, so the same few files stay cached
+ * across pages rather than every slot minting its own.
+ * ------------------------------------------------------------------------- */
+
+const STEPS = [120, 240, 400, 600, 900, 1200, 1600];
+
+/**
+ * The same image at a width suited to where it is going. Anything that is not
+ * a storage render URL — a local file, a placeholder — is returned untouched.
+ */
+export function imageAtWidth(url: string, width: number): string {
+  if (!url.includes('/render/image/')) return url;
+  const step = STEPS.find((value) => value >= width) ?? STEPS[STEPS.length - 1];
+  return url.replace(/([?&])width=\d+/, `$1width=${step}`);
+}

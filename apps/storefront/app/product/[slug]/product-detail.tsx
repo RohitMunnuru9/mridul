@@ -21,7 +21,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { formatPaise } from '@mridul/utils';
+import { formatPaise, imageAtWidth } from '@mridul/utils';
 import type { ProductListItem } from '@mridul/types';
 import { useStore } from '@/app/providers/store-provider';
 import { flyToBag } from '@/app/components/silk-interactions';
@@ -37,7 +37,7 @@ export function ProductGallery({ product }: { product: ProductListItem }) {
     <div className="pdp-gallery">
       <div className="pdp-stage">
         <Image
-          src={image.url}
+          src={imageAtWidth(image.url, 900)}
           alt={image.alt}
           fill
           sizes="(max-width: 900px) 100vw, 48vw"
@@ -58,7 +58,7 @@ export function ProductGallery({ product }: { product: ProductListItem }) {
               type="button"
             >
               <Image
-                src={item.url}
+                src={imageAtWidth(item.url, 120)}
                 alt=""
                 fill
                 sizes="72px"
