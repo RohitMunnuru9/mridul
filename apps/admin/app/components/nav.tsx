@@ -10,8 +10,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Boxes,
   Home,
+  Images,
   LayoutDashboard,
+  Layers,
   Package,
   Receipt,
   Settings,
@@ -27,7 +30,10 @@ const SECTIONS: Section[] = [
   { href: "/orders", label: "Orders", icon: Receipt, group: "Everyday" },
   { href: "/products", label: "All products", icon: Package, group: "Everyday" },
   { href: "/customers", label: "Customers", icon: Users, group: "Everyday" },
+  { href: "/inventory", label: "Stock", icon: Boxes, group: "Everyday" },
   { href: "/categories", label: "Categories", icon: Tags, group: "Occasional" },
+  { href: "/collections", label: "Collections", icon: Layers, group: "Occasional" },
+  { href: "/media", label: "Photos", icon: Images, group: "Occasional" },
   { href: "/homepage", label: "Homepage", icon: Home, group: "Occasional" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Occasional" },
 ];
