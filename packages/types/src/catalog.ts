@@ -225,3 +225,22 @@ export type NavMenu = {
     image: ProductImage;
   };
 };
+
+/**
+ * The catalogue as the help panel needs to know it: enough to name a piece,
+ * price it, say what it is made of and link to it — and nothing else.
+ *
+ * Deliberately not `ProductListItem`. That carries images, variants and stock
+ * for every product, and the panel sits on every page of the site.
+ */
+export type HelpProduct = {
+  slug: string;
+  name: string;
+  pricePaise: Money;
+  fabric: string;
+  colourName: string;
+  occasion: string;
+  soldOut: boolean;
+  categorySlug: string;
+  categoryName: string;
+};
