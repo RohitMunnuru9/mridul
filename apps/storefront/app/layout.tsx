@@ -33,10 +33,28 @@ const cormorant = Cormorant_Garamond({
   weight: ['400', '500', '600'],
 });
 
+const SITE =
+  process.env.NEXT_PUBLIC_STOREFRONT_ORIGIN ?? 'https://mridul-storefront.vercel.app';
+
 export const metadata: Metadata = {
+  // Without this every canonical and social URL is relative, which a crawler
+  // and a link preview both read as broken.
+  metadataBase: new URL(SITE),
   title: 'Mridul by MR | Sarees made to stay with you',
   description:
     'Thoughtfully made sarees and modern Indian clothing, rooted in craft and designed for today.',
+  // The file has been sitting in `public` unreferenced, so every tab showed a
+  // blank page icon and browsers fell back to asking for /favicon.ico, which
+  // does not exist.
+  icons: { icon: '/favicon.svg', apple: '/images/brand/mridul-emblem.webp' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Mridul by MR',
+    title: 'Mridul by MR | Sarees made to stay with you',
+    description:
+      'Thoughtfully made sarees and modern Indian clothing, rooted in craft and designed for today.',
+    images: ['/images/saree-homepage-hero.webp'],
+  },
 };
 
 export default async function RootLayout({

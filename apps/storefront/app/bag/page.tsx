@@ -8,6 +8,8 @@ import { BagView } from './bag-view';
 export const metadata: Metadata = {
   title: 'Your bag | Mridul by MR',
   description: 'Review the pieces in your bag before checkout.',
+  // One person's page. Nothing here is useful as a search result.
+  robots: { index: false, follow: false },
 };
 
 export default async function BagPage() {

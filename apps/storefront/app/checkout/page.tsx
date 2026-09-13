@@ -10,6 +10,8 @@ import { PlaceOrderPanel } from './place-order-panel';
 export const metadata: Metadata = {
   title: 'Checkout | Mridul by MR',
   description: 'Confirm your contact and delivery details securely.',
+  // One person's page. Nothing here is useful as a search result.
+  robots: { index: false, follow: false },
 };
 
 type PageProps = { searchParams: Promise<{ buy?: string }> };

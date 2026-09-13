@@ -8,6 +8,8 @@ import { WishlistView } from './wishlist-view';
 export const metadata: Metadata = {
   title: 'Your wishlist | Mridul by MR',
   description: 'The pieces you have saved at Mridul by MR.',
+  // One person's page. Nothing here is useful as a search result.
+  robots: { index: false, follow: false },
 };
 
 export default async function WishlistPage() {
