@@ -111,13 +111,35 @@ export function isConfigured(): boolean {
 }
 
 /**
- * Public URL for a file in a storage bucket.
+ * Public URL for an image in a storage bucket, resized on the way out.
  *
- * Buckets are public for reads, so this is a plain deterministic URL rather
- * than a signed one — no round trip, and it can be used in a server-rendered
- * `src` attribute.
+ * The originals are full-resolution PNGs straight from a camera or an export —
+ * the homepage hero is 1.9 MB on its own, and a phone on mobile data was being
+ * asked for nine megabytes of them. `next/image` cannot help here: this runtime
+ * optimises files it serves itself but passes remote URLs through untouched.
+ *
+ * So the resizing is asked of Supabase instead. Its render endpoint scales the
+ * file and hands back WebP to any browser that will take one, which turns that
+ * 1.9 MB hero into about 45 KB. Transformations are counted per distinct source
+ * image rather than per request, and this shop has a few dozen.
+ *
+ * Buckets are public for reads, so this stays a plain deterministic URL — no
+ * round trip, and usable in a server-rendered `src`.
  */
-export function storageUrl(bucket: string, path: string): string {
+export function storageUrl(bucket: string, path: string, width = 1200): string {
+  const base = readEnv('NEXT_PUBLIC_SUPABASE_URL');
+  if (!base) return '';
+  return (
+    `${base}/storage/v1/render/image/public/${bucket}/${path}` +
+    `?width=${width}&quality=70`
+  );
+}
+
+/**
+ * The untouched file. For anything being inspected or re-processed rather than
+ * displayed — never for an `<img>` on a page a customer loads.
+ */
+export function storageOriginalUrl(bucket: string, path: string): string {
   const base = readEnv('NEXT_PUBLIC_SUPABASE_URL');
   if (!base) return '';
   return `${base}/storage/v1/object/public/${bucket}/${path}`;
