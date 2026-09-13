@@ -292,7 +292,7 @@ export function StorefrontHeader({
                   height={256}
                   priority
                   sizes="44px"
-                  src="/images/brand/mridul-emblem.png"
+                  src="/images/brand/mridul-emblem.webp"
                   width={256}
                 />
               </SheetTrigger>

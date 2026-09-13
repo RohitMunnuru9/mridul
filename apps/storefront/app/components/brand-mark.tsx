@@ -27,7 +27,7 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
         height={336}
         priority
         sizes="(max-width: 720px) 190px, 240px"
-        src="/images/brand/mridul-wordmark.png"
+        src="/images/brand/mridul-wordmark.webp"
         width={1100}
       />
     </Link>

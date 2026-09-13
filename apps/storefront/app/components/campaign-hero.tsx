@@ -74,7 +74,7 @@ export function CampaignHero() {
         <div className="campaign-stage">
           <div className="campaign-photograph">
             <Image
-              src="/images/saree-homepage-hero.png"
+              src="/images/saree-homepage-hero.webp"
               alt="A woman in a floral ivory saree seated beside a sunlit window"
               fill
               priority
@@ -92,7 +92,7 @@ export function CampaignHero() {
           </h1>
           <div className="campaign-subject" aria-hidden="true">
             <Image
-              src="/images/saree-homepage-hero.png"
+              src="/images/saree-homepage-hero.webp"
               alt=""
               fill
               priority
