@@ -9,6 +9,19 @@ function text(formData: FormData, name: string): string {
   return String(formData.get(name) ?? '').trim();
 }
 
+/**
+ * Supabase hands back whatever went wrong verbatim, and "Gateway Timeout" is
+ * not a thing to show somebody who has just typed out their address. Only the
+ * rules written below are worth quoting; everything else becomes one sentence
+ * that says what actually happened and what to do about it.
+ */
+function humanError(message: string | undefined): string {
+  if (message && /timeout|timed out|fetch failed|network|50[234]/i.test(message)) {
+    return 'That took too long to save. Nothing you typed has been lost — please try again.';
+  }
+  return 'Your details could not be saved just now. Please try again.';
+}
+
 function indianPhone(value: string): string | null {
   let digits = value.replace(/\D/g, '');
   if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
@@ -36,11 +49,22 @@ export async function saveDeliveryDetails(formData: FormData): Promise<DeliveryR
   if (!city || !state) return { ok: false, message: 'Enter the city and state.' };
   if (!/^[1-9][0-9]{5}$/.test(pincode)) return { ok: false, message: 'Enter a valid 6-digit Indian pincode.' };
 
-  const { error: profileError } = await db
-    .from('profiles')
-    .update({ full_name: fullName, phone })
-    .eq('id', user.id);
-  if (profileError) return { ok: false, message: profileError.message };
+  // The profile write and the address lookup do not depend on each other, so
+  // they go together. Every round trip here is a trip to the database and back
+  // while somebody waits on a form.
+  const [{ error: profileError }, { data: existing, error: lookupError }] =
+    await Promise.all([
+      db.from('profiles').update({ full_name: fullName, phone }).eq('id', user.id),
+      db
+        .from('addresses')
+        .select('id')
+        .eq('customer_id', user.id)
+        .eq('is_default', true)
+        .maybeSingle(),
+    ]);
+
+  if (profileError) return { ok: false, message: humanError(profileError.message) };
+  if (lookupError) return { ok: false, message: humanError(lookupError.message) };
 
   const address = {
     full_name: fullName,
@@ -55,18 +79,10 @@ export async function saveDeliveryDetails(formData: FormData): Promise<DeliveryR
     is_default: true,
   };
 
-  const { data: existing, error: lookupError } = await db
-    .from('addresses')
-    .select('id')
-    .eq('customer_id', user.id)
-    .eq('is_default', true)
-    .maybeSingle();
-  if (lookupError) return { ok: false, message: lookupError.message };
-
   const result = existing
     ? await db.from('addresses').update(address).eq('id', existing.id)
     : await db.from('addresses').insert({ ...address, customer_id: user.id });
-  if (result.error) return { ok: false, message: result.error.message };
+  if (result.error) return { ok: false, message: humanError(result.error.message) };
 
   revalidatePath('/checkout');
   revalidatePath('/account');
@@ -131,7 +147,7 @@ export async function placeOrder(
     .eq('is_default', true)
     .maybeSingle();
 
-  if (addressError) return { ok: false, message: addressError.message };
+  if (addressError) return { ok: false, message: humanError(addressError.message) };
   if (!address) {
     return {
       ok: false,

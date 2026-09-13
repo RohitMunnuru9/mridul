@@ -79,7 +79,7 @@ export function ProductPurchase({
   product: ProductListItem;
   freeShippingThresholdPaise: number;
 }) {
-  const { addLine, toggleWishlist, isWishlisted, notify } = useStore();
+  const { addLine, startBuyNow, toggleWishlist, isWishlisted, notify } = useStore();
   const router = useRouter();
 
   // Default to the first variant that can actually be bought.
@@ -98,24 +98,25 @@ export function ProductPurchase({
   const liked = isWishlisted(product.id);
   const maxQuantity = Math.max(1, Math.min(variant.stock, 10));
 
-  /** Puts the line in the bag. Shared so Buy now cannot drift from Add to bag. */
-  function putInBag() {
-    addLine(
-      {
-        productId: product.id,
-        productSlug: product.slug,
-        variantId: variant.id,
-        name: product.name,
-        variantLabel: variant.label,
-        unitPricePaise,
-        image: {
-          url: product.images[0].url,
-          focal: product.images[0].focal,
-          alt: product.images[0].alt,
-        },
+  /** The chosen piece, described once so nothing below can describe it differently. */
+  function chosenLine() {
+    return {
+      productId: product.id,
+      productSlug: product.slug,
+      variantId: variant.id,
+      name: product.name,
+      variantLabel: variant.label,
+      unitPricePaise,
+      image: {
+        url: product.images[0].url,
+        focal: product.images[0].focal,
+        alt: product.images[0].alt,
       },
-      quantity,
-    );
+    };
+  }
+
+  function putInBag() {
+    addLine(chosenLine(), quantity);
   }
 
   function add(event: React.MouseEvent<HTMLButtonElement>) {
@@ -129,13 +130,16 @@ export function ProductPurchase({
     });
   }
 
-  /* Straight to checkout. No toast and no fly-to-bag: both of those exist to
-     tell you something happened somewhere else on the page, and here the page
-     itself is about to change. */
+  /* Straight to checkout, with this piece and nothing else.
+     Deliberately not "add to bag, then go to checkout": somebody buying one
+     saree now should not be shown a bill for the other four they were still
+     thinking about — nor find this one left in their bag afterwards.
+     No toast and no fly-to-bag either; both exist to report that something
+     happened elsewhere on the page, and here the page itself is changing. */
   function buyNow() {
     if (variant.stock <= 0) return;
-    putInBag();
-    router.push('/checkout');
+    startBuyNow(chosenLine(), quantity);
+    router.push('/checkout?buy=now');
   }
 
   function chooseVariant(id: string) {

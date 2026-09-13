@@ -38,12 +38,24 @@ export function PlaceOrderPanel({
   address,
   email,
   rates,
+  buyNowOnly = false,
 }: {
   address: SavedAddress | null;
   email: string;
   rates: ShippingRates;
+  /** Arrived here from "Buy now", so this checkout is one piece, not the bag. */
+  buyNowOnly?: boolean;
 }) {
-  const { lines, subtotalPaise, couponCode, clearBag } = useStore();
+  const store = useStore();
+  const { couponCode, clearBag, clearBuyNow } = store;
+
+  // Two different checkouts share this panel, and which one it is comes from
+  // the URL rather than from guessing at the contents of the bag.
+  const lines =
+    buyNowOnly ? (store.buyNow ? [store.buyNow] : []) : store.lines;
+  const subtotalPaise = buyNowOnly
+    ? lines.reduce((total, line) => total + line.unitPricePaise * line.quantity, 0)
+    : store.subtotalPaise;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState('');
@@ -60,7 +72,7 @@ export function PlaceOrderPanel({
           variantId: line.variantId,
           quantity: line.quantity,
         })),
-        couponCode,
+        buyNowOnly ? '' : couponCode,
         notes,
       );
 
@@ -69,9 +81,11 @@ export function PlaceOrderPanel({
         return;
       }
 
-      // The bag is emptied only once the order exists, so a failure leaves the
-      // customer exactly where they were rather than with nothing to retry.
-      clearBag();
+      // Cleared only once the order exists, so a failure leaves the customer
+      // exactly where they were rather than with nothing to retry. A Buy now
+      // order clears only itself — the bag was never part of it.
+      if (buyNowOnly) clearBuyNow();
+      else clearBag();
       router.push(`/order/${result.orderNumber}`);
     });
   }
@@ -85,12 +99,15 @@ export function PlaceOrderPanel({
           </span>
           <div>
             <small>Review</small>
-            <h2>Your bag is empty</h2>
+            <h2>{buyNowOnly ? 'Nothing chosen' : 'Your bag is empty'}</h2>
           </div>
         </div>
         <p className="review-empty">
-          Nothing to order yet. <Link href="/collections/new-arrivals">Browse new arrivals</Link>{' '}
-          and come back.
+          {buyNowOnly
+            ? 'This checkout was for one piece and it is no longer here. Open the piece again and choose Buy now, or '
+            : 'Nothing to order yet. '}
+          <Link href="/collections/new-arrivals">Browse new arrivals</Link>
+          {buyNowOnly ? '.' : ' and come back.'}
         </p>
       </section>
     );
@@ -104,7 +121,7 @@ export function PlaceOrderPanel({
         </span>
         <div>
           <small>Review</small>
-          <h2>What you are ordering</h2>
+          <h2>{buyNowOnly ? 'Buying this piece' : 'What you are ordering'}</h2>
         </div>
       </div>
 
@@ -142,7 +159,7 @@ export function PlaceOrderPanel({
           <dt>Shipping</dt>
           <dd>{shippingPaise === 0 ? 'Free' : formatPaise(shippingPaise)}</dd>
         </div>
-        {couponCode && (
+        {!buyNowOnly && couponCode && (
           <div className="is-discount">
             <dt>Code applied</dt>
             <dd>{couponCode.toUpperCase()}</dd>
