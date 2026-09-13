@@ -1020,13 +1020,33 @@
    are full-width rows at a comfortable height rather than small chips — this
    is used one-handed, on a phone, often while holding something else. */
 
+/*
+ * The list is the tallest thing in the panel and the panel has a fixed height,
+ * so on a small phone eight questions pushed the "email us" line out through
+ * the bottom edge. It gets a ceiling and scrolls past it; the conversation
+ * above keeps a floor so it never collapses to nothing, and the footer is the
+ * one part that never gives up space.
+ */
 .help-options {
   display: flex;
+  flex: 0 1 auto;
   flex-direction: column;
   gap: 0.4rem;
+  max-height: 52%;
   padding: 0.7rem 0.9rem 0.9rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-top: 1px solid #efe2dc;
   background: #fff;
+}
+.assistant-log {
+  min-height: 4rem;
+}
+.help-foot {
+  flex: 0 0 auto;
+}
+.help-option {
+  flex: none;
 }
 .help-options-label {
   margin: 0 0 0.15rem;
