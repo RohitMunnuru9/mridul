@@ -212,18 +212,20 @@ export function SilkInteractions() {
       if (pending.current) clearTimeout(pending.current);
       curtain.current?.classList.remove('is-arriving');
       curtain.current?.classList.add('is-leaving');
+
+      // The curtain plays *over* the navigation, not in front of it. It used
+      // to hold the click for 450ms before even asking for the next page —
+      // on a phone that is most of what "slow after I tap a link" was, and it
+      // bought nothing: the animation looks the same either way.
+      router.push(url.pathname + url.search);
+
+      // The effect on `pathname` lifts the curtain as soon as the new route
+      // commits. This is only the fallback for a navigation that never does.
       pending.current = setTimeout(() => {
-        router.push(url.pathname + url.search);
+        curtain.current?.classList.remove('is-leaving');
+        curtain.current?.classList.add('is-arriving');
         pending.current = null;
-        // The effect on `pathname` lifts the curtain as soon as the new route
-        // commits. This is only a fallback for a navigation that never
-        // resolves — at 1800ms it was the thing holding a blank panel on
-        // screen for nearly two seconds even when the page was ready.
-        setTimeout(() => {
-          curtain.current?.classList.remove('is-leaving');
-          curtain.current?.classList.add('is-arriving');
-        }, 900);
-      }, 450);
+      }, 900);
     };
     document.addEventListener('pointermove', move, { passive: true });
     document.addEventListener('pointerleave', leave);
