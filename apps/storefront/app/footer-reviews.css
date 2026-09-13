@@ -1014,3 +1014,68 @@
     transition: none;
   }
 }
+
+/* --- The help panel's question list ----------------------------------------
+   What replaced the text box. Tapping is the whole interaction, so the targets
+   are full-width rows at a comfortable height rather than small chips — this
+   is used one-handed, on a phone, often while holding something else. */
+
+.help-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem 0.9rem;
+  border-top: 1px solid #efe2dc;
+  background: #fff;
+}
+.help-options-label {
+  margin: 0 0 0.15rem;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.help-option {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgb(139 50 80 / 28%);
+  border-radius: 999px;
+  background: rgb(139 50 80 / 5%);
+  color: var(--cocoa);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.help-option:hover {
+  border-color: var(--berry);
+  background: rgb(139 50 80 / 11%);
+}
+.help-option:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* An answer is a couple of short paragraphs rather than one block. */
+.help-line {
+  display: block;
+}
+.help-line + .help-line {
+  margin-top: 0.5rem;
+}
+
+.help-answer-link {
+  align-self: flex-start;
+  margin: 0.1rem 0 0.2rem;
+}
+
+.help-foot {
+  padding: 0 0.9rem 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-option {
+    transition: none;
+  }
+}
