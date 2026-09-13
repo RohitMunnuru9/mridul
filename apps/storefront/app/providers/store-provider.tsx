@@ -53,10 +53,17 @@ type State = {
    * the code and the database decides again what, if anything, it takes off.
    */
   couponCode: string;
+  /**
+   * "Buy now" on a product page. Deliberately not the bag: somebody buying one
+   * saree straight away should not be handed a checkout containing the four
+   * other things they were still thinking about, and should not find this one
+   * sitting in their bag afterwards either.
+   */
+  buyNow: CartLine | null;
 };
 
 /** What the server renders, and the fallback whenever storage is unreadable. */
-const EMPTY: State = { lines: [], wishlist: [], couponCode: '' };
+const EMPTY: State = { lines: [], wishlist: [], couponCode: '', buyNow: null };
 
 const listeners = new Set<() => void>();
 let snapshot: State = EMPTY;
@@ -71,6 +78,7 @@ function read(): State {
       lines: Array.isArray(parsed.lines) ? parsed.lines : [],
       wishlist: Array.isArray(parsed.wishlist) ? parsed.wishlist : [],
       couponCode: typeof parsed.couponCode === 'string' ? parsed.couponCode : '',
+      buyNow: parsed.buyNow ?? null,
     };
   } catch {
     // A corrupt or blocked store should never take the storefront down.
@@ -128,6 +136,7 @@ type StoreValue = {
   lines: CartLine[];
   wishlist: string[];
   couponCode: string;
+  buyNow: CartLine | null;
   cartCount: number;
   /** Indicative subtotal in paise; the server recomputes it at checkout. */
   subtotalPaise: number;
@@ -137,6 +146,9 @@ type StoreValue = {
   removeLine: (variantId: string) => void;
   clearBag: () => void;
   setCouponCode: (code: string) => void;
+  /** Starts a one-piece checkout. Does not touch the bag. */
+  startBuyNow: (line: Omit<CartLine, 'quantity'>, quantity: number) => void;
+  clearBuyNow: () => void;
   /** Takes a line out of the bag and saves the product instead. */
   moveLineToWishlist: (variantId: string) => void;
   toggleWishlist: (productId: string) => boolean;
@@ -213,6 +225,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     update({ ...getSnapshot(), couponCode: code });
   }, []);
 
+  const startBuyNow = useCallback(
+    (line: Omit<CartLine, 'quantity'>, quantity: number) => {
+      update({ ...getSnapshot(), buyNow: { ...line, quantity } });
+    },
+    [],
+  );
+
+  const clearBuyNow = useCallback(() => {
+    update({ ...getSnapshot(), buyNow: null });
+  }, []);
+
   const moveLineToWishlist = useCallback((variantId: string) => {
     const current = getSnapshot();
     const line = current.lines.find((item) => item.variantId === variantId);
@@ -243,6 +266,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       lines: state.lines,
       wishlist: state.wishlist,
       couponCode: state.couponCode,
+      buyNow: state.buyNow,
       cartCount: state.lines.reduce((total, line) => total + line.quantity, 0),
       subtotalPaise: state.lines.reduce(
         (total, line) => total + line.unitPricePaise * line.quantity,
@@ -254,6 +278,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeLine,
       clearBag,
       setCouponCode,
+      startBuyNow,
+      clearBuyNow,
       moveLineToWishlist,
       toggleWishlist,
       isWishlisted: (productId: string) => state.wishlist.includes(productId),
@@ -268,6 +294,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeLine,
       clearBag,
       setCouponCode,
+      startBuyNow,
+      clearBuyNow,
       moveLineToWishlist,
       toggleWishlist,
       notify,
