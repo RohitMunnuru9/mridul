@@ -54,11 +54,26 @@ export function CampaignHero() {
 
     measure();
     paint();
+
+    /*
+     * Measuring once would be wrong the moment anything above the hero changes
+     * height — the header publishes its own height after it mounts, and a web
+     * font landing reflows the page under it. The old code got away with it by
+     * re-measuring every frame; this watches for the two things that can
+     * actually move the scene instead, which costs nothing while nothing does.
+     */
+    const observer = new ResizeObserver(relayout);
+    observer.observe(section);
+    window.addEventListener('load', relayout);
+    document.fonts?.ready.then(relayout).catch(() => {});
+
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', relayout);
     reduced.addEventListener('change', relayout);
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('load', relayout);
       window.removeEventListener('scroll', update);
       window.removeEventListener('resize', relayout);
       reduced.removeEventListener('change', relayout);
