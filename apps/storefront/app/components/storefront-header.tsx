@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { whatsappLink } from '@mridul/utils';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -363,14 +364,14 @@ export function StorefrontHeader({
                     </div>
                   </section>
 
-                  {/* wa.me wants digits only, the same as the chat button. */}
-                  {whatsapp.replace(/\D/g, '') && (
+                  {/* Hidden while the shop number is still the seed value. */}
+                  {whatsappLink(whatsapp) && (
                     <section className="mobile-group">
                       <h3>Help</h3>
                       <div className="mobile-rows">
                         <a
                           className="mobile-row"
-                          href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+                          href={whatsappLink(whatsapp) ?? undefined}
                           rel="noreferrer noopener"
                           target="_blank"
                         >

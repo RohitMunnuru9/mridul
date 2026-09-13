@@ -1,7 +1,7 @@
 import 'server-only';
 import { ApiError, GoogleGenAI, type Content, FinishReason, ThinkingLevel } from '@google/genai';
 import { getAllProducts, getSiteSettings } from '@mridul/database';
-import { formatPaise } from '@mridul/utils';
+import { formatPaise, isPlaceholderPhone } from '@mridul/utils';
 
 /**
  * The shop assistant, server side. Answered by Gemini.
@@ -152,7 +152,11 @@ async function systemInstruction(): Promise<string> {
     '- Every product, price, option and stock figure you mention comes from the CATALOGUE below. If it is not there, it does not exist — say so rather than guess.',
     "- Never promise a delivery date, a discount, a custom alteration or anything the catalogue and the facts below do not state. Delivery charges and dates are confirmed at checkout from the customer's pincode.",
     '- Do not invent reviews, awards, or claims about who made a piece.',
-    `- When you cannot answer, or the customer wants a person, offer WhatsApp: ${c.whatsapp}. That is a real number that reaches the shop.`,
+    ...(isPlaceholderPhone(c.whatsapp)
+      ? []
+      : [
+          `- When you cannot answer, or the customer wants a person, offer WhatsApp: ${c.whatsapp}. That is a real number that reaches the shop.`,
+        ]),
     '- Link a product by writing its url exactly as given, for example /product/some-slug, on its own or in a sentence. Do not make up urls.',
     '- Be brief and warm. Two or three short sentences usually. No headings, no bullet lists, no emoji.',
     '- Write plain sentences. Never use markdown: no asterisks for bold or italic, no hashes, no backticks.',
@@ -161,8 +165,20 @@ async function systemInstruction(): Promise<string> {
     'Shop facts:',
     `- Free shipping on orders of ${formatPaise(settings.freeShippingThresholdPaise)} and above; below that a flat ${formatPaise(settings.flatShippingPaise)} until checkout confirms the exact charge.`,
     `- Returns: ${settings.returnWindowDays} days from delivery. Details are confirmed at checkout; for anything specific, hand off to WhatsApp.`,
-    '- Payment is taken securely at checkout. Order updates go out on WhatsApp.',
-    `- Contact: WhatsApp ${c.whatsapp}${c.email ? `, email ${c.email}` : ''}${c.instagram ? `, Instagram ${c.instagram}` : ''}.`,
+    // Cash on delivery is the only way to pay today. Saying "payment is taken
+    // securely at checkout" was true of the shop that was planned, not the one
+    // that exists, and a customer asking how to pay deserves the real answer.
+    '- Payment is cash on delivery: the customer pays the delivery partner when the parcel arrives. Card and UPI payment is being set up and is not available yet. Never tell anyone they can pay online.',
+    '- After an order is placed the customer can see it any time under Your account, with its status, what it cost and where it is going.',
+    `- Contact:${isPlaceholderPhone(c.whatsapp) ? '' : ` WhatsApp ${c.whatsapp},`}${c.email ? ` email ${c.email}` : ''}${c.instagram ? `, Instagram ${c.instagram}` : ''}.`,
+    // The shop's number is a placeholder until somebody sets a real one, and
+    // sending a customer to a number that does not exist is worse than not
+    // offering it. The facts decide what the assistant may promise.
+    ...(isPlaceholderPhone(c.whatsapp)
+      ? [
+          '- The shop WhatsApp number is not set up yet, so do NOT give it out or tell anyone to message it. Point people to the email above instead.',
+        ]
+      : []),
     '- Prices are in Indian rupees and include all taxes.',
     '',
     `CATALOGUE (JSON, one entry per product):`,
