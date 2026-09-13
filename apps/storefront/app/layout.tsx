@@ -15,6 +15,7 @@ import { HelpChat } from './components/help-chat';
 import { StoreProvider } from './providers/store-provider';
 import {
   getCategories,
+  getHelpProducts,
   getCollections,
   getContentBlocks,
   getNavigationMenus,
@@ -62,13 +63,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [categories, collections, settings, copy, menus] = await Promise.all([
-    getCategories(),
-    getCollections(),
-    getSiteSettings(),
-    getContentBlocks(),
-    getNavigationMenus(),
-  ]);
+  const [categories, collections, settings, copy, menus, helpProducts] =
+    await Promise.all([
+      getCategories(),
+      getCollections(),
+      getSiteSettings(),
+      getContentBlocks(),
+      getNavigationMenus(),
+      // What the help panel answers catalogue questions from. Read here with
+      // everything else rather than fetched by the panel, so it costs one more
+      // parallel query rather than a second round trip.
+      getHelpProducts(),
+    ]);
 
   return (
     <html lang="en">
@@ -101,6 +107,7 @@ export default async function RootLayout({
               email: settings.contact.email,
               whatsapp: settings.contact.whatsapp,
             }}
+            products={helpProducts}
           />
           <ToastHost />
         </StoreProvider>

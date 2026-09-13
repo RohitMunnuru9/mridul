@@ -24,6 +24,7 @@ import {
   fetchCollections,
   fetchCouponValidation,
   fetchProductById,
+  fetchHelpProducts,
   fetchProductBySlug,
   fetchProducts,
 } from "./supabase-source";
@@ -33,6 +34,7 @@ import type {
   CouponResult,
   Facet,
   FacetValue,
+  HelpProduct,
   NavGroup,
   NavMenu,
   Product,
@@ -475,3 +477,14 @@ export async function getNavigationMenus(): Promise<NavMenu[]> {
     });
 }
 
+/**
+ * The catalogue the help panel answers from.
+ *
+ * Read on every render rather than baked into the script, which is the whole
+ * point: a product added in the admin is something the panel can talk about on
+ * the next page load, and one hidden there stops being mentioned — without
+ * anybody editing an answer or redeploying.
+ */
+export async function getHelpProducts(): Promise<HelpProduct[]> {
+  return fetchHelpProducts();
+}

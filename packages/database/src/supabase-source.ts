@@ -17,6 +17,7 @@
 
 import { publicClient, storageUrl, type Client } from "@mridul/supabase";
 import type {
+  HelpProduct,
   Category,
   Collection,
   Coupon,
@@ -456,3 +457,41 @@ export async function fetchMediaUsage() {
 /** Coupons for the admin. Kept here so the seed types stay in one place. */
 export type CouponRow = Coupon;
 
+/**
+ * The smallest description of the catalogue that is still useful to answer a
+ * question with — no images, no variants, no prose.
+ *
+ * It exists because the help panel is rendered on every page, and it must not
+ * cost a full catalogue read to tell somebody what arrived this week. Fifteen
+ * short fields for twenty products is a few kilobytes; the real query is the
+ * one it avoids.
+ *
+ * Inactive products never leave here, so a piece hidden in the admin stops
+ * being mentioned without anybody editing an answer.
+ */
+export async function fetchHelpProducts(
+  client: Client = publicClient(),
+): Promise<HelpProduct[]> {
+  const { data, error } = await client
+    .from("products")
+    .select(
+      "slug, name, price_paise, fabric, colour_name, occasion, is_sold_out, " +
+        "published_at, primary_category:categories!products_primary_category_id_fkey(slug, name)",
+    )
+    .eq("is_active", true)
+    .order("published_at", { ascending: false });
+
+  if (error) throw new Error(`Loading the help catalogue: ${error.message}`);
+
+  return (data ?? []).map((row: any) => ({
+    slug: row.slug,
+    name: row.name,
+    pricePaise: row.price_paise,
+    fabric: row.fabric ?? "",
+    colourName: row.colour_name ?? "",
+    occasion: row.occasion ?? "",
+    soldOut: Boolean(row.is_sold_out),
+    categorySlug: row.primary_category?.slug ?? "",
+    categoryName: row.primary_category?.name ?? "",
+  }));
+}

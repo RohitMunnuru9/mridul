@@ -1099,3 +1099,20 @@
     transition: none;
   }
 }
+
+/* An answer can carry several places to go — four new arrivals, six fabrics —
+   so they wrap as a group under the reply rather than sitting inline in it. */
+.help-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.help-places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding-left: 0.1rem;
+}
+.help-places .help-answer-link {
+  margin: 0;
+}

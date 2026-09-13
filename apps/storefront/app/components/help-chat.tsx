@@ -4,16 +4,18 @@
  * The help panel, as the customer meets it.
  *
  * The same launcher in the corner, opening the same panel — but there is no
- * model behind it any more and no key to leak. It is a script: a short list of
- * the things people actually ask a saree shop, each with an answer written
- * here and checked by a person.
+ * model behind it and no key to leak. It is a script: the questions people
+ * actually ask a saree shop, each with an answer written here and checked.
  *
- * That is the trade, and it is a good one for a shop this size. A model could
- * answer anything and had to be trusted not to invent a delivery date; this
- * can only answer nine questions and cannot get any of them wrong. Every
- * figure in it — the free-shipping threshold, the flat rate, the return window,
- * the email — is passed in from Settings rather than typed into the script, so
- * changing a number in the admin changes the answer here too.
+ * Two kinds of answer live in that script. Most are fixed sentences built from
+ * Settings — the free-shipping threshold, the flat rate, the return window —
+ * so changing a number in the admin changes what the panel says.
+ *
+ * The rest are read from the catalogue on every render. "What is new?" is not
+ * a list anybody maintains; it is the newest four live products at the moment
+ * the page was built. Publish a piece in the admin and the panel mentions it
+ * on the next page load; hide one and it stops being mentioned. Nobody edits
+ * an answer, and nothing is redeployed.
  *
  * Kept from what it replaces: the launcher stays out of the way until you have
  * scrolled past the hero, and it is hidden on the bag page where it would sit
@@ -24,6 +26,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MessageCircle, X } from 'lucide-react';
+import type { HelpProduct } from '@mridul/types';
 import { formatPaise, whatsappLink } from '@mridul/utils';
 
 export type HelpFacts = {
@@ -34,22 +37,78 @@ export type HelpFacts = {
   whatsapp: string;
 };
 
+type Place = { label: string; href: string };
+
 type Answer = {
   /** What the customer taps. Written as they would say it. */
   question: string;
   /** What comes back. Paragraphs, so an answer can breathe. */
-  reply: (facts: HelpFacts) => string[];
-  /** An optional place to go next, when the answer is really a page. */
-  link?: { label: string; href: string };
+  reply: (facts: HelpFacts, products: HelpProduct[]) => string[];
+  /** Where the answer can take them. Often the answer *is* the links. */
+  places?: (products: HelpProduct[]) => Place[];
+  /** Hidden when the catalogue cannot support it — no products, no fabrics. */
+  when?: (products: HelpProduct[]) => boolean;
 };
 
-/**
- * The script.
- *
- * Ordered by how often it is asked, not by how interesting it is: payment and
- * delivery first, because that is what somebody with a full bag wants to know.
- */
+/** Unique, non-empty, in the order the catalogue gives them. */
+function distinct(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
 const SCRIPT: Answer[] = [
+  /* ---- read from the catalogue -------------------------------------------- */
+  {
+    question: 'What is new?',
+    when: (p) => p.length > 0,
+    reply: (_f, products) => [
+      products.length === 1
+        ? 'One piece is live right now — here it is.'
+        : `${products.length} pieces are live right now. These are the ones that arrived most recently.`,
+    ],
+    places: (products) =>
+      products.slice(0, 4).map((product) => ({
+        label: `${product.name} · ${formatPaise(product.pricePaise)}`,
+        href: `/product/${product.slug}`,
+      })),
+  },
+  {
+    question: 'What fabrics do you have?',
+    when: (p) => distinct(p.map((product) => product.fabric)).length > 0,
+    reply: (_f, products) => {
+      const fabrics = distinct(products.map((product) => product.fabric));
+      return [
+        `Right now: ${fabrics.slice(0, 8).join(', ')}.`,
+        'Tap one to see everything cut from it.',
+      ];
+    },
+    places: (products) =>
+      distinct(products.map((product) => product.fabric))
+        .slice(0, 6)
+        .map((fabric) => ({ label: fabric, href: `/search?q=${encodeURIComponent(fabric)}` })),
+  },
+  {
+    question: 'What is the least I can spend?',
+    when: (p) => p.some((product) => !product.soldOut),
+    reply: (_f, products) => {
+      const available = products.filter((product) => !product.soldOut);
+      const cheapest = Math.min(...available.map((product) => product.pricePaise));
+      return [
+        `Pieces start at ${formatPaise(cheapest)}. These are the gentlest on the purse today.`,
+      ];
+    },
+    places: (products) =>
+      products
+        .filter((product) => !product.soldOut)
+        .slice()
+        .sort((a, b) => a.pricePaise - b.pricePaise)
+        .slice(0, 4)
+        .map((product) => ({
+          label: `${product.name} · ${formatPaise(product.pricePaise)}`,
+          href: `/product/${product.slug}`,
+        })),
+  },
+
+  /* ---- fixed, from Settings ----------------------------------------------- */
   {
     question: 'How do I pay?',
     reply: () => [
@@ -70,14 +129,14 @@ const SCRIPT: Answer[] = [
       'Each piece is checked, pressed and packed by hand before it leaves, which usually takes a day or two.',
       'Once it is handed to the courier you get a message with the tracking number, and your order page shows where it has reached.',
     ],
-    link: { label: 'See your orders', href: '/account' },
+    places: () => [{ label: 'See your orders', href: '/account' }],
   },
   {
     question: 'Where is my order?',
     reply: () => [
       'Every order you have placed is on your account page, with what is in it, where it is going and how far along it is.',
     ],
-    link: { label: 'Open your orders', href: '/account' },
+    places: () => [{ label: 'Open your orders', href: '/account' }],
   },
   {
     question: 'Can I return something?',
@@ -92,7 +151,6 @@ const SCRIPT: Answer[] = [
       'Every saree lists its blouse piece and the fabric it is cut from on the product page, along with the measurements it will make up to.',
       'If you are between sizes, send us the measurement you stitch to and we will tell you which to take.',
     ],
-    link: { label: 'Browse sarees', href: '/shop/sarees' },
   },
   {
     question: 'How do I care for a saree?',
@@ -106,23 +164,27 @@ const SCRIPT: Answer[] = [
     reply: () => [
       'Stock is live on every product page. If a size or a variant can be added to the bag, it is on the shelf; if it is sold out, the page says so rather than letting you order it.',
     ],
-    link: { label: 'See what is in stock', href: '/collections/new-arrivals' },
+    places: () => [{ label: 'See what is in stock', href: '/collections/new-arrivals' }],
   },
 ];
 
-type Bubble = { role: 'user' | 'shop'; lines: string[]; link?: Answer['link'] };
+type Bubble = { role: 'user' | 'shop'; lines: string[]; places?: Place[] };
 
-const OPENER =
-  'Hello. Pick a question below and I will answer it straight away.';
+const OPENER = 'Hello. Pick a question below and I will answer it straight away.';
 
-export function HelpChat({ facts }: { facts: HelpFacts }) {
+export function HelpChat({
+  facts,
+  products,
+}: {
+  facts: HelpFacts;
+  products: HelpProduct[];
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState(false);
   const [thread, setThread] = useState<Bubble[]>([]);
   const log = useRef<HTMLDivElement>(null);
 
-  // The launcher appears once the hero is behind you, as it always has.
   useEffect(() => {
     let frame = 0;
     const measure = () => {
@@ -158,17 +220,27 @@ export function HelpChat({ facts }: { facts: HelpFacts }) {
     [facts.whatsapp],
   );
 
-  // Asked-and-answered questions drop out of the list, so what is left is what
-  // the customer has not tried yet.
-  const remaining = SCRIPT.filter(
-    (entry) => !thread.some((bubble) => bubble.role === 'user' && bubble.lines[0] === entry.question),
+  // A question about fabrics is worth asking only if there are fabrics. An
+  // empty catalogue quietly leaves the shop with the questions it can answer.
+  const askable = useMemo(
+    () => SCRIPT.filter((entry) => !entry.when || entry.when(products)),
+    [products],
+  );
+
+  const remaining = askable.filter(
+    (entry) =>
+      !thread.some((bubble) => bubble.role === 'user' && bubble.lines[0] === entry.question),
   );
 
   function ask(entry: Answer) {
     setThread((current) => [
       ...current,
       { role: 'user', lines: [entry.question] },
-      { role: 'shop', lines: entry.reply(facts), link: entry.link },
+      {
+        role: 'shop',
+        lines: entry.reply(facts, products),
+        places: entry.places?.(products),
+      },
     ]);
   }
 
@@ -207,7 +279,7 @@ export function HelpChat({ facts }: { facts: HelpFacts }) {
             <p className="assistant-msg is-assistant">{OPENER}</p>
 
             {thread.map((bubble, index) => (
-              <div key={index}>
+              <div className="help-turn" key={index}>
                 <p className={`assistant-msg is-${bubble.role === 'user' ? 'user' : 'assistant'}`}>
                   {bubble.lines.map((line, position) => (
                     <span className="help-line" key={position}>
@@ -215,14 +287,19 @@ export function HelpChat({ facts }: { facts: HelpFacts }) {
                     </span>
                   ))}
                 </p>
-                {bubble.link && (
-                  <Link
-                    className="assistant-link help-answer-link"
-                    href={bubble.link.href}
-                    onClick={() => setOpen(false)}
-                  >
-                    {bubble.link.label}
-                  </Link>
+                {bubble.places && bubble.places.length > 0 && (
+                  <div className="help-places">
+                    {bubble.places.map((place) => (
+                      <Link
+                        className="assistant-link help-answer-link"
+                        href={place.href}
+                        key={place.href}
+                        onClick={() => setOpen(false)}
+                      >
+                        {place.label}
+                      </Link>
+                    ))}
+                  </div>
                 )}
               </div>
             ))}
