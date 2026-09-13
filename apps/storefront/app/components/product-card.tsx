@@ -13,6 +13,7 @@
  */
 
 import Image from 'next/image';
+import { imageAtWidth } from '@mridul/utils';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
@@ -128,7 +129,7 @@ export function ProductCard({
               key={image.id}
               priority={priority && index === 0}
               sizes="(max-width: 720px) 50vw, 25vw"
-              src={image.url}
+              src={imageAtWidth(image.url, 400)}
               style={{ objectPosition: image.focal }}
             />
           ))}

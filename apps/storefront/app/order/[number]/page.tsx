@@ -20,7 +20,12 @@ import {
   type Order,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
-import { formatDateTime, formatPaise, whatsappLink } from '@mridul/utils';
+import {
+  formatDateTime,
+  formatPaise,
+  imageAtWidth,
+  whatsappLink,
+} from '@mridul/utils';
 
 export const metadata: Metadata = {
   title: 'Your order | Mridul by MR',
@@ -120,7 +125,12 @@ export default async function OrderPage({ params }: PageProps) {
               <li key={line.id}>
                 <span className="order-line-photo">
                   {line.imageUrl ? (
-                    <Image src={line.imageUrl} alt={line.name} fill sizes="88px" />
+                    <Image
+                      src={imageAtWidth(line.imageUrl, 240)}
+                      alt={line.name}
+                      fill
+                      sizes="88px"
+                    />
                   ) : (
                     <Package aria-hidden="true" />
                   )}

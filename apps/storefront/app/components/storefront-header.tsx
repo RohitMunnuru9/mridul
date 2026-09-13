@@ -180,10 +180,22 @@ export function StorefrontHeader({
 
   // Collapse the header once the page has moved, so the products get the room.
   useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 80);
-    onScroll();
+    // Scroll fires far more often than the screen refreshes. Coalesced to one
+    // check per frame, which is as often as the answer can possibly matter.
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      setCompact(window.scrollY > 80);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   // Any navigation closes whatever was open. Adjusted during render rather

@@ -11,32 +11,57 @@ export function CampaignHero() {
     if (!section) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
+    let last = -1;
+
+    /*
+     * Where the scene sits and how tall it is only change when the page is
+     * laid out, so they are measured then rather than on every frame. Calling
+     * getBoundingClientRect() inside a scroll handler forces the browser to
+     * recompute layout before it can answer — sixty times a second, while it
+     * is also trying to composite the animation those numbers drive. On a slow
+     * phone that is the difference between this hero gliding and juddering.
+     */
+    let top = 0;
+    let travel = 1;
+    const measure = () => {
+      const box = section.getBoundingClientRect();
+      top = box.top + window.scrollY;
+      travel = Math.max(1, box.height - window.innerHeight);
+    };
+
     const paint = () => {
       frame = 0;
-      const box = section.getBoundingClientRect();
       const progress = reduced.matches
         ? 0
-        : Math.max(
-            0,
-            Math.min(
-              1,
-              -box.top / Math.max(1, box.height - window.innerHeight),
-            ),
-          );
-      section.style.setProperty('--progress', String(progress));
+        : Math.max(0, Math.min(1, (window.scrollY - top) / travel));
+      // Three decimals is finer than any of these transforms can show. Below
+      // that, writing the variable only costs a style recalculation for a
+      // frame that would have looked identical.
+      const stepped = Math.round(progress * 1000) / 1000;
+      if (stepped === last) return;
+      last = stepped;
+      section.style.setProperty('--progress', String(stepped));
     };
+
     const update = () => {
       if (!frame) frame = requestAnimationFrame(paint);
     };
+    const relayout = () => {
+      measure();
+      last = -1;
+      update();
+    };
+
+    measure();
     paint();
     window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    reduced.addEventListener('change', update);
+    window.addEventListener('resize', relayout);
+    reduced.addEventListener('change', relayout);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      reduced.removeEventListener('change', update);
+      window.removeEventListener('resize', relayout);
+      reduced.removeEventListener('change', relayout);
     };
   }, []);
   return (
