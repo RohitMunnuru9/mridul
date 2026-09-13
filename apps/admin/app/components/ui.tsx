@@ -146,12 +146,18 @@ export function MediaThumb({
   );
 }
 
-/** Opens the corresponding storefront page in a new tab. */
+/**
+ * Opens the corresponding storefront page in a new tab.
+ *
+ * The origin comes from the same variable `mediaUrl` uses, rather than being
+ * written out here. It was hardcoded to localhost, so every "View listing" in
+ * the deployed admin pointed at a machine that was not running.
+ */
 export function ViewOnSite({ href, label = 'View' }: { href: string; label?: string }) {
   return (
     <a
       className="view-on-site"
-      href={`http://localhost:3000${href}`}
+      href={`${MEDIA_ORIGIN}${href}`}
       rel="noreferrer noopener"
       target="_blank"
     >

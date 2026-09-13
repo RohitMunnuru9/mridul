@@ -23,6 +23,8 @@ import { signOut } from '../auth/actions';
 export const metadata: Metadata = {
   title: 'Your account | Mridul by MR',
   description: 'Your details, orders, addresses and saved pieces at Mridul by MR.',
+  // One person's page. Nothing here is useful as a search result.
+  robots: { index: false, follow: false },
 };
 
 /** Google, email and phone read better than 'google', 'email' and 'phone'. */

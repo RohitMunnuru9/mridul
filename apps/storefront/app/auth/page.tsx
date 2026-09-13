@@ -9,6 +9,8 @@ import { signInWithGoogle } from './actions';
 export const metadata: Metadata = {
   title: 'Sign in | Mridul by MR',
   description: 'Sign in securely or create your Mridul by MR account.',
+  // One person's page. Nothing here is useful as a search result.
+  robots: { index: false, follow: false },
 };
 
 type PageProps = { searchParams: Promise<{ next?: string; error?: string }> };
