@@ -50,6 +50,9 @@ type Answer = {
   when?: (products: HelpProduct[]) => boolean;
 };
 
+/** As many fabrics as fit a sentence without it becoming a list. */
+const SHOWN_FABRICS = 8;
+
 /** Unique, non-empty, in the order the catalogue gives them. */
 function distinct(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
@@ -76,14 +79,18 @@ const SCRIPT: Answer[] = [
     when: (p) => distinct(p.map((product) => product.fabric)).length > 0,
     reply: (_f, products) => {
       const fabrics = distinct(products.map((product) => product.fabric));
+      // Listing eight of eleven and stopping reads as "that is all of them".
+      // Say how many are behind the full stop.
+      const shown = fabrics.slice(0, SHOWN_FABRICS);
+      const rest = fabrics.length - shown.length;
       return [
-        `Right now: ${fabrics.slice(0, 8).join(', ')}.`,
+        `Right now: ${shown.join(', ')}${rest > 0 ? `, and ${rest} more` : ''}.`,
         'Tap one to see everything cut from it.',
       ];
     },
     places: (products) =>
       distinct(products.map((product) => product.fabric))
-        .slice(0, 6)
+        .slice(0, SHOWN_FABRICS)
         .map((fabric) => ({ label: fabric, href: `/search?q=${encodeURIComponent(fabric)}` })),
   },
   {
