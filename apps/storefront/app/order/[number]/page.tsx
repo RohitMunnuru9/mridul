@@ -191,12 +191,26 @@ export default async function OrderPage({ params }: PageProps) {
               <br />
               {order.address.pincode}
             </address>
+            {/*
+              Two different things, and saying which is which matters: the
+              number is the one given for this delivery, the email is the one
+              the account was created with. They are often not the same person's
+              habit, and an unlabelled pair looks like a mistake.
+            */}
             <ul className="order-contact">
               <li>
-                <Phone aria-hidden="true" /> {order.phone ?? order.address.phone}
+                <Phone aria-hidden="true" />
+                <span>
+                  <small>Delivery contact</small>
+                  {order.phone ?? order.address.phone}
+                </span>
               </li>
               <li>
-                <Mail aria-hidden="true" /> {order.email ?? '—'}
+                <Mail aria-hidden="true" />
+                <span>
+                  <small>Order updates sent to</small>
+                  {order.email ?? '—'}
+                </span>
               </li>
             </ul>
           </section>

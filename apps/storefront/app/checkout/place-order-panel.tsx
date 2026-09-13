@@ -191,7 +191,9 @@ export function PlaceOrderPanel({
               <br />
               {address.city}, {address.state} — {address.pincode}
               <br />
-              <span className="review-address-email">{email}</span>
+              <span className="review-address-email">
+                Order updates to {email}
+              </span>
             </p>
           </div>
         </div>
