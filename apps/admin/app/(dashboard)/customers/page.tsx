@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BadgeCheck, ChevronRight, ShieldAlert } from 'lucide-react';
-import { fetchCustomers } from '@mridul/database';
+import { redirect } from 'next/navigation';
+import { fetchCustomers, type Customer } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
 import { formatDate, formatDateTime, formatPaise } from '@mridul/utils';
 import { PageHead, Panel } from '../../components/ui';
@@ -16,10 +17,23 @@ const METHOD_LABEL: Record<string, string> = {
 
 export default async function CustomersPage() {
   const db = await sessionClient();
+
   // `admin_customers()` reads auth.users, which no client role may touch. It
   // checks the caller's role itself and refuses anyone without one, so this
   // page needs the admin's ordinary session and not the service-role key.
-  const customers = await fetchCustomers(db);
+  //
+  // A refusal is not a fault. A session that has gone stale looks exactly like
+  // somebody with no role, and answering that with a server error page — which
+  // is what an uncaught throw here produced — tells the reader nothing they
+  // can act on. Sending them to sign in is the truthful answer.
+  let customers: Customer[] = [];
+  let refused = false;
+  try {
+    customers = await fetchCustomers(db);
+  } catch {
+    refused = true;
+  }
+  if (refused) redirect('/login');
 
   const shoppers = customers.filter((customer) => !customer.isStaff);
   const buyers = shoppers.filter((customer) => customer.ordersCount > 0);

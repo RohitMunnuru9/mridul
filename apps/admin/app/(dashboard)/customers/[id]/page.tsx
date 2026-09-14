@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import {
   BadgeCheck,
   ChevronLeft,
@@ -30,8 +30,10 @@ export default async function CustomerDetailPage({ params }: PageProps) {
   const { id } = await params;
   const db = await sessionClient();
 
+  // Same as the list: a refusal means the session went stale, not that the
+  // page is broken.
   const [customers, orders, { data: addresses }] = await Promise.all([
-    fetchCustomers(db),
+    fetchCustomers(db).catch(() => null),
     fetchOrders(db, { customerId: id }),
     db
       .from('addresses')
@@ -39,6 +41,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
       .eq('customer_id', id)
       .order('is_default', { ascending: false }),
   ]);
+
+  if (!customers) redirect('/login');
 
   const customer = customers.find((row) => row.id === id);
   if (!customer) notFound();
