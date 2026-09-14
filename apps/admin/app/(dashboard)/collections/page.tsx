@@ -14,7 +14,8 @@ import {
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
 import { formatPaise } from '@mridul/utils';
-import { InternalLink, MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite } from '../../components/ui';
+import { InternalLink, MediaThumb, PageHead, Panel, Pill, StatCard, ViewOnSite, mediaUrl } from '../../components/ui';
+import { CollectionBoard } from '../../components/collection-board';
 
 export const metadata: Metadata = { title: 'Collections | Mridul Admin' };
 
@@ -32,9 +33,21 @@ export default async function CollectionsPage() {
   const withProducts = await Promise.all(
     collections.map(async (collection) => ({
       collection,
-      products: await getProductsByCollection(collection.slug, 6, db),
+      // The board needs the whole membership, not a preview of it — a piece
+      // you cannot see is a piece you cannot move.
+      products: await getProductsByCollection(collection.slug, 200, db),
     })),
   );
+
+  const board = withProducts.map(({ collection, products }) => ({
+    collection: { id: collection.id, name: collection.name, slug: collection.slug },
+    products: products.map((product) => ({
+      id: product.id,
+      name: product.name,
+      pricePaise: product.pricePaise,
+      imageUrl: mediaUrl(product.images[0].url),
+    })),
+  }));
 
   return (
     <>
@@ -64,6 +77,19 @@ export default async function CollectionsPage() {
           note="product memberships"
         />
       </dl>
+
+      <Panel
+        title="Move pieces between collections"
+        note="Drag a piece by its grip into another collection, or use the Move to menu on it. Changes save straight away."
+        wide
+      >
+        <CollectionBoard
+          collections={board.map((entry) => entry.collection)}
+          initialGroups={Object.fromEntries(
+            board.map((entry) => [entry.collection.id, entry.products]),
+          )}
+        />
+      </Panel>
 
       {withProducts.map(({ collection, products }) => (
         <Panel
