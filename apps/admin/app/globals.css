@@ -584,17 +584,22 @@ th.numeric {
   background: var(--line-soft);
 }
 .hero-admin-card {
-  display: flex;
-  gap: 1.2rem;
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 0.9rem 1.2rem;
   padding: 1.1rem;
   background: var(--paper);
+}
+/* The heading names the whole card, so it sits above both columns. */
+.hero-admin-card > .hero-admin-head {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
 }
 /* A fixed column so the picture and its upload form read as one unit, the way
    the category editor does. */
 .hero-admin-preview {
   display: flex;
-  width: 180px;
-  flex: none;
+  min-width: 0;
   flex-direction: column;
   gap: 0.6rem;
 }
@@ -602,13 +607,10 @@ th.numeric {
   padding: 0;
 }
 
-/* On a phone the banner stacks: picture first, then its words. */
-@media (width <= 720px) {
+/* On a phone the banner stacks: heading, picture, then its words. */
+@media (width <= 820px) {
   .hero-admin-card {
-    flex-direction: column;
-  }
-  .hero-admin-preview {
-    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 .hero-admin-body {
@@ -961,6 +963,7 @@ th.numeric {
   border-top: 1px solid var(--line-soft);
 }
 .btn-primary,
+.btn-secondary,
 .btn-danger,
 .btn-quiet {
   padding: 0.45rem 0.9rem;
@@ -998,6 +1001,41 @@ th.numeric {
 .btn-quiet:hover {
   background: var(--canvas);
   color: var(--ink);
+}
+
+/*
+ * The one that was missing.
+ *
+ * `btn-secondary` drives "Choose a picture" and both crop-box controls, and it
+ * had no rule anywhere — only a flex declaration inside `.image-upload-pick`.
+ * Tailwind's reset strips a button to transparent with no border, so all three
+ * rendered as a line of text with an icon next to it. Nobody presses text, so
+ * no picture was ever chosen, which left the upload button permanently
+ * disabled and looking broken.
+ *
+ * It is the quiet counterpart to btn-primary: clearly a button, clearly not
+ * the one that commits.
+ */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--paper);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.btn-secondary svg {
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .form-note {
@@ -2675,4 +2713,128 @@ th.numeric {
   font-size: 0.7rem;
   opacity: 0.75;
   word-break: break-word;
+}
+
+/* ---------------------------------------------------------------------------
+   Telling one editable thing from the next
+   ---------------------------------------------------------------------------
+   On a wide screen a hairline between two forms is enough, because you can see
+   both at once and the columns line up. On a phone each form is taller than the
+   screen, so by the time you reach the bottom of one there is nothing to say
+   the next field belongs to something else — a banner's "Save" sits directly
+   above the next banner's picture, and the form for editing a review looks
+   exactly like the form for adding one.
+
+   So below 820px every editable thing becomes a card with its own edge, and
+   the groups inside a panel get a heading that names them.
+   --------------------------------------------------------------------------- */
+
+/* A labelled group inside a panel — "Add a new review" — so a second form is
+   announced rather than just appearing. */
+.panel-subhead {
+  padding: 0.9rem 1.1rem 0;
+  border-top: 1px solid var(--line);
+  margin-top: 0.4rem;
+}
+.panel-subhead:first-child {
+  border-top: 0;
+  margin-top: 0;
+}
+.panel-subhead h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.panel-subhead p {
+  max-width: 70ch;
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+/* The picture chooser reads as a control, not as three stray lines of text. */
+.image-upload {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  padding: 0.85rem 0.9rem;
+}
+.image-upload .field:last-of-type {
+  margin-bottom: 0;
+}
+.image-upload .edit-form-foot {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+}
+/* Inside a card that already has its own frame, one frame is enough. */
+.hero-admin-preview .image-upload,
+.review-editor-photo .image-upload {
+  background: var(--paper);
+}
+
+@media (width <= 820px) {
+  /* Each banner becomes a card with an edge instead of a 1px seam. */
+  .hero-admin-list {
+    gap: 0.9rem;
+    padding: 0.9rem;
+    background: transparent;
+  }
+  .hero-admin-card {
+    gap: 0.9rem;
+    padding: 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  /* Same for a review: its state, its picture and its fields are one object. */
+  .review-editor {
+    gap: 0.8rem;
+    margin: 0 0.9rem 0.9rem;
+    padding: 0.95rem;
+    border: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+  }
+  .review-editor:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .review-editor-state {
+    justify-content: space-between;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  /* A form that fills the screen needs its save button to read as the end of
+     it, not as another row. */
+  .edit-form-foot {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .edit-form-foot .btn-primary,
+  .edit-form-foot .btn-secondary,
+  .edit-form-foot .btn-danger,
+  .edit-form-foot .btn-quiet {
+    justify-content: center;
+    min-height: 2.6rem;
+  }
+  /* Except where the button is the whole form — a publish or a remove — which
+     should stay the size of its own words. */
+  .edit-form.is-compact .edit-form-foot {
+    flex-direction: row;
+    align-items: center;
+  }
+  .edit-form.is-compact .edit-form-foot .btn-primary,
+  .edit-form.is-compact .edit-form-foot .btn-danger {
+    min-height: 2.2rem;
+  }
+
+  .image-upload-pick .btn-secondary {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 2.6rem;
+  }
 }
