@@ -78,15 +78,23 @@ export function CollectionBoard({
     if (fromId === toId) return;
 
     const before = groups;
+
     // Show it in the new place at once; a move that waits for the network
     // feels broken even when it works.
+    //
+    // Unless it is already there. A piece can belong to several collections,
+    // and moving one into a collection it is already in adds nothing — it only
+    // takes it out of where it came from. Inserting it anyway drew the same
+    // piece twice in the target column, which reads as the board losing track.
     setGroups((current) => {
       const moved = current[fromId]?.find((product) => product.id === productId);
       if (!moved) return current;
+      const target = current[toId] ?? [];
+      const already = target.some((product) => product.id === productId);
       return {
         ...current,
         [fromId]: current[fromId].filter((product) => product.id !== productId),
-        [toId]: [moved, ...(current[toId] ?? [])],
+        [toId]: already ? target : [moved, ...target],
       };
     });
 
@@ -100,7 +108,13 @@ export function CollectionBoard({
       return;
     }
     const to = collections.find((collection) => collection.id === toId);
-    setNote({ ok: true, text: `Moved to ${to?.name ?? 'the collection'}.` });
+    const from = collections.find((collection) => collection.id === fromId);
+    setNote({
+      ok: true,
+      text: result.alreadyThere
+        ? `${to?.name ?? 'That collection'} already had it, so it has only been taken out of ${from?.name ?? 'the old one'}.`
+        : `Moved to ${to?.name ?? 'the collection'}.`,
+    });
   }
 
   /*
@@ -253,11 +267,19 @@ export function CollectionBoard({
                           <option value="">Move to…</option>
                           {collections
                             .filter((other) => other.id !== collection.id)
-                            .map((other) => (
-                              <option key={other.id} value={other.id}>
-                                {other.name}
-                              </option>
-                            ))}
+                            .map((other) => {
+                              // Saying so up front is the difference between a
+                              // move and an apparent disappearance.
+                              const has = (groups[other.id] ?? []).some(
+                                (inThere) => inThere.id === product.id,
+                              );
+                              return (
+                                <option key={other.id} value={other.id}>
+                                  {other.name}
+                                  {has ? ' — already in' : ''}
+                                </option>
+                              );
+                            })}
                         </select>
                       </label>
                     </li>
