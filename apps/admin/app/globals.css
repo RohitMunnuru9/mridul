@@ -768,6 +768,10 @@ th.numeric {
   .admin-sidebar {
     position: static;
     display: grid;
+    /* Brand takes what it needs, the account takes the rest — and the nav
+       below spans both, or it inherits the brand's narrow column and the
+       links are clipped after the first one. */
+    grid-template-columns: auto minmax(0, 1fr);
     height: auto;
     padding: 0.7rem 0 0;
     gap: 0.55rem;
@@ -811,11 +815,13 @@ th.numeric {
     width: auto;
     flex: none;
     padding: 0.35rem 0.7rem;
+    white-space: nowrap;
   }
 
   /* One row, scrolled rather than wrapped. Every section is still here. */
   .admin-nav {
     grid-row: 2;
+    grid-column: 1 / -1;
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 0.5rem;
