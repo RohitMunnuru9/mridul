@@ -501,32 +501,50 @@ async function loadHelpProducts(
  * One read per request, not one per caller
  * ---------------------------------------------------------------------------
  * These are pure reads of a catalogue that cannot change while a single page
- * is being rendered, and several of them were being asked for again and again
- * inside one render. The admin's Collections page was the worst: it wanted the
- * membership of five collections and the counts, and each of those went and
- * fetched the entire catalogue — products, images, variants, inventory — so
- * one page load was six full catalogue reads where one would do.
+ * is being rendered, and several were being asked for again and again inside
+ * one render. The admin's Collections page was the worst: it wants the
+ * membership of five collections and the counts, and every one of those went
+ * and fetched the entire catalogue — products, images, variants, inventory.
  *
  * React's `cache` is per request and only per request. That distinction is the
- * whole reason it is safe here: two shoppers never share a result, and a page
- * rendered after an edit never sees the version from before it. It is a way of
- * asking the same question once, not a way of remembering the answer.
+ * whole reason it is safe: two shoppers never share a result, and a page
+ * rendered after an edit never sees the version from before it. It asks the
+ * same question once rather than remembering the answer.
  *
- * Keyed on arguments, so a call that passes the admin's session client and one
- * that passes nothing are correctly treated as different questions — they can
- * see different rows, because row-level security says so.
+ * `perRequest` exists because `cache` keys on the exact argument list, and
+ * these functions all take an optional client. `fetchProducts()` and
+ * `fetchProducts(undefined)` are the same question asked two ways, and without
+ * trimming they became two cache entries and two round trips — which is most
+ * of what the first attempt at this left on the table.
+ *
+ * Only trailing undefined is dropped, so `fetchTestimonials(true, undefined)`
+ * still differs from `fetchTestimonials(undefined, client)`. And a real client
+ * argument is kept: the admin's session sees rows the anonymous one does not,
+ * because row-level security says so, and those must never share an answer.
  * ------------------------------------------------------------------------- */
-export const fetchProducts = cache(loadProducts);
-export const fetchCategories = cache(loadCategories);
-export const fetchCollections = cache(loadCollections);
-export const fetchSiteSettings = cache(loadSiteSettings);
-export const fetchContentBlocks = cache(loadContentBlocks);
-export const fetchHelpProducts = cache(loadHelpProducts);
-export const fetchHeroSlides = cache(loadHeroSlides);
-export const fetchHomepageSections = cache(loadHomepageSections);
-export const fetchMoodTiles = cache(loadMoodTiles);
-export const fetchOccasionPanels = cache(loadOccasionPanels);
-export const fetchValueProps = cache(loadValueProps);
-export const fetchJournalPosts = cache(loadJournalPosts);
-export const fetchStoryPanel = cache(loadStoryPanel);
-export const fetchTestimonials = cache(loadTestimonials);
+
+function perRequest<A extends unknown[], R>(load: (...args: A) => Promise<R>) {
+  const once = cache(load);
+  return (...args: A): Promise<R> => {
+    const trimmed = [...args];
+    while (trimmed.length > 0 && trimmed[trimmed.length - 1] === undefined) {
+      trimmed.pop();
+    }
+    return once(...(trimmed as A));
+  };
+}
+
+export const fetchProducts = perRequest(loadProducts);
+export const fetchCategories = perRequest(loadCategories);
+export const fetchCollections = perRequest(loadCollections);
+export const fetchSiteSettings = perRequest(loadSiteSettings);
+export const fetchContentBlocks = perRequest(loadContentBlocks);
+export const fetchHelpProducts = perRequest(loadHelpProducts);
+export const fetchHeroSlides = perRequest(loadHeroSlides);
+export const fetchHomepageSections = perRequest(loadHomepageSections);
+export const fetchMoodTiles = perRequest(loadMoodTiles);
+export const fetchOccasionPanels = perRequest(loadOccasionPanels);
+export const fetchValueProps = perRequest(loadValueProps);
+export const fetchJournalPosts = perRequest(loadJournalPosts);
+export const fetchStoryPanel = perRequest(loadStoryPanel);
+export const fetchTestimonials = perRequest(loadTestimonials);
