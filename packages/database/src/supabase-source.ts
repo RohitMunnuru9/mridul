@@ -15,6 +15,7 @@
  * deliberately simple for now.
  */
 
+import { cache } from "react";
 import { publicClient, storageUrl, type Client } from "@mridul/supabase";
 import type {
   HelpProduct,
@@ -144,7 +145,7 @@ function toProduct(row: any): Product {
  * shopper gets active products, and nothing else, without this code having to
  * remember to filter.
  */
-export async function fetchProducts(client: Client = publicClient()): Promise<Product[]> {
+async function loadProducts(client: Client = publicClient()): Promise<Product[]> {
   const { data, error } = await client
     .from("products")
     .select(PRODUCT_SELECT)
@@ -182,7 +183,7 @@ export async function fetchProductById(
   return data ? toProduct(data) : null;
 }
 
-export async function fetchCategories(client: Client = publicClient()): Promise<Category[]> {
+async function loadCategories(client: Client = publicClient()): Promise<Category[]> {
   const { data, error } = await client
     .from("categories")
     .select(
@@ -209,7 +210,7 @@ export async function fetchCategories(client: Client = publicClient()): Promise<
   }));
 }
 
-export async function fetchCollections(): Promise<Collection[]> {
+async function loadCollections(): Promise<Collection[]> {
   const { data, error } = await publicClient()
     .from("collections")
     .select("id, slug, name, tagline, show_in_nav")
@@ -225,7 +226,7 @@ export async function fetchCollections(): Promise<Collection[]> {
   }));
 }
 
-export async function fetchHeroSlides(client: Client = publicClient()): Promise<HeroSlide[]> {
+async function loadHeroSlides(client: Client = publicClient()): Promise<HeroSlide[]> {
   const { data, error } = await client
     .from("hero_slides")
     .select(
@@ -249,7 +250,7 @@ export async function fetchHeroSlides(client: Client = publicClient()): Promise<
   }));
 }
 
-export async function fetchHomepageSections(client: Client = publicClient()): Promise<HomepageSection[]> {
+async function loadHomepageSections(client: Client = publicClient()): Promise<HomepageSection[]> {
   const { data, error } = await client
     .from("homepage_sections")
     .select("id, key, name, description, position, is_enabled, collection:collections(slug)")
@@ -268,7 +269,7 @@ export async function fetchHomepageSections(client: Client = publicClient()): Pr
   }));
 }
 
-export async function fetchOccasionPanels(client: Client = publicClient()): Promise<OccasionPanel[]> {
+async function loadOccasionPanels(client: Client = publicClient()): Promise<OccasionPanel[]> {
   const { data, error } = await client
     .from("occasion_panels")
     .select("id, tone, eyebrow, title, body, cta_label, cta_href, position")
@@ -288,7 +289,7 @@ export async function fetchOccasionPanels(client: Client = publicClient()): Prom
   }));
 }
 
-export async function fetchValueProps(client: Client = publicClient()): Promise<ValueProp[]> {
+async function loadValueProps(client: Client = publicClient()): Promise<ValueProp[]> {
   const { data, error } = await client
     .from("value_props")
     .select("id, icon, title, note, position")
@@ -304,7 +305,7 @@ export async function fetchValueProps(client: Client = publicClient()): Promise<
   }));
 }
 
-export async function fetchJournalPosts(client: Client = publicClient()): Promise<JournalPost[]> {
+async function loadJournalPosts(client: Client = publicClient()): Promise<JournalPost[]> {
   const { data, error } = await client
     .from("journal_posts")
     .select(
@@ -325,7 +326,7 @@ export async function fetchJournalPosts(client: Client = publicClient()): Promis
   }));
 }
 
-export async function fetchStoryPanel(client: Client = publicClient()): Promise<StoryPanel> {
+async function loadStoryPanel(client: Client = publicClient()): Promise<StoryPanel> {
   const { data, error } = await client
     .from("story_panel")
     .select(
@@ -347,7 +348,7 @@ export async function fetchStoryPanel(client: Client = publicClient()): Promise<
   };
 }
 
-export async function fetchSiteSettings(client: Client = publicClient()): Promise<SiteSettings> {
+async function loadSiteSettings(client: Client = publicClient()): Promise<SiteSettings> {
   const { data, error } = await client.from("settings").select("*").maybeSingle();
 
   if (error) throw new Error(`Loading settings: ${error.message}`);
@@ -372,7 +373,7 @@ export async function fetchSiteSettings(client: Client = publicClient()): Promis
 }
 
 /** Named editorial prose, keyed by slug. */
-export async function fetchContentBlocks(client: Client = publicClient()): Promise<Record<string, string>> {
+async function loadContentBlocks(client: Client = publicClient()): Promise<Record<string, string>> {
   const { data, error } = await client.from("content_blocks").select("key, body");
 
   if (error) throw new Error(`Loading content blocks: ${error.message}`);
@@ -380,7 +381,7 @@ export async function fetchContentBlocks(client: Client = publicClient()): Promi
   return Object.fromEntries((data ?? []).map((row: any) => [row.key, row.body]));
 }
 
-export async function fetchTestimonials(
+async function loadTestimonials(
   client: Client = publicClient(),
 ): Promise<Testimonial[]> {
   const { data, error } = await client
@@ -407,7 +408,7 @@ export async function fetchTestimonials(
   }));
 }
 
-export async function fetchMoodTiles(client: Client = publicClient()) {
+async function loadMoodTiles(client: Client = publicClient()) {
   const { data, error } = await client
     .from("mood_tiles")
     .select("id, label, note, href, icon, tone, position")
@@ -469,7 +470,7 @@ export type CouponRow = Coupon;
  * Inactive products never leave here, so a piece hidden in the admin stops
  * being mentioned without anybody editing an answer.
  */
-export async function fetchHelpProducts(
+async function loadHelpProducts(
   client: Client = publicClient(),
 ): Promise<HelpProduct[]> {
   const { data, error } = await client
@@ -495,3 +496,37 @@ export async function fetchHelpProducts(
     categoryName: row.primary_category?.name ?? "",
   }));
 }
+
+/* ---------------------------------------------------------------------------
+ * One read per request, not one per caller
+ * ---------------------------------------------------------------------------
+ * These are pure reads of a catalogue that cannot change while a single page
+ * is being rendered, and several of them were being asked for again and again
+ * inside one render. The admin's Collections page was the worst: it wanted the
+ * membership of five collections and the counts, and each of those went and
+ * fetched the entire catalogue — products, images, variants, inventory — so
+ * one page load was six full catalogue reads where one would do.
+ *
+ * React's `cache` is per request and only per request. That distinction is the
+ * whole reason it is safe here: two shoppers never share a result, and a page
+ * rendered after an edit never sees the version from before it. It is a way of
+ * asking the same question once, not a way of remembering the answer.
+ *
+ * Keyed on arguments, so a call that passes the admin's session client and one
+ * that passes nothing are correctly treated as different questions — they can
+ * see different rows, because row-level security says so.
+ * ------------------------------------------------------------------------- */
+export const fetchProducts = cache(loadProducts);
+export const fetchCategories = cache(loadCategories);
+export const fetchCollections = cache(loadCollections);
+export const fetchSiteSettings = cache(loadSiteSettings);
+export const fetchContentBlocks = cache(loadContentBlocks);
+export const fetchHelpProducts = cache(loadHelpProducts);
+export const fetchHeroSlides = cache(loadHeroSlides);
+export const fetchHomepageSections = cache(loadHomepageSections);
+export const fetchMoodTiles = cache(loadMoodTiles);
+export const fetchOccasionPanels = cache(loadOccasionPanels);
+export const fetchValueProps = cache(loadValueProps);
+export const fetchJournalPosts = cache(loadJournalPosts);
+export const fetchStoryPanel = cache(loadStoryPanel);
+export const fetchTestimonials = cache(loadTestimonials);
