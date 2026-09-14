@@ -21,6 +21,14 @@ import type { ActionResult } from './catalogue';
 const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
 
+/**
+ * A move reports whether the piece was already in the collection it was moved
+ * to, because that changes what actually happened: nothing was added, and the
+ * only effect was taking it out of where it came from. Saying "Moved" there
+ * would describe a piece appearing somewhere it already was.
+ */
+export type MoveResult = ActionResult & { alreadyThere?: boolean };
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function editor() {
@@ -40,7 +48,7 @@ export async function moveProductToCollection(
   productId: string,
   fromCollectionId: string | null,
   toCollectionId: string,
-): Promise<ActionResult> {
+): Promise<MoveResult> {
   if (!(await editor())) return FAIL('You cannot change collections.');
 
   if (!UUID.test(productId) || !UUID.test(toCollectionId)) {
@@ -53,13 +61,19 @@ export async function moveProductToCollection(
 
   const db = await sessionClient();
 
+  // `select()` after an ignore-duplicates upsert returns the rows that were
+  // actually written — empty means the piece was already a member. Worth
+  // knowing without a second round trip to ask.
   const added = await db
     .from('product_collections')
     .upsert(
       { product_id: productId, collection_id: toCollectionId, position: 0 },
       { onConflict: 'product_id,collection_id', ignoreDuplicates: true },
-    );
+    )
+    .select('collection_id');
   if (added.error) return FAIL(added.error.message);
+
+  const alreadyThere = (added.data ?? []).length === 0;
 
   if (fromCollectionId) {
     const removed = await db
@@ -76,7 +90,15 @@ export async function moveProductToCollection(
 
   revalidatePath('/collections');
   revalidatePath('/products');
-  return OK(fromCollectionId ? 'Moved.' : 'Added.');
+
+  if (alreadyThere && fromCollectionId) {
+    return {
+      ok: true,
+      alreadyThere: true,
+      message: 'It was already in that collection, so it has only been taken out of the old one.',
+    };
+  }
+  return { ...OK(fromCollectionId ? 'Moved.' : 'Added.'), alreadyThere };
 }
 
 /** Take a piece out of a collection without putting it anywhere else. */
