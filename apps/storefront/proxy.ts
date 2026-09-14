@@ -77,7 +77,6 @@ export async function proxy(request: NextRequest) {
   // setAll above, that refresh finally gets written down.
   await supabase.auth.getUser();
 
-  response.headers.set('x-session-refresh', 'ran');
   return response;
 }
 
