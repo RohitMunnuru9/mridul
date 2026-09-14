@@ -32,7 +32,7 @@ import {
   updateOccasionPanel,
 } from '../../actions/content';
 import { EditForm, Field, FieldRow, TextArea, Toggle } from '../../components/form';
-import { MediaThumb, PageHead, Panel, Pill, ViewOnSite } from '../../components/ui';
+import { MediaThumb, PageHead, Panel, Pill, SubHead, ViewOnSite } from '../../components/ui';
 
 export const metadata: Metadata = { title: 'Homepage | Mridul Admin' };
 
@@ -61,8 +61,16 @@ export default async function HomepagePage() {
         note="The full-bleed carousel at the top. Change the picture and the words in one place."
       >
         <div className="hero-admin-list">
-          {slides.map((slide) => (
+          {slides.map((slide, index) => (
             <article className="hero-admin-card" key={slide.id}>
+              {/* Which banner this is, and whether anyone can see it. Without
+                  it two stacked banners on a phone are indistinguishable. */}
+              <div className="hero-admin-head">
+                <span className="slide-number">Banner {index + 1}</span>
+                <Pill tone={slide.isActive ? 'ok' : 'low'}>
+                  {slide.isActive ? 'On the website' : 'Hidden'}
+                </Pill>
+              </div>
               <div className="hero-admin-preview">
                 <MediaThumb
                   url={slide.media.url}
@@ -126,6 +134,17 @@ export default async function HomepagePage() {
                     type="hidden"
                     value={review.isPublished ? 'false' : 'true'}
                   />
+                </EditForm>
+                {/* Removing this review belongs next to this review, not in a
+                    list of "Remove <name>" buttons under an unrelated form. */}
+                <EditForm
+                  action={deleteTestimonial}
+                  submitLabel="Remove"
+                  title={`Remove the review from ${review.author}`}
+                  compact
+                  danger
+                >
+                  <input name="id" type="hidden" value={review.id} />
                 </EditForm>
               </div>
 
@@ -203,6 +222,10 @@ export default async function HomepagePage() {
             </div>
           ))}
         </div>
+        <SubHead
+          title="Add a new review"
+          note="A different form from the ones above: this one creates a review rather than editing an existing one. It starts as a draft."
+        />
         <div className="panel-stack">
           <EditForm action={createTestimonial} submitLabel="Add review">
             <FieldRow>
@@ -220,17 +243,6 @@ export default async function HomepagePage() {
               <Field label="Order" name="position" type="number" defaultValue={0} />
             </FieldRow>
           </EditForm>
-          {reviews.map((review) => (
-            <EditForm
-              action={deleteTestimonial}
-              key={`remove-${review.id}`}
-              submitLabel={`Remove ${review.author}`}
-              compact
-              danger
-            >
-              <input name="id" type="hidden" value={review.id} />
-            </EditForm>
-          ))}
         </div>
       </Panel>
 

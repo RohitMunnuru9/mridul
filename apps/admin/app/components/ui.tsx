@@ -121,6 +121,22 @@ export function AwaitingBackend({
   );
 }
 
+/**
+ * A named group inside a panel.
+ *
+ * A panel that holds both "edit these" and "add another" was showing two forms
+ * with identical fields and no word between them — on a phone, where only one
+ * is on screen at a time, there was nothing to say which you were filling in.
+ */
+export function SubHead({ title, note }: { title: string; note?: string }) {
+  return (
+    <div className="panel-subhead">
+      <h3>{title}</h3>
+      {note && <p>{note}</p>}
+    </div>
+  );
+}
+
 export function Pill({
   tone,
   children,
