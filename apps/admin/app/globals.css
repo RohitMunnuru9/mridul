@@ -864,6 +864,18 @@ th.numeric {
     min-width: 0;
     padding: 1.25rem 1rem 3rem;
   }
+  /*
+   * A dense table inside a panel scrolls on its own — the panel above is a
+   * scroll container and clips it. Something in that arrangement still let the
+   * document itself be dragged sideways by about 140px, which on a phone means
+   * every page can be pushed off-centre with a stray thumb.
+   *
+   * `clip` rather than `hidden`: it stops the drag without turning the shell
+   * into a scroll container, so the sticky panel headings inside still stick.
+   */
+  .admin-shell {
+    overflow-x: clip;
+  }
   /* Let dense tables scroll sideways rather than crush every column to
      one character per line. */
   .panel {
