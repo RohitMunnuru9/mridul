@@ -2933,3 +2933,179 @@ th.numeric {
     min-height: 2.6rem;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Moving pieces between collections
+   ---------------------------------------------------------------------------
+   Columns side by side on a desk, stacked on a phone. The grip is the only
+   part that takes a drag — `touch-action: none` there and nowhere else, so a
+   finger dragged across the card still scrolls the page.
+   --------------------------------------------------------------------------- */
+
+.collection-board {
+  padding: 0.9rem 1.1rem 1.1rem;
+}
+.collection-board-hint {
+  max-width: 70ch;
+  margin: 0 0 0.8rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.collection-board .form-note {
+  display: block;
+  margin-bottom: 0.7rem;
+}
+
+.collection-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.collection-column {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  transition: border-color 140ms ease, background 140ms ease;
+}
+/* The column under the pointer says so, or a drop is a guess. */
+.collection-column.is-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.collection-column > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.collection-column > header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.collection-column > header span {
+  color: var(--faint);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+.collection-column ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.5rem;
+  list-style: none;
+}
+.collection-column-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 1.1rem 0.75rem;
+  color: var(--faint);
+  font-size: 0.76rem;
+}
+.collection-column-empty svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.collection-chip {
+  display: grid;
+  grid-template-columns: auto 2.2rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.collection-chip.is-dragging {
+  opacity: 0.4;
+}
+.collection-grip {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--faint);
+  cursor: grab;
+  /* The whole point: a drag from here is a drag, not a scroll. */
+  touch-action: none;
+}
+.collection-grip:hover {
+  background: var(--canvas);
+  color: var(--ink);
+}
+.collection-grip:active {
+  cursor: grabbing;
+}
+.collection-grip svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.collection-chip-photo {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 5px;
+  object-fit: cover;
+}
+.collection-chip-body {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+}
+.collection-chip-body strong {
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.collection-chip-body small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+.collection-move {
+  grid-column: 1 / -1;
+}
+.collection-move select {
+  width: 100%;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+/* Follows the pointer so there is never a doubt about what is being moved. */
+.collection-ghost {
+  position: fixed;
+  z-index: 200;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  transform: translate(-50%, -180%);
+  box-shadow: 0 8px 22px rgb(25 12 16 / 30%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-column {
+    transition: none;
+  }
+}
