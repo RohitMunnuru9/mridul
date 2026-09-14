@@ -750,29 +750,106 @@ th.numeric {
 }
 
 @media (width <= 860px) {
+  /*
+   * The sidebar becomes a header, and it has to be a short one.
+   *
+   * Wrapping ten links into rows put the brand, two group headings, four rows
+   * of navigation, the signed-in email and a full-width Sign out button above
+   * every page — about eight hundred pixels of chrome before the first thing
+   * you came to edit. On a phone that is the whole screen.
+   *
+   * Nothing is dropped. The links become one row that scrolls sideways, the
+   * group headings ride along inside it as labels, and the account line sits
+   * beside the brand instead of under the navigation.
+   */
   .admin-shell {
     grid-template-columns: 1fr;
   }
   .admin-sidebar {
     position: static;
+    display: grid;
     height: auto;
+    padding: 0.7rem 0 0;
+    gap: 0.55rem;
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
+
+  /* Brand on the left, who you are and the way out on the right. */
+  .admin-brand {
+    grid-row: 1;
+    padding: 0 0.9rem;
+    font-size: 1.15rem;
+  }
+  .admin-brand span {
+    display: inline;
+    margin-left: 0.45rem;
+    font-size: 0.6rem;
+  }
+  .admin-account {
+    display: flex;
+    grid-row: 1;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0 0.9rem;
+    border-top: 0;
+  }
+  .admin-account p {
+    margin: 0;
+    text-align: right;
+  }
+  .admin-account strong {
+    max-width: 42vw;
+    overflow: hidden;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-account button {
+    width: auto;
+    flex: none;
+    padding: 0.35rem 0.7rem;
+  }
+
+  /* One row, scrolled rather than wrapped. Every section is still here. */
   .admin-nav {
+    grid-row: 2;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding: 0 0.9rem 0.6rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .admin-nav::-webkit-scrollbar {
+    display: none;
   }
   .admin-nav-group {
     display: flex;
-    flex-wrap: wrap;
+    flex: none;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 0.3rem;
   }
+  /* The heading keeps its words, inline, so nothing is lost to the rewrite. */
   .admin-nav-group h2 {
-    width: 100%;
-    margin: 0 0 0.1rem;
+    width: auto;
+    margin: 0 0.15rem 0 0;
+    padding-right: 0.4rem;
+    border-right: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .admin-nav a {
+    flex: none;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .admin-nav a.is-active {
+    border-color: var(--accent);
   }
   .admin-note {
     display: none;
