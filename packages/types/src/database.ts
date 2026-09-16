@@ -1735,10 +1735,12 @@ export type Database = {
       place_order: {
         Args: {
           p_address: Json
-          p_coupon: string | null
+          p_coupon?: string | null
           p_items: Json
-          p_method: string | null
-          p_notes: string | null
+          /** Omit for cash on delivery: that resolves to the four-argument
+           *  overload, which exists on every version of the schema. */
+          p_method?: string | null
+          p_notes?: string | null
         }
         Returns: Json
       }
