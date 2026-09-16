@@ -6,6 +6,7 @@
     "paths": {
       "@/*": ["./*"],
       "@mridul/supabase/server": ["../../packages/supabase/src/server.ts"],
+      "@mridul/payments/ccavenue": ["../../packages/payments/src/ccavenue.ts"],
       "@mridul/*": ["../../packages/*/src"]
     }
   },

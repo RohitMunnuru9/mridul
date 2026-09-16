@@ -29,6 +29,13 @@ const workspaceAliases = {
   '@mridul/supabase/server': fileURLToPath(
     new URL('../../packages/supabase/src/server.ts', import.meta.url),
   ),
+  // Also server-only, and for a harder reason: it holds the CCAvenue working
+  // key, which both encrypts the request and authenticates the reply. Kept out
+  // of `@mridul/payments` itself so that importing the payment *types* from a
+  // component cannot drag the crypto — or the key — into a client bundle.
+  '@mridul/payments/ccavenue': fileURLToPath(
+    new URL('../../packages/payments/src/ccavenue.ts', import.meta.url),
+  ),
 };
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =

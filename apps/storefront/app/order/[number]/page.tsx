@@ -20,6 +20,7 @@ import {
   type Order,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
+import { ClearBagOnPaid } from './clear-bag';
 import {
   formatDateTime,
   formatPaise,
@@ -33,7 +34,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type PageProps = { params: Promise<{ number: string }> };
+type PageProps = {
+  params: Promise<{ number: string }>;
+  searchParams: Promise<{ payment?: string }>;
+};
 
 /**
  * Where this order has reached, and what is still ahead of it. Cancelled,
@@ -72,8 +76,9 @@ function Progress({ order }: { order: Order }) {
   );
 }
 
-export default async function OrderPage({ params }: PageProps) {
+export default async function OrderPage({ params, searchParams }: PageProps) {
   const { number } = await params;
+  const { payment } = await searchParams;
   const db = await sessionClient();
   const {
     data: { user },
@@ -96,8 +101,31 @@ export default async function OrderPage({ params }: PageProps) {
     `Hello, I have a question about order ${order.number}.`,
   );
 
+  // The bag is only let go once the money is in.  is set by the
+  // gateway callback after it has verified with CCAvenue directly — but this
+  // still checks the order's own status, so a hand-typed query string empties
+  // nothing.
+  const paidOnline = payment === 'paid' && !cash && order.status !== 'pending_payment';
+
   return (
     <div className="order-page page-shell">
+      {paidOnline && <ClearBagOnPaid />}
+
+      {payment === 'pending' && (
+        <p className="order-payment-note is-waiting" role="status">
+          We could not confirm your payment with the bank just yet. Nothing has
+          been charged twice — if money has left your account, this order will
+          update shortly and we will be in touch.
+        </p>
+      )}
+      {payment === 'mismatch' && (
+        <p className="order-payment-note is-waiting" role="status">
+          Your payment came back for a different amount than this order. We have
+          held it for a person to check rather than confirming it, and we will
+          contact you today.
+        </p>
+      )}
+
       <header className="order-banner">
         <CheckCircle2 aria-hidden="true" />
         <div>
