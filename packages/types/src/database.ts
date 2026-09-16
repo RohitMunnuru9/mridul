@@ -947,6 +947,7 @@ export type Database = {
           provider: string
           provider_order_id: string
           provider_payment_id: string | null
+          provider_reference: string | null
           refunded_paise: number
           signature: string | null
           status: Database["public"]["Enums"]["payment_status"]
@@ -963,6 +964,7 @@ export type Database = {
           provider?: string
           provider_order_id: string
           provider_payment_id?: string | null
+          provider_reference?: string | null
           refunded_paise?: number
           signature?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
@@ -979,6 +981,7 @@ export type Database = {
           provider?: string
           provider_order_id?: string
           provider_payment_id?: string | null
+          provider_reference?: string | null
           refunded_paise?: number
           signature?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
@@ -1713,12 +1716,29 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       mark_order_paid: { Args: { p_order_id: string }; Returns: undefined }
       next_order_number: { Args: never; Returns: string }
+      confirm_online_payment: {
+        Args: {
+          p_amount: number
+          p_method?: string | null
+          p_order_id: string
+          p_payment_id: string
+          p_provider: string
+          p_reference?: string | null
+          p_signature?: string | null
+        }
+        Returns: Json
+      }
+      fail_online_payment: {
+        Args: { p_order_id: string; p_reason?: string | null }
+        Returns: Json
+      }
       place_order: {
         Args: {
           p_address: Json
-          p_coupon?: string | null
+          p_coupon: string | null
           p_items: Json
-          p_notes?: string | null
+          p_method: string | null
+          p_notes: string | null
         }
         Returns: Json
       }

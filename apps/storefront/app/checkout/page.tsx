@@ -83,6 +83,15 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
         }
         buyNowOnly={buyNowOnly}
         email={user.email ?? ''}
+        // Whether online payment is offered is answered here, on the server,
+        // by whether the gateway is actually configured. A deployment without
+        // the CCAvenue keys quietly shows cash on delivery alone rather than a
+        // button that leads nowhere.
+        onlinePayment={Boolean(
+          process.env.CCAVENUE_MERCHANT_ID &&
+            process.env.CCAVENUE_ACCESS_CODE &&
+            process.env.CCAVENUE_WORKING_KEY,
+        )}
         rates={{
           freeShippingThresholdPaise: settings.freeShippingThresholdPaise,
           flatRatePaise: settings.flatShippingPaise,

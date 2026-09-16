@@ -106,8 +106,21 @@ export async function saveDeliveryDetails(formData: FormData): Promise<DeliveryR
 
 export type BagItem = { variantId: string; quantity: number };
 
+/** The ways to pay that the database will accept. Anything else is refused
+ *  there, not here; this type only stops the mistake being made in our own
+ *  code. */
+export type PaymentMethod = 'cod' | 'ccavenue';
+
 export type PlaceOrderResult =
-  | { ok: true; orderNumber: string }
+  | {
+      ok: true;
+      orderNumber: string;
+      orderId: string;
+      /** True when the order is waiting on money and must be sent to the
+       *  gateway. Taken from what the database did, not from what was asked
+       *  for. */
+      needsPayment: boolean;
+    }
   | { ok: false; message: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -116,6 +129,7 @@ export async function placeOrder(
   items: BagItem[],
   couponCode = '',
   notes = '',
+  method: PaymentMethod = 'cod',
 ): Promise<PlaceOrderResult> {
   const db = await sessionClient();
   const {
@@ -160,6 +174,7 @@ export async function placeOrder(
     p_address: address,
     p_coupon: couponCode.trim() || null,
     p_notes: notes.trim() || null,
+    p_method: method === 'ccavenue' ? 'ccavenue' : 'cod',
   });
 
   if (error) {
@@ -175,8 +190,12 @@ export async function placeOrder(
     };
   }
 
-  const placed = data as { order_number?: string } | null;
-  if (!placed?.order_number) {
+  const placed = data as {
+    order_number?: string;
+    order_id?: string;
+    needs_payment?: boolean;
+  } | null;
+  if (!placed?.order_number || !placed?.order_id) {
     return {
       ok: false,
       message: 'The order could not be placed just now. Please try again.',
@@ -184,5 +203,10 @@ export async function placeOrder(
   }
 
   revalidatePath('/account');
-  return { ok: true, orderNumber: placed.order_number };
+  return {
+    ok: true,
+    orderNumber: placed.order_number,
+    orderId: placed.order_id,
+    needsPayment: placed.needs_payment === true,
+  };
 }

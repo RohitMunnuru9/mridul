@@ -17,11 +17,43 @@ import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, BadgeIndianRupee, MapPin, Wallet } from 'lucide-react';
+import {
+  AlertCircle,
+  BadgeIndianRupee,
+  CreditCard,
+  MapPin,
+  Wallet,
+} from 'lucide-react';
 import { formatPaise, imageAtWidth } from '@mridul/utils';
 import { estimateShipping, type ShippingRates } from '@mridul/shipping';
 import { useStore } from '../providers/store-provider';
-import { placeOrder } from './actions';
+import { placeOrder, type PaymentMethod } from './actions';
+import { startCCAvenuePayment } from './ccavenue-action';
+
+/**
+ * Hand the browser over to CCAvenue.
+ *
+ * It has to be a real form POST to their domain — they do not accept a fetch,
+ * and the customer has to end up on their page to type a card into it. So the
+ * form is built, submitted and discarded here rather than sitting in the
+ * markup where something could submit it early.
+ */
+function handOver(action: string, fields: Record<string, string>) {
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = action;
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    // appendChild, not append: the Cloudflare Workers types this app is built
+    // against declare an `append` of their own, and it wins here.
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
 
 type SavedAddress = {
   fullName: string;
@@ -39,12 +71,17 @@ export function PlaceOrderPanel({
   email,
   rates,
   buyNowOnly = false,
+  onlinePayment = false,
 }: {
   address: SavedAddress | null;
   email: string;
   rates: ShippingRates;
   /** Arrived here from "Buy now", so this checkout is one piece, not the bag. */
   buyNowOnly?: boolean;
+  /** CCAvenue is configured on this deployment. Decided on the server — the
+   *  browser is never told whether a key exists, only whether to offer the
+   *  choice. */
+  onlinePayment?: boolean;
 }) {
   const store = useStore();
   const { couponCode, clearBag, clearBuyNow } = store;
@@ -60,6 +97,11 @@ export function PlaceOrderPanel({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState('');
   const [notes, setNotes] = useState('');
+  const [method, setMethod] = useState<PaymentMethod>(onlinePayment ? 'ccavenue' : 'cod');
+  // Separate from `pending`: the transition has finished by the time the
+  // browser is being sent to CCAvenue, and the button must not go back to
+  // saying "Place order" during the second or two before the page changes.
+  const [leaving, setLeaving] = useState(false);
 
   const shippingPaise = estimateShipping(subtotalPaise, rates);
   const estimatedTotal = subtotalPaise + shippingPaise;
@@ -74,6 +116,7 @@ export function PlaceOrderPanel({
         })),
         buyNowOnly ? '' : couponCode,
         notes,
+        method,
       );
 
       if (!result.ok) {
@@ -81,9 +124,28 @@ export function PlaceOrderPanel({
         return;
       }
 
-      // Cleared only once the order exists, so a failure leaves the customer
-      // exactly where they were rather than with nothing to retry. A Buy now
-      // order clears only itself — the bag was never part of it.
+      // Paying online: the order exists but is not paid for, and the bag stays
+      // exactly as it is. If the card is declined the order is cancelled and
+      // its stock released, and the customer lands back here with everything
+      // they had — rather than an empty bag and a saree they never bought.
+      if (result.needsPayment) {
+        setLeaving(true);
+        const handoff = await startCCAvenuePayment(result.orderId);
+        if (!handoff.ok) {
+          setLeaving(false);
+          setError(handoff.message);
+          return;
+        }
+        handOver(handoff.action, {
+          encRequest: handoff.encRequest,
+          access_code: handoff.accessCode,
+        });
+        return;
+      }
+
+      // Cash on delivery: the order is already confirmed, so the bag has done
+      // its job. A Buy now order clears only itself — the bag was never part
+      // of it.
       if (buyNowOnly) clearBuyNow();
       else clearBag();
       router.push(`/order/${result.orderNumber}`);
@@ -216,16 +278,55 @@ export function PlaceOrderPanel({
         />
       </label>
 
-      <div className="review-payment">
-        <Wallet aria-hidden="true" />
-        <div>
-          <strong>Cash on delivery</strong>
-          <small>
-            Pay the delivery partner when your parcel arrives. Card and UPI
-            payment through Razorpay is being set up.
-          </small>
+      {onlinePayment ? (
+        <fieldset className="review-pay-choice">
+          <legend>How would you like to pay?</legend>
+
+          <label className={method === 'ccavenue' ? 'is-chosen' : undefined}>
+            <input
+              checked={method === 'ccavenue'}
+              name="payment_method"
+              onChange={() => setMethod('ccavenue')}
+              type="radio"
+              value="ccavenue"
+            />
+            <CreditCard aria-hidden="true" />
+            <span>
+              <strong>Pay now — card, UPI or net banking</strong>
+              <small>
+                You will be taken to CCAvenue to pay. Your card details are
+                entered on their page and never reach us.
+              </small>
+            </span>
+          </label>
+
+          <label className={method === 'cod' ? 'is-chosen' : undefined}>
+            <input
+              checked={method === 'cod'}
+              name="payment_method"
+              onChange={() => setMethod('cod')}
+              type="radio"
+              value="cod"
+            />
+            <Wallet aria-hidden="true" />
+            <span>
+              <strong>Cash on delivery</strong>
+              <small>Pay the delivery partner when your parcel arrives.</small>
+            </span>
+          </label>
+        </fieldset>
+      ) : (
+        <div className="review-payment">
+          <Wallet aria-hidden="true" />
+          <div>
+            <strong>Cash on delivery</strong>
+            <small>
+              Pay the delivery partner when your parcel arrives. Card and UPI
+              payment is being set up.
+            </small>
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <p className="delivery-message is-bad" role="alert">
@@ -235,11 +336,17 @@ export function PlaceOrderPanel({
 
       <button
         className="delivery-submit"
-        disabled={pending || !address}
+        disabled={pending || leaving || !address}
         onClick={submit}
         type="button"
       >
-        {pending ? 'Placing your order…' : 'Place order'}
+        {leaving
+          ? 'Taking you to the payment page…'
+          : pending
+            ? 'Placing your order…'
+            : method === 'ccavenue'
+              ? `Pay ${formatPaise(estimatedTotal)}`
+              : 'Place order'}
       </button>
     </section>
   );

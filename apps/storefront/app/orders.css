@@ -80,6 +80,31 @@
 .review-payment strong { display: block; font-size: 0.85rem; font-weight: 600; }
 .review-payment small { display: block; margin-top: 0.15rem; color: var(--muted-foreground); font-size: 0.72rem; line-height: 1.55; }
 
+/* Choosing how to pay. Two cards rather than a bare radio pair: the choice
+   carries a consequence (money now, or money at the door) and deserves the
+   room to say so. The chosen one is marked by its border and ground, not by
+   the radio alone, so it reads at a glance on a phone. */
+.review-pay-choice { display: grid; gap: 0.6rem; margin: 1.1rem 0 0; padding: 0; border: 0; }
+.review-pay-choice legend { padding: 0; margin-bottom: 0.15rem; color: var(--muted-foreground); font-size: 0.72rem; }
+.review-pay-choice label { display: grid; grid-template-columns: auto auto 1fr; align-items: start; gap: 0.6rem; padding: 0.8rem 0.9rem; border: 1px solid var(--border); background: var(--paper); cursor: pointer; }
+.review-pay-choice label.is-chosen { border-color: var(--berry); background: color-mix(in srgb, var(--berry) 5%, var(--paper)); }
+.review-pay-choice label:has(input:focus-visible) { outline: 2px solid var(--ring); outline-offset: 1px; }
+.review-pay-choice input { margin: 0.2rem 0 0; accent-color: var(--berry); }
+.review-pay-choice svg { flex: none; width: 1.05rem; margin-top: 0.05rem; color: var(--berry); }
+.review-pay-choice strong { display: block; font-size: 0.85rem; font-weight: 600; }
+.review-pay-choice small { display: block; margin-top: 0.15rem; color: var(--muted-foreground); font-size: 0.72rem; line-height: 1.55; }
+
+@media (max-width: 420px) {
+  /* The icon is decoration; at this width the sentence needs the pixels. */
+  .review-pay-choice label { grid-template-columns: auto 1fr; }
+  .review-pay-choice svg { display: none; }
+}
+
+/* A payment that could not be confirmed, or came back for the wrong amount.
+   Amber rather than red: nothing has gone wrong for the customer yet, and it
+   must not read as a failure when the money may well have gone through. */
+.order-payment-note { margin: 0 0 1rem; padding: 0.8rem 0.95rem; border: 1px solid #d9c08a; background: #fbf3e2; color: #7a5810; font-size: 0.8rem; line-height: 1.6; }
+
 .review-section .delivery-submit { margin-top: 1.1rem; }
 
 /* --- The order page -------------------------------------------------------- */
