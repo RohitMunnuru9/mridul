@@ -169,13 +169,23 @@ export async function placeOrder(
     };
   }
 
-  const { data, error } = await db.rpc('place_order', {
+  // `p_method` is sent only when it says something the four-argument form
+  // cannot. PostgREST picks the overload by the argument names it is given, so
+  // a cash order names four and reaches `place_order` on any database —
+  // including one where 0017 has not been applied yet. That is what lets a
+  // deploy and a migration happen in either order without a broken checkout
+  // in between. An online order names five and needs 0017, which is exactly
+  // when it is offered.
+  const online = method === 'ccavenue';
+  const args = {
     p_items: lines,
     p_address: address,
     p_coupon: couponCode.trim() || null,
     p_notes: notes.trim() || null,
-    p_method: method === 'ccavenue' ? 'ccavenue' : 'cod',
-  });
+    ...(online ? { p_method: 'ccavenue' } : {}),
+  };
+
+  const { data, error } = await db.rpc('place_order', args);
 
   if (error) {
     // Everything `place_order` raises deliberately is already a sentence a
