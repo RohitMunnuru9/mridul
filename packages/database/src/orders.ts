@@ -142,6 +142,16 @@ export function paymentMethodLabel(method: string): string {
   }
 }
 
+/** Where the parcel is, once it has been handed over. */
+export type OrderShipment = {
+  provider: string;
+  /** The courier's own tracking number. */
+  awb: string;
+  trackingUrl: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+};
+
 export type Order = {
   id: string;
   number: string;
@@ -166,6 +176,8 @@ export type Order = {
   address: OrderAddress;
   lines: OrderLine[];
   payment: OrderPayment | null;
+  /** Null until the shop hands it to a courier. */
+  shipment: OrderShipment | null;
 };
 
 const COLUMNS =
@@ -176,7 +188,8 @@ const COLUMNS =
   'order_items ( id, product_id, product_name, variant_label, sku, image_url, ' +
   'unit_price_paise, quantity, line_total_paise, products ( slug ) ), ' +
   'payments ( provider, status, method, amount_paise, verified_at, ' +
-  'provider_payment_id )';
+  'provider_payment_id ), ' +
+  'shipments ( provider, awb, tracking_url, shipped_at, delivered_at )';
 
 /**
  * `shipping_address` is jsonb, so it arrives as whatever was written rather
@@ -224,6 +237,7 @@ export function orderImageUrl(stored: string | null): string | null {
 function toOrder(row: any): Order {
   const items = (row.order_items ?? []) as any[];
   const payments = (row.payments ?? []) as any[];
+  const shipments = (row.shipments ?? []) as any[];
 
   return {
     id: row.id,
@@ -265,6 +279,15 @@ function toOrder(row: any): Order {
           verifiedAt: payments[0].verified_at ?? null,
           providerPaymentId: payments[0].provider_payment_id ?? null,
           providerReference: null,
+        }
+      : null,
+    shipment: shipments[0]
+      ? {
+          provider: shipments[0].provider,
+          awb: shipments[0].awb,
+          trackingUrl: shipments[0].tracking_url ?? null,
+          shippedAt: shipments[0].shipped_at ?? null,
+          deliveredAt: shipments[0].delivered_at ?? null,
         }
       : null,
   };

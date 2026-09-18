@@ -233,3 +233,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* Tracking. The link is the point of the panel, so it is the one thing in it
+   that looks pressable. */
+.order-track-link { display: inline-flex; align-items: center; gap: 0.45rem; margin-top: 0.85rem; padding: 0.6rem 1rem; border: 1px solid var(--berry); color: var(--berry); font-size: 0.82rem; font-weight: 600; }
+.order-track-link:hover { background: color-mix(in srgb, var(--berry) 6%, transparent); }
+.order-track-link svg { width: 0.95rem; }
+.order-panel code { padding: 0.1rem 0.35rem; background: var(--paper-warm, #f6f1ea); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82em; overflow-wrap: anywhere; }

@@ -1719,6 +1719,16 @@ export type Database = {
         Returns: undefined
       }
       admin_set_stock: { Args: { p_changes: Json }; Returns: Json }
+      admin_mark_delivered: { Args: { p_order_id: string }; Returns: undefined }
+      admin_record_dispatch: {
+        Args: {
+          p_awb: string
+          p_order_id: string
+          p_provider: string
+          p_tracking_url?: string | null
+        }
+        Returns: Json
+      }
       admin_set_order_status: {
         Args: {
           p_order_id: string

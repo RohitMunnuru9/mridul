@@ -100,6 +100,7 @@ export function Field({
   hint,
   required = false,
   placeholder,
+  list,
 }: {
   label: string;
   name: string;
@@ -108,12 +109,17 @@ export function Field({
   hint?: string;
   required?: boolean;
   placeholder?: string;
+  /** Id of a <datalist> to suggest from. Suggestions only — the field still
+   *  accepts anything typed, which is what a courier nobody has used before
+   *  needs. */
+  list?: string;
 }) {
   return (
     <label className="field">
       <FieldLabel hint={hint} label={label} required={required} />
       <input
         defaultValue={defaultValue ?? ''}
+        list={list}
         name={name}
         placeholder={placeholder}
         required={required}

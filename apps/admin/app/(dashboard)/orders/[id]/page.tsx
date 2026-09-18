@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronLeft, Mail, MapPin, Phone, UserRound, Wallet } from 'lucide-react';
+import {
+  ChevronLeft,
+  Mail,
+  MapPin,
+  Phone,
+  Truck,
+  UserRound,
+  Wallet,
+} from 'lucide-react';
 import {
   fetchOrderById,
   fetchPaymentReference,
@@ -13,8 +21,14 @@ import {
 } from '@mridul/database';
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import { formatDateTime, formatPaise } from '@mridul/utils';
-import { updateOrderNote, updateOrderStatus } from '../../../actions/orders';
-import { EditForm, Select, TextArea } from '../../../components/form';
+import { COURIERS } from '@mridul/shipping';
+import {
+  markDelivered,
+  recordDispatch,
+  updateOrderNote,
+  updateOrderStatus,
+} from '../../../actions/orders';
+import { EditForm, Field, Select, TextArea } from '../../../components/form';
 import { PageHead } from '../../../components/ui';
 
 export const metadata: Metadata = { title: 'Order | Mridul Admin' };
@@ -291,6 +305,109 @@ export default async function OrderDetailPage({ params }: PageProps) {
                 customer is not going to pay, cancel it — that puts everything
                 back on the shelf straight away.
               </p>
+            )}
+          </section>
+
+          {/*
+            Dispatch.
+            
+            The site tells the customer twice — on their order page and in the
+            help panel — that they will get a tracking number. This is where it
+            comes from. Everything that could be wrong about a dispatch is
+            decided by the database, so a refusal here is a sentence, not a
+            silent failure.
+          */}
+          <section className="panel">
+            <div className="panel-head">
+              <h2>
+                <Truck aria-hidden="true" /> Dispatch
+              </h2>
+              {order.shipment ? (
+                <p>
+                  Handed to {order.shipment.provider}
+                  {order.shipment.shippedAt
+                    ? ` on ${formatDateTime(order.shipment.shippedAt)}`
+                    : ''}
+                  . Correcting anything below mends this record rather than
+                  adding a second one.
+                </p>
+              ) : (
+                <p>
+                  Enter the courier and the number on their slip. The customer
+                  sees both on their order page straight away.
+                </p>
+              )}
+            </div>
+
+            {order.shipment && (
+              <ul className="order-facts">
+                <li>
+                  <strong>{order.shipment.awb}</strong>
+                </li>
+                {order.shipment.trackingUrl && (
+                  <li>
+                    <a
+                      href={order.shipment.trackingUrl}
+                      rel="noreferrer noopener"
+                      target="_blank"
+                    >
+                      Open the courier&apos;s tracking page
+                    </a>
+                  </li>
+                )}
+                {order.shipment.deliveredAt && (
+                  <li>Delivered {formatDateTime(order.shipment.deliveredAt)}</li>
+                )}
+              </ul>
+            )}
+
+            {canEdit && !closed ? (
+              <>
+                <EditForm
+                  action={recordDispatch}
+                  submitLabel={order.shipment ? 'Update dispatch' : 'Mark as shipped'}
+                >
+                  <input name="id" type="hidden" value={order.id} />
+                  <Field
+                    defaultValue={order.shipment?.provider ?? ''}
+                    hint="Type any courier; the common ones are suggested."
+                    label="Courier"
+                    list="couriers"
+                    name="provider"
+                    required
+                  />
+                  <datalist id="couriers">
+                    {COURIERS.map((courier) => (
+                      <option key={courier.name} value={courier.name}>
+                        {courier.name}
+                      </option>
+                    ))}
+                  </datalist>
+                  <Field
+                    defaultValue={order.shipment?.awb ?? ''}
+                    hint="The number on the courier's slip."
+                    label="Tracking number"
+                    name="awb"
+                    required
+                  />
+                  <Field
+                    defaultValue={order.shipment?.trackingUrl ?? ''}
+                    hint="Optional. Left blank, we build one for couriers we know."
+                    label="Tracking link"
+                    name="tracking_url"
+                  />
+                </EditForm>
+
+                {order.shipment && order.status !== 'delivered' && (
+                  <EditForm action={markDelivered} submitLabel="Mark delivered" compact>
+                    <input name="id" type="hidden" value={order.id} />
+                  </EditForm>
+                )}
+              </>
+            ) : (
+              !closed && (
+                <p className="panel-note">You can view orders but not dispatch them.</p>
+              )
             )}
           </section>
 
