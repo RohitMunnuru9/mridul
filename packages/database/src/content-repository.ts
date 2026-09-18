@@ -31,6 +31,7 @@ import {
   fetchContentBlocks,
   fetchHeroSlides,
   fetchHomepageSections,
+  fetchJournalPost,
   fetchJournalPosts,
   fetchMediaUsage,
   fetchMoodTiles,
@@ -78,6 +79,16 @@ export async function getJournalPosts(
 ): Promise<JournalPost[]> {
   const posts = await fetchJournalPosts(client);
   return includeDrafts ? posts : posts.filter((post) => post.isPublished);
+}
+
+/** A single story for the storefront. Drafts are null here, whatever RLS
+ *  happens to return, so a draft's URL cannot be shared early. */
+export async function getJournalPost(
+  slug: string,
+  client?: Client,
+): Promise<JournalPost | null> {
+  const post = await fetchJournalPost(slug, client);
+  return post && post.isPublished ? post : null;
 }
 
 export async function getSiteSettings(client?: Client): Promise<SiteSettings> {

@@ -662,3 +662,54 @@ export async function replaceMediaFile(formData: FormData): Promise<ActionResult
   return OK("File replaced everywhere it is used.");
 }
 
+/**
+ * The picture on a journal post. Editorial imagery, so it lives with the hero
+ * banners rather than the product photographs.
+ */
+export async function uploadJournalImage(formData: FormData): Promise<ActionResult> {
+  const admin = await currentAdmin();
+  if (!can(admin, "content_manager")) return FAIL("You cannot change journal pictures.");
+
+  const postId = String(formData.get("post_id") ?? "");
+  const slug = String(formData.get("post_slug") ?? "post");
+  const alt = String(formData.get("alt") ?? "").trim();
+  const focal = String(formData.get("focal") ?? "").trim() || "50% center";
+  const file = formData.get("file");
+  if (!postId) return FAIL("Missing post.");
+  if (!(file instanceof File) || file.size === 0) return FAIL("Choose an image.");
+  if (file.size > MAX_BYTES) return FAIL("That image is larger than 10MB.");
+  if (!ALLOWED.includes(file.type)) return FAIL("Use a JPEG, PNG, WebP or AVIF.");
+  if (!alt) return FAIL("Describe the image for screen readers.");
+
+  const db = await sessionClient();
+  const path = `journal/${safeName(slug)}-${Date.now()}-${safeName(file.name)}`;
+  const { error: uploadError } = await db.storage
+    .from("banners")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return FAIL(`Upload failed: ${uploadError.message}`);
+
+  const { data: media, error: mediaError } = await db
+    .from("media")
+    .insert({
+      bucket: "banners",
+      path,
+      alt,
+      focal,
+      mime_type: file.type,
+      byte_size: file.size,
+      uploaded_by: admin?.id ?? null,
+    })
+    .select("id")
+    .single();
+  if (mediaError) return FAIL(mediaError.message);
+
+  const { error: postError } = await db
+    .from("journal_posts")
+    .update({ media_id: media.id })
+    .eq("id", postId);
+  if (postError) return FAIL(postError.message);
+
+  revalidatePath("/journal");
+  revalidatePath("/");
+  return OK("Picture changed.");
+}

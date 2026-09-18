@@ -200,6 +200,7 @@ export const valueProps: ValueProp[] = [
 export const journalPosts: JournalPost[] = [
   {
     id: 'post_drape',
+    slug: 'drape',
     title: 'Five ways to drape for today',
     excerpt: 'The pleats, the pallu, and four small changes that shift the whole look.',
     media: asset(
@@ -212,9 +213,12 @@ export const journalPosts: JournalPost[] = [
     href: '/shop/sarees',
     position: 1,
     isPublished: true,
+    publishedAt: null,
+    body: '',
   },
   {
     id: 'post_blouse',
+    slug: 'blouse',
     title: 'The art of the blouse',
     excerpt: 'Why the half you notice least decides how the whole drape reads.',
     media: asset(
@@ -227,9 +231,12 @@ export const journalPosts: JournalPost[] = [
     href: '/shop/blouses',
     position: 2,
     isPublished: true,
+    publishedAt: null,
+    body: '',
   },
   {
     id: 'post_festive',
+    slug: 'festive',
     title: 'Festive, without the fuss',
     excerpt: 'Dressing for a long day of ceremony without changing three times.',
     media: asset(
@@ -242,6 +249,8 @@ export const journalPosts: JournalPost[] = [
     href: '/collections/festive',
     position: 3,
     isPublished: true,
+    publishedAt: null,
+    body: '',
   },
 ];
 
