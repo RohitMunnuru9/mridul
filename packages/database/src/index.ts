@@ -8,3 +8,4 @@ export * from './audit';
 export * from './returns';
 export * from './journal';
 export * from './attention';
+export * from './packing';

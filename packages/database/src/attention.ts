@@ -17,7 +17,7 @@ import type { JournalPost } from '@mridul/types';
 import type { Coupon } from './coupons';
 import { couponState } from './coupons';
 import type { Order } from './orders';
-import { isPaidFor } from './orders';
+import { readyToSend } from './packing';
 import type { ReturnRequest } from './returns';
 
 export type AttentionTone = 'urgent' | 'soon' | 'note';
@@ -115,7 +115,7 @@ export function attentionItems(input: AttentionInput): Attention[] {
   const toPack = open.filter(
     (order) =>
       ['confirmed', 'processing'].includes(order.status) &&
-      (order.paymentMethod === 'cod' || isPaidFor(order)),
+      readyToSend(order),
   );
   if (toPack.length > 0) {
     items.push({
@@ -123,7 +123,9 @@ export function attentionItems(input: AttentionInput): Attention[] {
       count: toPack.length,
       title: `${plural(toPack.length, 'order', 'orders')} to pack`,
       detail: 'Paid for and waiting. Check, press, pack, then dispatch from the order.',
-      href: toPack.length === 1 ? `/orders/${toPack[0].id}` : '/orders?status=confirmed',
+      // More than one and the useful destination is the printer, not a
+      // filtered list: Packing is where these become parcels.
+      href: toPack.length === 1 ? `/orders/${toPack[0].id}` : '/packing',
       tone: 'urgent',
     });
   }

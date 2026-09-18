@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './packing.css';
 
 /**
  * Root layout. Deliberately bare: the login page renders inside it with no

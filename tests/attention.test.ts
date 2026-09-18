@@ -100,12 +100,12 @@ describe('attentionItems', () => {
     expect(items.find((i) => i.key === 'to_pack')?.href).toBe('/orders/only');
   });
 
-  it('links to the filtered list when there are several', () => {
+  it('sends several to the printer rather than to a filtered list', () => {
     const items = attentionItems({
       ...empty,
       orders: [order({ id: 'a', status: 'confirmed' }), order({ id: 'b', status: 'processing' })],
     });
-    expect(items.find((i) => i.key === 'to_pack')?.href).toBe('/orders?status=confirmed');
+    expect(items.find((i) => i.key === 'to_pack')?.href).toBe('/packing');
   });
 
   it('flags a parcel out for more than the threshold, and not one inside it', () => {
