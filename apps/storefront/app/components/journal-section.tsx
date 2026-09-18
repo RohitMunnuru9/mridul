@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import type { JournalPost } from '@mridul/types';
+import { hasStory, journalHref } from '@mridul/database';
 
 /**
  * The journal: one story, as a photographic banner.
@@ -23,14 +24,17 @@ export function JournalSection({ posts }: { posts: JournalPost[] }) {
           <p>Notes from our world</p>
           <h2 id="journal-title">The style journal</h2>
         </div>
-        <Link href="/shop">
+        <Link href="/journal">
           View all <ArrowRight aria-hidden="true" />
         </Link>
       </header>
 
-      <Link className="journal-lead" href={lead.href}>
+      {/* "Read the story" now means it: the story if the post has one, the
+          listing it always pointed at if not. Decided in journalHref, so this
+          and the index and the sitemap cannot disagree. */}
+      <Link className="journal-lead" href={journalHref(lead)}>
         <div className="journal-lead-copy">
-          <p className="journal-eyebrow">Read the story</p>
+          <p className="journal-eyebrow">{hasStory(lead) ? 'Read the story' : 'See the pieces'}</p>
           <h3>{lead.title}</h3>
           <p className="journal-excerpt">{lead.excerpt}</p>
           <span className="journal-more">

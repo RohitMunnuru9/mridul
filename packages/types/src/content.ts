@@ -99,12 +99,19 @@ export type HomepageSection = {
 
 export type JournalPost = {
   id: string;
+  slug: string;
   title: string;
   excerpt: string;
+  /** The story itself, as plain text with blank lines between paragraphs.
+   *  Empty for a post that only ever pointed at a listing. */
+  body: string;
   media: MediaAsset;
+  /** Where the post sends people when it has no body of its own — a listing
+   *  or a collection. Kept once it has one, as "shop the story". */
   href: string;
   position: number;
   isPublished: boolean;
+  publishedAt: string | null;
 };
 
 /** The editorial panel about the brand. */

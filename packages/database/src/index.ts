@@ -6,3 +6,4 @@ export * from './coupons';
 export * from './staff';
 export * from './audit';
 export * from './returns';
+export * from './journal';

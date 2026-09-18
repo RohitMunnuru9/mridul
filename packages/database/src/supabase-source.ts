@@ -308,22 +308,47 @@ async function loadValueProps(client: Client = publicClient()): Promise<ValuePro
 async function loadJournalPosts(client: Client = publicClient()): Promise<JournalPost[]> {
   const { data, error } = await client
     .from("journal_posts")
-    .select(
-      "id, title, excerpt, href, position, is_published, " + "media(id, bucket, path, alt, focal)",
-    )
+    .select(JOURNAL_COLUMNS)
     .order("position");
 
   if (error) throw new Error(`Loading journal: ${error.message}`);
 
-  return (data ?? []).map((row: any) => ({
+  return (data ?? []).map(toJournalPost);
+}
+
+const JOURNAL_COLUMNS =
+  "id, slug, title, excerpt, body, href, position, is_published, published_at, " +
+  "media(id, bucket, path, alt, focal)";
+
+function toJournalPost(row: any): JournalPost {
+  return {
     id: row.id,
+    slug: row.slug,
     title: row.title,
     excerpt: row.excerpt,
+    body: row.body ?? "",
     media: toAsset(row.media) ?? { ...MISSING_IMAGE, bucket: "homepage" as const },
     href: row.href,
     position: row.position,
     isPublished: row.is_published,
-  }));
+    publishedAt: row.published_at ?? null,
+  };
+}
+
+/** One post by slug. RLS decides whether a draft comes back: it does for the
+ *  admin's session and does not for a shopper's. */
+async function loadJournalPost(
+  slug: string,
+  client: Client = publicClient(),
+): Promise<JournalPost | null> {
+  const { data, error } = await client
+    .from("journal_posts")
+    .select(JOURNAL_COLUMNS)
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw new Error(`Loading journal post: ${error.message}`);
+  return data ? toJournalPost(data) : null;
 }
 
 async function loadStoryPanel(client: Client = publicClient()): Promise<StoryPanel> {
@@ -546,5 +571,6 @@ export const fetchMoodTiles = perRequest(loadMoodTiles);
 export const fetchOccasionPanels = perRequest(loadOccasionPanels);
 export const fetchValueProps = perRequest(loadValueProps);
 export const fetchJournalPosts = perRequest(loadJournalPosts);
+export const fetchJournalPost = perRequest(loadJournalPost);
 export const fetchStoryPanel = perRequest(loadStoryPanel);
 export const fetchTestimonials = perRequest(loadTestimonials);

@@ -9,7 +9,13 @@
  * Disallow list is absent here too; the two must not contradict each other.
  */
 
-import { getAllProducts, getCategories, getCollections } from '@mridul/database';
+import {
+  getAllProducts,
+  getCategories,
+  getCollections,
+  getJournalPosts,
+  hasStory,
+} from '@mridul/database';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,14 +44,26 @@ function xml(entries: Entry[], origin: string): string {
 export async function GET(request: Request): Promise<Response> {
   const { origin } = new URL(request.url);
 
-  const [categories, collections, products] = await Promise.all([
+  const [categories, collections, products, posts] = await Promise.all([
     getCategories(),
     getCollections(),
     getAllProducts(),
+    getJournalPosts(),
   ]);
+  // Only stories with a page of their own. A post that points at a listing
+  // has nothing at /journal/<slug>, and a sitemap must not promise a 404.
+  const stories = posts.filter(hasStory);
 
   const entries: Entry[] = [
     { path: '/', priority: '1.0', changefreq: 'weekly' },
+    ...(stories.length > 0
+      ? [{ path: '/journal', priority: '0.6', changefreq: 'weekly' }]
+      : []),
+    ...stories.map((post) => ({
+      path: `/journal/${post.slug}`,
+      priority: '0.5',
+      changefreq: 'monthly',
+    })),
     ...categories
       .filter((category) => category.isActive)
       .map((category) => ({
