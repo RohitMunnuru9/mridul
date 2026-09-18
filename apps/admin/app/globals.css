@@ -94,6 +94,18 @@ code {
   text-transform: uppercase;
 }
 
+/* The wrapper exists for the menu's state and its outside-click target, not
+   for layout — `contents` keeps the nav a direct child of the sidebar, so the
+   desktop arrangement is exactly what it was before the menu was added. */
+.admin-nav-wrap {
+  display: contents;
+}
+
+/* Phone only. The sidebar has room for all ten sections at this width. */
+.admin-nav-toggle {
+  display: none;
+}
+
 .admin-nav {
   display: flex;
   flex-direction: column;
@@ -758,9 +770,9 @@ th.numeric {
    * every page — about eight hundred pixels of chrome before the first thing
    * you came to edit. On a phone that is the whole screen.
    *
-   * Nothing is dropped. The links become one row that scrolls sideways, the
-   * group headings ride along inside it as labels, and the account line sits
-   * beside the brand instead of under the navigation.
+   * Nothing is dropped. The sections move behind one button that names where
+   * you are and opens the full list, and the account line sits beside the
+   * brand instead of under the navigation.
    */
   .admin-shell {
     grid-template-columns: 1fr;
@@ -818,41 +830,98 @@ th.numeric {
     white-space: nowrap;
   }
 
-  /* One row, scrolled rather than wrapped. Every section is still here. */
-  .admin-nav {
+  /*
+   * One button, not a row that runs off the screen.
+   *
+   * It names the section you are in — the phone's only line of orientation —
+   * and says there is more behind it. Full width, because a menu that is also
+   * the page's "where am I" deserves the row.
+   */
+  .admin-nav-toggle {
+    display: flex;
     grid-row: 2;
     grid-column: 1 / -1;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-    padding: 0 0.9rem 0.6rem;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
+    align-items: center;
+    gap: 0.6rem;
+    width: calc(100% - 1.8rem);
+    margin: 0 0.9rem 0.7rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--canvas);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
   }
-  .admin-nav::-webkit-scrollbar {
+  .admin-nav-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .admin-nav-toggle > svg:first-child {
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    color: var(--accent);
+  }
+  .admin-nav-toggle > span {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+  }
+  .admin-nav-toggle strong {
+    overflow: hidden;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-nav-toggle small {
+    color: var(--faint);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+  }
+  .admin-nav-toggle > svg:last-child {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+    color: var(--faint);
+    transition: transform 0.18s ease;
+  }
+  .admin-nav-toggle > svg:last-child[data-open="true"] {
+    transform: rotate(180deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-nav-toggle > svg:last-child {
+      transition: none;
+    }
+  }
+
+  /* Closed by default at this width; the button above is the way in. */
+  .admin-nav {
     display: none;
+    grid-row: 3;
+    grid-column: 1 / -1;
+    padding: 0 0.9rem 0.8rem;
+    gap: 0.9rem;
+  }
+  .admin-nav[data-open="true"] {
+    display: flex;
+    flex-direction: column;
   }
   .admin-nav-group {
     display: flex;
-    flex: none;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 0.3rem;
+    flex-direction: column;
+    gap: 0.15rem;
   }
-  /* The heading keeps its words, inline, so nothing is lost to the rewrite. */
   .admin-nav-group h2 {
-    width: auto;
-    margin: 0 0.15rem 0 0;
-    padding-right: 0.4rem;
-    border-right: 1px solid var(--line);
-    white-space: nowrap;
+    margin: 0 0 0.25rem;
   }
+  /* Roomy enough to hit with a thumb without aiming. */
   .admin-nav a {
-    flex: none;
-    padding: 0.4rem 0.65rem;
-    border: 1px solid var(--line);
-    white-space: nowrap;
+    padding: 0.6rem 0.65rem;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
   }
   .admin-nav a.is-active {
     border-color: var(--accent);
