@@ -3235,3 +3235,92 @@ th.numeric {
   margin-bottom: 0.2rem;
   color: #6b4a08;
 }
+
+/* --- Inventory: a table on a desk, cards in a hand ------------------------ */
+
+/*
+ * The table is the default and the cards are hidden, so a browser that never
+ * matches the media query below still gets the complete, readable thing.
+ */
+.inventory-cards {
+  display: none;
+}
+
+@media (width <= 820px) {
+  /*
+   * Five columns do not fit a phone. The table used to scroll sideways, which
+   * technically kept every column but put the stock box — the only control on
+   * the page — past the right edge, on a page that gives no sign it continues.
+   *
+   * One card per option instead: what it is and how many are left on the first
+   * line, the details under it, and the control on its own row where a thumb
+   * can reach it without the page moving.
+   */
+  .inventory-table {
+    display: none;
+  }
+  .inventory-cards {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.85rem;
+    list-style: none;
+  }
+  .inventory-cards li {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.8rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+  }
+
+  /* The name and the number that decides whether you care, on one line. */
+  .inventory-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.7rem;
+  }
+  .inventory-card-head a {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .inventory-card-head .pill {
+    flex: none;
+  }
+
+  .inventory-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .inventory-card-price {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The control, on its own row, aligned so the Save button sits at the far
+     edge where a right thumb lands. */
+  .inventory-card-set {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .inventory-card-set > span {
+    color: var(--faint);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .inventory-card-set .stock-input {
+    width: 4.5rem;
+  }
+}
