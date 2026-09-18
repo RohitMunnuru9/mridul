@@ -24,6 +24,7 @@ import { usePathname } from "next/navigation";
 import {
   Boxes,
   ChevronDown,
+  History,
   Home,
   Images,
   LayoutDashboard,
@@ -53,6 +54,7 @@ const SECTIONS: Section[] = [
   { href: "/homepage", label: "Homepage", icon: Home, group: "Occasional" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Occasional" },
   { href: "/staff", label: "Who has access", icon: KeyRound, group: "Occasional" },
+  { href: "/activity", label: "Activity", icon: History, group: "Occasional" },
 ];
 
 const GROUPS = ["Everyday", "Occasional"];

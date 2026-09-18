@@ -3532,3 +3532,54 @@ th.numeric {
     text-align: left;
   }
 }
+
+/* --- Activity ------------------------------------------------------------- */
+
+.activity-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.activity-list > li {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.9rem 1.1rem;
+  border-top: 1px solid var(--line-soft);
+}
+.activity-list > li:first-child {
+  border-top: 0;
+}
+.activity-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.activity-head strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.activity-who {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+.activity-what {
+  margin: 0;
+}
+.activity-what code {
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+/* The before and after. Indented and quiet — it is the detail you drop to
+   once the line above has told you whether this is the entry you wanted. */
+.activity-changes {
+  margin: 0.15rem 0 0;
+  padding-left: 0.9rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+.activity-changes li {
+  overflow-wrap: anywhere;
+}

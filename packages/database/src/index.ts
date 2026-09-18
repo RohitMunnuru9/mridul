@@ -4,3 +4,4 @@ export * from './homepage';
 export * from './orders';
 export * from './coupons';
 export * from './staff';
+export * from './audit';

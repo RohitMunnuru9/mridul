@@ -15,6 +15,7 @@
 
 import { revalidatePath } from "next/cache";
 import { can, currentAdmin, sessionClient } from "@mridul/supabase/server";
+import { audit } from "./audit";
 
 export type ActionResult = { ok: boolean; message: string };
 
@@ -175,6 +176,18 @@ async function saveStock(changes: StockChange[]): Promise<ActionResult> {
     return FAIL(
       `Stock changed while you were on this page, so nothing was saved. ${detail}. ` +
         "Reload to see the current counts, then set what is actually on the shelf.",
+    );
+  }
+
+  // What it was as well as what it became. A stock count that has been
+  // corrected twice in a week is a question worth being able to ask.
+  if (result.changed !== 0) {
+    await audit(
+      "stock.set",
+      "inventory",
+      changes.length === 1 ? changes[0].variantId : `${changes.length} options`,
+      { counts: changes.map((change) => change.expected) },
+      { counts: changes.map((change) => change.onHand) },
     );
   }
 
