@@ -1,0 +1,408 @@
+/**
+ * Parcel paper.
+ *
+ * Two audiences for the same markup: someone checking a sheet on screen before
+ * they commit paper to it, and the printer. On screen a sheet looks like a
+ * sheet — white, bordered, centred on the canvas. On paper the admin around it
+ * disappears entirely and one order gets one A4 page.
+ *
+ * Kept out of globals.css because every rule here exists for a printer, and
+ * mixing print rules into three thousand lines of screen styling is how a
+ * stylesheet stops being editable.
+ */
+
+/* --- On screen -------------------------------------------------------------- */
+
+.sheet {
+  max-width: 800px;
+  margin: 0 auto 1.25rem;
+  padding: 1.6rem 1.7rem 1.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.sheet-warning {
+  margin: 0 0 1.2rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--bad);
+  border-radius: 6px;
+  background: var(--bad-soft);
+  color: var(--bad);
+  font-size: 0.86rem;
+}
+.sheet-warning strong {
+  letter-spacing: 0.01em;
+}
+
+.sheet-cut {
+  margin: 1.4rem 0 1.2rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed var(--faint);
+  color: var(--faint);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+/* --- The address label -------------------------------------------------------- */
+
+.label {
+  padding: 1rem 1.15rem 1.15rem;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+}
+
+.label-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.label-from strong {
+  color: var(--ink);
+}
+.label-order {
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.label-to {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.85rem;
+}
+.label-tag {
+  color: var(--faint);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.label-name {
+  margin-top: 0.1rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+.label-line {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+/* Read by somebody in a hurry, and it decides which van the parcel goes on. */
+.label-pin {
+  margin-top: 0.45rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.label-phone {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.label-money {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding: 0.55rem 0.85rem;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+/* Cash to collect is reversed out, because the failure is a courier who does
+   not notice it and a parcel that is handed over for nothing. */
+.label-money.is-cash {
+  background: var(--ink);
+  color: var(--paper);
+}
+.label-money.is-cash strong {
+  font-size: 1.45rem;
+  letter-spacing: 0;
+}
+.label-money.is-prepaid {
+  border-style: dashed;
+  border-color: var(--line);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* --- The delivery note --------------------------------------------------------- */
+
+.note-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--ink);
+}
+.note-head strong {
+  display: block;
+  font-size: 1.05rem;
+}
+.note-head span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.note-ref {
+  text-align: right;
+}
+
+.note-items {
+  width: 100%;
+  margin-top: 0.9rem;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.note-items th {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.note-items td {
+  padding: 0.5rem 0.5rem;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+.note-items th:first-child,
+.note-items td:first-child {
+  width: 1.7rem;
+  padding-left: 0;
+}
+.note-items td strong {
+  display: block;
+  font-weight: 600;
+}
+.note-items td small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+.note-items .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.note-sku {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+/* Ticked by hand as each piece goes in the box. */
+.tickbox {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-top: 0.15rem;
+  border: 1.2px solid var(--ink);
+  border-radius: 2px;
+}
+
+.note-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+.note-count {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.note-totals {
+  min-width: 15rem;
+  margin: 0;
+  margin-left: auto;
+  font-size: 0.82rem;
+}
+.note-totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.2rem 0;
+}
+.note-totals dt {
+  color: var(--muted);
+}
+.note-totals dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.note-totals .is-total {
+  margin-top: 0.25rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.note-totals .is-total dt {
+  color: var(--ink);
+}
+
+.note-payment {
+  margin: 0.9rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.note-message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.9rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.84rem;
+  white-space: pre-line;
+}
+.note-message span {
+  color: var(--muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.note-thanks {
+  margin-top: 1.1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+.note-thanks p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+/* --- The queue page ------------------------------------------------------------- */
+
+.packing-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+.packing-bar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* --- On paper -------------------------------------------------------------------- */
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  /* The admin itself has no business on a parcel. */
+  .admin-sidebar,
+  .admin-nav-toggle,
+  .admin-account,
+  .admin-head,
+  .back-link,
+  .packing-bar,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+  .admin-shell {
+    display: block;
+    min-height: 0;
+  }
+  .admin-main {
+    padding: 0;
+  }
+
+  /* One order, one page. */
+  .sheet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    break-inside: avoid;
+    break-after: page;
+  }
+  .sheet:last-of-type {
+    break-after: auto;
+  }
+
+  /* A reversed-out cash box that prints as white text on white paper is the
+     one failure this whole sheet exists to prevent. */
+  .label-money.is-cash {
+    background: #000 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .note-message {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+
+/* --- Ways in ------------------------------------------------------------------- */
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.print-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.parcel-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.parcel-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.parcel-link svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}

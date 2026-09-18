@@ -31,6 +31,7 @@ import {
   Layers,
   Newspaper,
   Package,
+  PackageCheck,
   Receipt,
   KeyRound,
   Settings,
@@ -45,6 +46,7 @@ type Section = { href: string; label: string; icon: LucideIcon; group: string };
 const SECTIONS: Section[] = [
   { href: "/", label: "Start", icon: LayoutDashboard, group: "Everyday" },
   { href: "/orders", label: "Orders", icon: Receipt, group: "Everyday" },
+  { href: "/packing", label: "Packing", icon: PackageCheck, group: "Everyday" },
   { href: "/products", label: "All products", icon: Package, group: "Everyday" },
   { href: "/customers", label: "Customers", icon: Users, group: "Everyday" },
   { href: "/inventory", label: "Stock", icon: Boxes, group: "Everyday" },

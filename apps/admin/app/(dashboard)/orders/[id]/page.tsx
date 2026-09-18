@@ -6,6 +6,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  Printer,
   RotateCcw,
   Truck,
   UserRound,
@@ -75,9 +76,19 @@ export default async function OrderDetailPage({ params }: PageProps) {
         title={order.number}
         subtitle={`Placed ${formatDateTime(order.placedAt)}`}
         actions={
-          <span className={`order-pill is-${order.status}`}>
-            {ORDER_STATUS_LABEL[order.status]}
-          </span>
+          <>
+            <span className={`order-pill is-${order.status}`}>
+              {ORDER_STATUS_LABEL[order.status]}
+            </span>
+            {/*
+              The step between marking an order ready and recording its
+              tracking number: the label for the box and the note that goes
+              inside it, rather than an address copied out by hand.
+            */}
+            <Link className="parcel-link" href={`/orders/${order.id}/slip`}>
+              <Printer aria-hidden="true" /> Parcel paper
+            </Link>
+          </>
         }
       />
 

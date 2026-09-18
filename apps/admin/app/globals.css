@@ -3729,3 +3729,17 @@ th.numeric {
   flex: none;
   width: 1.1rem;
 }
+
+/* --- Page-head actions ------------------------------------------------------ */
+
+/*
+ * Two things beside a heading — a status pill and a way through to something —
+ * had no rule between them and sat against each other. One page already passed
+ * a pair; this is what it should have looked like.
+ */
+.admin-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
