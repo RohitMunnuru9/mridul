@@ -18,6 +18,7 @@
 import { revalidatePath } from 'next/cache';
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import type { ActionResult } from './catalogue';
+import { audit } from './audit';
 
 const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
@@ -170,6 +171,7 @@ export async function createCoupon(formData: FormData): Promise<ActionResult> {
   const { error } = await db.from('coupons').insert(shaped.row);
   if (error) return FAIL(readable(error.message));
 
+  await audit('coupon.create', 'coupon', shaped.row.code, null, shaped.row);
   revalidatePath('/coupons');
   return OK(`${shaped.row.code} is ready to use.`);
 }
@@ -185,9 +187,20 @@ export async function updateCoupon(formData: FormData): Promise<ActionResult> {
   if (!shaped.ok) return FAIL(shaped.message);
 
   const db = await sessionClient();
+
+  // Read first, so the entry can say what it was as well as what it became.
+  // A discount that changed from 10% to 50% is a different thing to look back
+  // at than one that was always 50%.
+  const { data: before } = await db
+    .from('coupons')
+    .select('code, percent_off, amount_off_paise, min_subtotal_paise, max_redemptions, is_active')
+    .eq('id', id)
+    .maybeSingle();
+
   const { error } = await db.from('coupons').update(shaped.row).eq('id', id);
   if (error) return FAIL(readable(error.message));
 
+  await audit('coupon.update', 'coupon', shaped.row.code, before ?? null, shaped.row);
   revalidatePath('/coupons');
   return OK('Saved.');
 }
@@ -215,6 +228,7 @@ export async function setCouponActive(formData: FormData): Promise<ActionResult>
   const { error } = await db.from('coupons').update({ is_active: active }).eq('id', id);
   if (error) return FAIL(readable(error.message));
 
+  await audit(active ? 'coupon.start' : 'coupon.stop', 'coupon', id, null, { is_active: active });
   revalidatePath('/coupons');
   return OK(active ? 'Switched on.' : 'Switched off — it stops working now.');
 }

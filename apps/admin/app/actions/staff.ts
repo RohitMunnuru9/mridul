@@ -17,6 +17,7 @@ import { revalidatePath } from 'next/cache';
 import { ADMIN_ROLES, canRevoke, fetchStaff, ROLE_LABEL, type AdminRole } from '@mridul/database';
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import type { ActionResult } from './catalogue';
+import { audit } from './audit';
 
 const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
@@ -75,6 +76,9 @@ export async function grantRole(formData: FormData): Promise<ActionResult> {
     .insert({ user_id: person.id, role, granted_by: admin?.id ?? null });
   if (error) return FAIL(readable(error.message));
 
+  // Access changes are the entries most worth having. Who let somebody in, and
+  // when, is the first question asked after anything goes wrong.
+  await audit('access.grant', 'admin_role', person.id, null, { email, role });
   revalidatePath('/staff');
   return OK(`${email} can now handle ${ROLE_LABEL[role].toLowerCase()}.`);
 }
@@ -110,6 +114,8 @@ export async function revokeRole(formData: FormData): Promise<ActionResult> {
     .eq('role', role);
   if (error) return FAIL(readable(error.message));
 
+  const who = staff.find((member) => member.userId === userId);
+  await audit('access.revoke', 'admin_role', userId, { email: who?.email ?? null, role }, null);
   revalidatePath('/staff');
   return OK('Access removed.');
 }

@@ -19,6 +19,7 @@ import { ORDER_EXITS, ORDER_PIPELINE, type OrderStatus } from '@mridul/database'
 import { trackingUrlFor } from '@mridul/shipping';
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import type { ActionResult } from './catalogue';
+import { audit } from './audit';
 
 const OK = (message: string): ActionResult => ({ ok: true, message });
 const FAIL = (message: string): ActionResult => ({ ok: false, message });
@@ -65,6 +66,7 @@ export async function updateOrderStatus(formData: FormData): Promise<ActionResul
   });
   if (error) return FAIL(error.message);
 
+  await audit('order.status', 'order', id, null, { status });
   revalidatePath('/orders');
   revalidatePath(`/orders/${id}`);
   return OK(`Marked as ${status.replace(/_/g, ' ')}.`);
@@ -130,6 +132,7 @@ export async function recordDispatch(formData: FormData): Promise<ActionResult> 
 
   if (error) return dispatchError(error);
 
+  await audit('order.dispatch', 'order', id, null, { provider, awb, tracking_url: trackingUrl });
   revalidatePath('/orders');
   revalidatePath(`/orders/${id}`);
   return OK(`Marked as shipped with ${provider}.`);
@@ -147,6 +150,7 @@ export async function markDelivered(formData: FormData): Promise<ActionResult> {
   const { error } = await db.rpc('admin_mark_delivered', { p_order_id: id });
   if (error) return dispatchError(error);
 
+  await audit('order.delivered', 'order', id, null, null);
   revalidatePath('/orders');
   revalidatePath(`/orders/${id}`);
   return OK('Marked as delivered.');

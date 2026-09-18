@@ -1702,6 +1702,18 @@ export type Database = {
           state: string | null
         }[]
       }
+      admin_audit_trail: {
+        Args: { p_entity?: string | null; p_limit?: number | null }
+        Returns: {
+          action: string
+          actor_email: string
+          before: Json
+          created_at: string
+          entity: string
+          entity_id: string
+          id: string
+        }[]
+      }
       admin_add_product_image: {
         Args: { p_media_id: string; p_product_id: string }
         Returns: number
@@ -1760,6 +1772,16 @@ export type Database = {
         Returns: Json
       }
       my_unpaid_order: { Args: { p_order_id?: string | null }; Returns: Json }
+      record_admin_action: {
+        Args: {
+          p_action: string
+          p_after?: Json
+          p_before?: Json
+          p_entity: string
+          p_entity_id?: string | null
+        }
+        Returns: undefined
+      }
       place_order: {
         Args: {
           p_address: Json
