@@ -3,9 +3,11 @@ import Link from 'next/link';
 import { ChevronRight, Search } from 'lucide-react';
 import {
   fetchOrders,
+  isPaidFor,
   ORDER_EXITS,
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
+  paymentMethodLabel,
   type OrderStatus,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
@@ -54,10 +56,22 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const inTransit = orders.filter((order) =>
     ['packed', 'shipped', 'out_for_delivery'].includes(order.status),
   ).length;
-  const owed = orders
-    .filter((order) => order.paymentMethod === 'cod' && order.payment?.status !== 'paid')
-    .filter((order) => !['cancelled', 'returned', 'refunded'].includes(order.status))
+  // Money not yet in hand, whichever way it was meant to arrive: cash still to
+  // be collected at a door, and online orders whose payment never completed.
+  // `isPaidFor` is the same test the database uses, so this figure cannot drift
+  // away from what the shop is actually allowed to dispatch.
+  const open = orders.filter(
+    (order) => !['cancelled', 'returned', 'refunded'].includes(order.status),
+  );
+  const owed = open
+    .filter((order) => !isPaidFor(order))
     .reduce((total, order) => total + order.totalPaise, 0);
+
+  // Online orders sitting unpaid are worth calling out on their own: each one
+  // is holding stock off the shelf for a sale that may never happen.
+  const awaitingPayment = open.filter(
+    (order) => order.paymentMethod !== 'cod' && order.status === 'pending_payment',
+  ).length;
 
   return (
     <>
@@ -81,8 +95,14 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         </div>
         <div>
           <strong>{formatPaise(owed)}</strong>
-          <span>Cash still to collect</span>
+          <span>Money still to come in</span>
         </div>
+        {awaitingPayment > 0 && (
+          <div className="is-warning">
+            <strong>{awaitingPayment}</strong>
+            <span>Unpaid, holding stock</span>
+          </div>
+        )}
       </section>
 
       <div className="orders-controls">
@@ -182,9 +202,16 @@ export default async function OrdersPage({ searchParams }: PageProps) {
                     <strong>{formatPaise(order.totalPaise)}</strong>
                   </td>
                   <td>
-                    {order.paymentMethod === 'cod' ? 'Cash on delivery' : 'Online'}
+                    {paymentMethodLabel(order.paymentMethod)}
                     <small>
-                      {order.payment?.status === 'paid' ? 'Collected' : 'Not yet collected'}
+                      {isPaidFor(order)
+                        ? order.paymentMethod === 'cod'
+                          ? 'Collected'
+                          : 'Received'
+                        : order.paymentMethod !== 'cod' &&
+                            order.status === 'pending_payment'
+                          ? 'Not paid — holding stock'
+                          : 'Not yet collected'}
                     </small>
                   </td>
                   <td>

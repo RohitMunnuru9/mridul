@@ -93,15 +93,52 @@ export type OrderPayment = {
   status: string;
   method: string | null;
   amountPaise: number;
+  /**
+   * Written in exactly one place — `confirm_online_payment`, after the server
+   * has asked the gateway itself. This, not `status`, is what "the money is
+   * really there" means, and it is what the database checks before letting an
+   * online order be dispatched.
+   */
   verifiedAt: string | null;
+  /** The gateway's own id for the transaction. Audit trail, never a gate. */
+  providerPaymentId: string | null;
+  /** CCAvenue's tracking id / the acquiring bank's reference. */
+  providerReference: string | null;
 };
+
+/**
+ * Whether the money for this order is actually in hand.
+ *
+ * Cash is real once it has been collected at the door. Anything paid online is
+ * real only once it has been verified against the gateway — a `paid` row on
+ * its own is not enough, which is the same test the database applies.
+ */
+export function isPaidFor(order: Order): boolean {
+  if (order.payment?.status !== 'paid') return false;
+  if (order.paymentMethod === 'cod') return true;
+  return order.payment.verifiedAt !== null;
+}
+
+/** What to call the way this order is being paid for, in the shop's words. */
+export function paymentMethodLabel(method: string): string {
+  switch (method) {
+    case 'cod':
+      return 'Cash on delivery';
+    case 'ccavenue':
+      return 'Card, UPI or net banking';
+    case 'razorpay':
+      return 'Online (Razorpay)';
+    default:
+      return 'Online';
+  }
+}
 
 export type Order = {
   id: string;
   number: string;
   customerId: string | null;
   status: OrderStatus;
-  /** 'cod' until Razorpay is connected. */
+  /** 'cod', or a gateway name such as 'ccavenue'. */
   paymentMethod: string;
   placedAt: string;
   confirmedAt: string | null;
@@ -129,7 +166,8 @@ const COLUMNS =
   'shipping_address, ' +
   'order_items ( id, product_id, product_name, variant_label, sku, image_url, ' +
   'unit_price_paise, quantity, line_total_paise, products ( slug ) ), ' +
-  'payments ( provider, status, method, amount_paise, verified_at )';
+  'payments ( provider, status, method, amount_paise, verified_at, ' +
+  'provider_payment_id, provider_reference )';
 
 /**
  * `shipping_address` is jsonb, so it arrives as whatever was written rather
@@ -216,6 +254,8 @@ function toOrder(row: any): Order {
           method: payments[0].method ?? null,
           amountPaise: payments[0].amount_paise,
           verifiedAt: payments[0].verified_at ?? null,
+          providerPaymentId: payments[0].provider_payment_id ?? null,
+          providerReference: payments[0].provider_reference ?? null,
         }
       : null,
   };
