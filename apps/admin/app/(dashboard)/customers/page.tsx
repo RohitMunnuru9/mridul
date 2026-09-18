@@ -134,6 +134,66 @@ export default async function CustomersPage() {
               ))}
             </tbody>
           </table>
+
+          {/*
+            The same people, for a phone. Nine columns of dates and counts are
+            unreadable on one; the name, how to reach them and what they have
+            spent are what this page is opened for, so those lead.
+          */}
+          <ul className="customers-cards">
+            {customers.map((customer) => (
+              <li key={customer.id}>
+                <Link className="orders-card-head" href={`/customers/${customer.id}`}>
+                  <span>
+                    <strong>{customer.fullName ?? 'No name given'}</strong>
+                    <small>
+                      {customer.city ? `${customer.city}, ${customer.state}` : 'No address yet'}
+                    </small>
+                  </span>
+                  <ChevronRight aria-hidden="true" />
+                </Link>
+
+                {customer.isStaff && <small className="is-staff">Staff</small>}
+
+                <p className="customers-card-contact">
+                  <span className="customer-email">
+                    {customer.email ?? '—'}
+                    {customer.emailConfirmedAt ? (
+                      <BadgeCheck aria-label="Email verified" className="is-good" />
+                    ) : (
+                      <ShieldAlert aria-label="Email not verified" className="is-warn" />
+                    )}
+                  </span>
+                  <small>{customer.phone ?? 'No phone yet'}</small>
+                </p>
+
+                <dl className="orders-card-facts">
+                  <div>
+                    <dt>Orders</dt>
+                    <dd>{customer.ordersCount}</dd>
+                  </div>
+                  <div>
+                    <dt>Spent</dt>
+                    <dd>
+                      <strong>{formatPaise(customer.spendPaise)}</strong>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Signed in with</dt>
+                    <dd>{METHOD_LABEL[customer.signInMethod] ?? customer.signInMethod}</dd>
+                  </div>
+                  <div>
+                    <dt>Joined</dt>
+                    <dd>{formatDate(customer.signedUpAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>Last signed in</dt>
+                    <dd>{formatDateTime(customer.lastSignInAt)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
     </>

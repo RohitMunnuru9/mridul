@@ -290,7 +290,7 @@ export default async function HomepagePage() {
       </Panel>
 
       <Panel title="Section order" note="Turn a section off, or move it up and down the page.">
-        <table>
+        <table className="sections-table">
           <thead>
             <tr>
               <th>Section</th>
@@ -329,6 +329,36 @@ export default async function HomepagePage() {
             ))}
           </tbody>
         </table>
+
+        {/*
+          The same sections, for a phone. The control here — position, shown,
+          and the button — sat in the last column of a five-column table, which
+          is the one place a narrow screen cannot reach.
+        */}
+        <ul className="sections-cards">
+          {sections.map((section) => (
+            <li key={section.id}>
+              <strong>{section.name}</strong>
+              <p>{section.description}</p>
+              <EditForm action={updateHomepageSection} submitLabel="Update" compact>
+                <input name="id" type="hidden" value={section.id} />
+                <input
+                  aria-label={`Position of ${section.name}`}
+                  className="stock-input"
+                  defaultValue={section.position}
+                  min={1}
+                  name="position"
+                  type="number"
+                />
+                <Toggle
+                  label="Shown"
+                  name="is_enabled"
+                  defaultChecked={section.isEnabled}
+                />
+              </EditForm>
+            </li>
+          ))}
+        </ul>
       </Panel>
     </>
   );

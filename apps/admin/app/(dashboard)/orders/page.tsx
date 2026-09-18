@@ -8,6 +8,7 @@ import {
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
   paymentMethodLabel,
+  type Order,
   type OrderStatus,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
@@ -35,6 +36,23 @@ function isStatus(value?: string): value is OrderStatus {
   return Boolean(
     value && [...ORDER_PIPELINE, ...ORDER_EXITS].includes(value as OrderStatus),
   );
+}
+
+/**
+ * Whether the money for an order is in hand, in the shop's words.
+ *
+ * Defined once because the table and the cards below both say it, and two
+ * copies of a sentence about money is two chances to describe an unpaid order
+ * as paid.
+ */
+function paidLabel(order: Order): string {
+  if (isPaidFor(order)) {
+    return order.paymentMethod === 'cod' ? 'Collected' : 'Received';
+  }
+  if (order.paymentMethod !== 'cod' && order.status === 'pending_payment') {
+    return 'Not paid — holding stock';
+  }
+  return 'Not yet collected';
 }
 
 export default async function OrdersPage({ searchParams }: PageProps) {
@@ -203,16 +221,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
                   </td>
                   <td>
                     {paymentMethodLabel(order.paymentMethod)}
-                    <small>
-                      {isPaidFor(order)
-                        ? order.paymentMethod === 'cod'
-                          ? 'Collected'
-                          : 'Received'
-                        : order.paymentMethod !== 'cod' &&
-                            order.status === 'pending_payment'
-                          ? 'Not paid — holding stock'
-                          : 'Not yet collected'}
-                    </small>
+                    <small>{paidLabel(order)}</small>
                   </td>
                   <td>
                     <span className={`order-pill is-${order.status}`}>
@@ -228,6 +237,65 @@ export default async function OrdersPage({ searchParams }: PageProps) {
               ))}
             </tbody>
           </table>
+
+          {/*
+            The same orders, for a phone. Eight columns cannot be read on one,
+            and scrolling them sideways hides the status and the way in — the
+            two things anybody opens this page for.
+          */}
+          <ul className="orders-cards">
+            {orders.map((order) => (
+              <li key={order.id}>
+                <Link className="orders-card-head" href={`/orders/${order.id}`}>
+                  <span>
+                    <strong>{order.number}</strong>
+                    <small>{formatDateTime(order.placedAt)}</small>
+                  </span>
+                  <ChevronRight aria-hidden="true" />
+                </Link>
+
+                <span className={`order-pill is-${order.status}`}>
+                  {ORDER_STATUS_LABEL[order.status]}
+                </span>
+
+                <dl className="orders-card-facts">
+                  <div>
+                    <dt>Customer</dt>
+                    <dd>
+                      {order.address.fullName}
+                      <small>{order.phone ?? order.address.phone}</small>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Delivering to</dt>
+                    <dd>
+                      {order.address.city}, {order.address.state}
+                      <small>{order.address.pincode}</small>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Pieces</dt>
+                    <dd>
+                      {order.lines.reduce((count, line) => count + line.quantity, 0)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Total</dt>
+                    <dd>
+                      <strong>{formatPaise(order.totalPaise)}</strong>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Payment</dt>
+                    <dd>
+                      {paymentMethodLabel(order.paymentMethod)}
+                      <small>{paidLabel(order)}</small>
+                    </dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
     </>

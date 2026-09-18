@@ -3324,3 +3324,153 @@ th.numeric {
     width: 4.5rem;
   }
 }
+
+/* --- Orders and customers as cards ---------------------------------------- */
+
+/*
+ * Same pattern as the inventory list: the table is the default, the cards are
+ * hidden, and the media query swaps them. Two layouts of the same rows, one on
+ * screen at a time — so a screen reader is handed whichever is actually shown.
+ */
+.orders-cards,
+.customers-cards,
+.sections-cards {
+  display: none;
+}
+
+@media (width <= 820px) {
+  .orders-table,
+  .customers-table,
+  .sections-table {
+    display: none;
+  }
+  .orders-cards,
+  .customers-cards,
+  .sections-cards {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0.85rem;
+    list-style: none;
+  }
+  .orders-cards li,
+  .customers-cards li,
+  .sections-cards li {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+  }
+
+  /* The whole head is the way in, so the tap target is a line rather than a
+     word — "Open" at the end of a row is a miss waiting to happen. */
+  .orders-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    color: inherit;
+  }
+  .orders-card-head span {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+  }
+  .orders-card-head strong {
+    overflow: hidden;
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .orders-card-head small {
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+  .orders-card-head svg {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--faint);
+  }
+
+  .orders-cards .order-pill,
+  .customers-cards .order-pill {
+    justify-self: start;
+  }
+
+  .customers-card-contact {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0;
+    font-size: 0.8rem;
+  }
+  .customers-card-contact small {
+    color: var(--muted);
+    font-size: 0.74rem;
+  }
+
+  /*
+   * Label above value, in two columns. Side by side would put a wrapped
+   * address and its label on different lines from each other, which is how
+   * these lists become a puzzle rather than a glance.
+   */
+  .orders-card-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 0.9rem;
+    margin: 0;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line-soft);
+  }
+  .orders-card-facts > div {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+  .orders-card-facts dt {
+    color: var(--faint);
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .orders-card-facts dd {
+    margin: 0;
+    font-size: 0.82rem;
+    /* A long email or address wraps rather than pushing the page sideways. */
+    overflow-wrap: anywhere;
+  }
+  .orders-card-facts dd small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.73rem;
+  }
+  .orders-card-facts dd strong {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (width <= 820px) {
+  .sections-cards strong {
+    font-size: 0.92rem;
+    font-weight: 650;
+  }
+  .sections-cards p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  /* The control keeps its own row, above the panel's own padding, so the
+     number, the toggle and the button are all reachable without the page
+     moving sideways. */
+  .sections-cards .edit-form.is-compact {
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line-soft);
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+}
