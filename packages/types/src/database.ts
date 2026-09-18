@@ -1702,6 +1702,7 @@ export type Database = {
           state: string | null
         }[]
       }
+      admin_set_stock: { Args: { p_changes: Json }; Returns: Json }
       admin_set_order_status: {
         Args: {
           p_order_id: string

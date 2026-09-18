@@ -178,6 +178,9 @@ export default async function ProductEditPage({ params }: PageProps) {
               <EditForm action={updateVariant} submitLabel="Save option" compact>
                 <input name="product_id" type="hidden" value={product.id} />
                 <input name="variant_id" type="hidden" value={variant.id} />
+                {/* The stock this form was drawn with, so the save can refuse
+                    rather than write over a sale that landed meanwhile. */}
+                <input name="on_hand_was" type="hidden" value={variant.stock} />
                 <FieldRow>
                   <Field label="Option" name="label" defaultValue={variant.label} required />
                   <Field label="Code" name="sku" defaultValue={variant.sku} required />

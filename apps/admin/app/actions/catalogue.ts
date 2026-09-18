@@ -32,6 +32,12 @@ function toPaise(raw: FormDataEntryValue | null): number | null {
   return Math.round(rupees * 100);
 }
 
+/** Like `toInt`, but for a value that may legitimately be absent. */
+function toIntOrNull(raw: FormDataEntryValue | null): number | null {
+  if (raw === null) return null;
+  return toInt(raw);
+}
+
 function toInt(raw: FormDataEntryValue | null): number | null {
   const text = String(raw ?? "").trim();
   if (text === "") return null;
@@ -100,6 +106,83 @@ export async function updateProduct(formData: FormData): Promise<ActionResult> {
   return OK("Saved.");
 }
 
+/* ---------------------------------------------------------------------------
+ * Stock
+ *
+ * Stock is the one number in this admin that something else writes too: every
+ * order placed on the website decrements it, under a row lock, while the shop
+ * may well be looking at a page that was rendered before that happened.
+ *
+ * So a save says what it expects to find as well as what it wants to write. If
+ * the shelf has moved since the page was drawn, nothing is written and the
+ * shop is told what it moved to. The alternative — writing anyway — silently
+ * erases the sale, and the first symptom is an oversell weeks later.
+ * ------------------------------------------------------------------------- */
+
+type StockChange = {
+  variantId: string;
+  onHand: number;
+  /** What the form displayed. Null when the caller had nothing to compare. */
+  expected: number | null;
+};
+
+async function saveStock(changes: StockChange[]): Promise<ActionResult> {
+  if (changes.length === 0) return FAIL("Nothing to save.");
+
+  const db = await sessionClient();
+  const { data, error } = await db.rpc("admin_set_stock", {
+    p_changes: changes.map((change) => ({
+      variant_id: change.variantId,
+      on_hand: change.onHand,
+      expected: change.expected,
+    })),
+  });
+
+  if (error) {
+    // PGRST202 is "no such function": migration 0019 has not been applied to
+    // this database yet. Saving stock is not something to refuse over that, so
+    // fall back to the old direct write — unguarded, as it always was, and no
+    // worse than before.
+    if (error.code === "PGRST202") {
+      for (const change of changes) {
+        const { error: writeError } = await db
+          .from("inventory")
+          .update({ on_hand: change.onHand })
+          .eq("variant_id", change.variantId);
+        if (writeError) return FAIL(writeError.message);
+      }
+      return OK("Stock saved.");
+    }
+    return FAIL(error.message);
+  }
+
+  const result = (data ?? {}) as {
+    ok?: boolean;
+    changed?: number;
+    conflicts?: { label: string; expected: number; actual: number }[];
+  };
+
+  if (result.ok === false) {
+    const clashes = result.conflicts ?? [];
+    // Name the pieces and the numbers. "Someone else changed this" tells the
+    // shop nothing they can act on.
+    const detail = clashes
+      .map(
+        (clash) =>
+          `${clash.label}: you had ${clash.expected}, it is now ${clash.actual}`,
+      )
+      .join("; ");
+    return FAIL(
+      `Stock changed while you were on this page, so nothing was saved. ${detail}. ` +
+        "Reload to see the current counts, then set what is actually on the shelf.",
+    );
+  }
+
+  return OK(
+    result.changed === 0 ? "No change to save." : "Stock saved.",
+  );
+}
+
 /** Updates a variant and its stock together, from the product editor. */
 export async function updateVariant(formData: FormData): Promise<ActionResult> {
   const admin = await currentAdmin();
@@ -126,11 +209,10 @@ export async function updateVariant(formData: FormData): Promise<ActionResult> {
     .eq("product_id", productId);
   if (variantError) return FAIL(variantError.message);
 
-  const { error: stockError } = await db
-    .from("inventory")
-    .update({ on_hand: onHand })
-    .eq("variant_id", variantId);
-  if (stockError) return FAIL(stockError.message);
+  const stock = await saveStock([
+    { variantId, onHand, expected: toIntOrNull(formData.get("on_hand_was")) },
+  ]);
+  if (!stock.ok) return stock;
 
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);
@@ -152,13 +234,10 @@ export async function updateStock(formData: FormData): Promise<ActionResult> {
   if (!variantId) return FAIL("Missing variant.");
   if (onHand === null) return FAIL("Stock must be a whole number, zero or more.");
 
-  const db = await sessionClient();
-  const { error } = await db
-    .from("inventory")
-    .update({ on_hand: onHand })
-    .eq("variant_id", variantId);
-
-  if (error) return FAIL(error.message);
+  const result = await saveStock([
+    { variantId, onHand, expected: toIntOrNull(formData.get("on_hand_was")) },
+  ]);
+  if (!result.ok) return result;
 
   revalidatePath("/inventory");
   revalidatePath("/products");
@@ -177,24 +256,25 @@ export async function updateProductStock(formData: FormData): Promise<ActionResu
   const admin = await currentAdmin();
   if (!can(admin, "catalog_manager")) return FAIL("You cannot change stock.");
 
-  const wanted: { variantId: string; onHand: number }[] = [];
+  const wanted: StockChange[] = [];
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("stock:")) continue;
     const variantId = key.slice("stock:".length);
     const onHand = toInt(value);
     if (onHand === null) return FAIL("Stock must be a whole number, zero or more.");
-    wanted.push({ variantId, onHand });
+    // The count this row was drawn with, sent back so the save can tell
+    // whether the shelf moved underneath it.
+    wanted.push({
+      variantId,
+      onHand,
+      expected: toIntOrNull(formData.get(`was:${variantId}`)),
+    });
   }
   if (wanted.length === 0) return FAIL("Nothing to save.");
 
-  const db = await sessionClient();
-  for (const { variantId, onHand } of wanted) {
-    const { error } = await db
-      .from("inventory")
-      .update({ on_hand: onHand })
-      .eq("variant_id", variantId);
-    if (error) return FAIL(error.message);
-  }
+  // One call, one transaction: six options save together or not at all.
+  const saved = await saveStock(wanted);
+  if (!saved.ok) return saved;
 
   revalidatePath("/products");
   revalidatePath("/inventory");

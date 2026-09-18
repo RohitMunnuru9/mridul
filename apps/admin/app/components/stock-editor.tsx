@@ -68,6 +68,10 @@ export function StockEditor({
               >
                 <Minus aria-hidden="true" />
               </button>
+              {/* What this row was drawn with, as opposed to what is typed
+                  into it. The save compares the two so a sale that landed
+                  while this page was open is not written over. */}
+              <input name={`was:${variant.id}`} type="hidden" value={variant.stock} />
               <input
                 aria-label={`Stock for ${variant.label}`}
                 inputMode="numeric"
