@@ -102,7 +102,16 @@ export type OrderPayment = {
   verifiedAt: string | null;
   /** The gateway's own id for the transaction. Audit trail, never a gate. */
   providerPaymentId: string | null;
-  /** CCAvenue's tracking id / the acquiring bank's reference. */
+  /**
+   * CCAvenue's tracking id / the acquiring bank's reference.
+   *
+   * Deliberately NOT part of the main order query. The column arrives with
+   * migration 0017, and selecting a column that does not exist yet fails the
+   * whole query — which would take out every orders screen in both apps, for
+   * the sake of one line of small print on one page. `fetchPaymentReference`
+   * asks for it separately, where it is actually shown, and shrugs if it is
+   * not there.
+   */
   providerReference: string | null;
 };
 
@@ -167,7 +176,7 @@ const COLUMNS =
   'order_items ( id, product_id, product_name, variant_label, sku, image_url, ' +
   'unit_price_paise, quantity, line_total_paise, products ( slug ) ), ' +
   'payments ( provider, status, method, amount_paise, verified_at, ' +
-  'provider_payment_id, provider_reference )';
+  'provider_payment_id )';
 
 /**
  * `shipping_address` is jsonb, so it arrives as whatever was written rather
@@ -255,7 +264,7 @@ function toOrder(row: any): Order {
           amountPaise: payments[0].amount_paise,
           verifiedAt: payments[0].verified_at ?? null,
           providerPaymentId: payments[0].provider_payment_id ?? null,
-          providerReference: payments[0].provider_reference ?? null,
+          providerReference: null,
         }
       : null,
   };
@@ -375,4 +384,26 @@ export async function fetchCustomers(client: Client): Promise<Customer[]> {
     city: row.city ?? null,
     state: row.state ?? null,
   }));
+}
+
+/**
+ * The gateway's reference for an order's payment, if this database has the
+ * column yet.
+ *
+ * Returns null rather than throwing when it does not: an admin looking at an
+ * order should see the order, not an error page, because one optional field
+ * is missing. Once 0017 is applied this simply starts returning the value.
+ */
+export async function fetchPaymentReference(
+  db: Client,
+  orderId: string,
+): Promise<string | null> {
+  const { data, error } = await db
+    .from('payments')
+    .select('provider_reference')
+    .eq('order_id', orderId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return (data as { provider_reference?: string | null }).provider_reference ?? null;
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, Mail, MapPin, Phone, UserRound, Wallet } from 'lucide-react';
 import {
   fetchOrderById,
+  fetchPaymentReference,
   isPaidFor,
   ORDER_EXITS,
   ORDER_PIPELINE,
@@ -25,6 +26,13 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const db = await sessionClient();
   const order = await fetchOrderById(db, id);
   if (!order) notFound();
+
+  // Asked for on its own, because the column only exists from migration 0017
+  // and a missing one would otherwise fail the whole order query. Null until
+  // that is applied, which costs this page one line of small print.
+  const bankReference = order.payment
+    ? await fetchPaymentReference(db, order.id)
+    : null;
 
   const admin = await currentAdmin();
   const canEdit = can(admin, 'order_manager');
@@ -243,7 +251,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
             {/* The gateway's own references. Not a gate on anything — they are
                 here so a disputed payment can be looked up in CCAvenue's
                 dashboard months later without going through the database. */}
-            {!cash && (order.payment?.providerPaymentId || order.payment?.providerReference) && (
+            {!cash && (order.payment?.providerPaymentId || bankReference) && (
               <dl className="order-refs">
                 {order.payment?.providerPaymentId && (
                   <div>
@@ -253,11 +261,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
                     </dd>
                   </div>
                 )}
-                {order.payment?.providerReference && (
+                {bankReference && (
                   <div>
                     <dt>Bank reference</dt>
                     <dd>
-                      <code>{order.payment.providerReference}</code>
+                      <code>{bankReference}</code>
                     </dd>
                   </div>
                 )}
