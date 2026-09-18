@@ -40,6 +40,40 @@ function safeName(name: string): string {
   return `${stem || "image"}.${ext}`;
 }
 
+/* ---------------------------------------------------------------------------
+ * Image order
+ *
+ * The position of a photograph within a product is shared state: the shop may
+ * have the product open in two tabs, and every one of these operations used to
+ * be several separate round trips with the half-finished state visible in
+ * between. Worse, swapping two images parked one of them at position -1 — and
+ * -1 sorts before 0, so a reorder interrupted at the wrong moment silently
+ * made the wrong photograph the thumbnail.
+ *
+ * All four now happen inside one database function, under a lock on that
+ * product's rows, with the unique constraint deferred to commit. There is no
+ * intermediate state and no parking slot.
+ *
+ * `orderImages` keeps the old client-side code as a fallback for a database
+ * where 0020 has not been applied: PostgREST answers PGRST202 for a function
+ * it does not have, and refusing to reorder photographs over that would be a
+ * worse outcome than the race it fixes.
+ * ------------------------------------------------------------------------- */
+
+const NO_SUCH_FUNCTION = "PGRST202";
+
+async function orderImages(
+  // Supabase's query builders are thenables rather than real Promises, so this
+  // takes a PromiseLike — asking for a Promise here rejects every call site.
+  call: () => PromiseLike<{ error: { code?: string; message: string } | null }>,
+  legacy: () => Promise<ActionResult>,
+): Promise<ActionResult | null> {
+  const { error } = await call();
+  if (!error) return null;
+  if (error.code === NO_SUCH_FUNCTION) return legacy();
+  return FAIL(error.message);
+}
+
 /**
  * Adds an image to a product.
  *
@@ -68,13 +102,16 @@ export async function uploadProductImage(formData: FormData): Promise<ActionResu
 
   const db = await sessionClient();
 
-  const { count } = await db
-    .from("product_images")
-    .select("id", { count: "exact", head: true })
-    .eq("product_id", productId);
-  const position = count ?? 0;
-
-  const path = `${slug}/${position + 1}-${safeName(file.name)}`;
+  // A random token rather than the image's position in the product.
+  //
+  // The position was read a moment earlier and used as part of the filename,
+  // so two uploads starting together produced the SAME path — and the upload
+  // below passes `upsert: true`, which meant the second file quietly replaced
+  // the first in the bucket. One of the two photographs was simply gone.
+  // Nothing about the path needs to encode the order; it only needs to be
+  // unique and readable.
+  const token = Math.random().toString(36).slice(2, 10);
+  const path = `${slug}/${token}-${safeName(file.name)}`;
 
   const { error: uploadError } = await db.storage
     .from("products")
@@ -99,10 +136,31 @@ export async function uploadProductImage(formData: FormData): Promise<ActionResu
     .single();
   if (mediaError) return FAIL(mediaError.message);
 
-  const { error: linkError } = await db
-    .from("product_images")
-    .insert({ product_id: productId, media_id: media.id, position });
-  if (linkError) return FAIL(linkError.message);
+  // Where it lands is decided by the database, under a lock, so two uploads
+  // arriving together get two different positions instead of colliding on the
+  // unique constraint after both files are already in the bucket.
+  let position: number;
+  const placed = await db.rpc("admin_add_product_image", {
+    p_product_id: productId,
+    p_media_id: media.id,
+  });
+
+  if (placed.error) {
+    if (placed.error.code !== NO_SUCH_FUNCTION) return FAIL(placed.error.message);
+
+    // 0020 not applied: the old count-then-insert, races and all.
+    const { count } = await db
+      .from("product_images")
+      .select("id", { count: "exact", head: true })
+      .eq("product_id", productId);
+    position = count ?? 0;
+    const { error: linkError } = await db
+      .from("product_images")
+      .insert({ product_id: productId, media_id: media.id, position });
+    if (linkError) return FAIL(linkError.message);
+  } else {
+    position = Number(placed.data ?? 0);
+  }
 
   revalidatePath(`/products/${productId}`);
   revalidatePath("/media");
@@ -186,25 +244,37 @@ export async function removeProductImage(formData: FormData): Promise<ActionResu
   const productId = String(formData.get("product_id") ?? "");
 
   const db = await sessionClient();
-  const { error } = await db
-    .from("product_images")
-    .delete()
-    .eq("product_id", productId)
-    .eq("media_id", imageId);
-  if (error) return FAIL(error.message);
 
-  // Close the gap so positions stay 0..n-1 and the thumbnail is always first.
-  const { data: remaining } = await db
-    .from("product_images")
-    .select("id, position")
-    .eq("product_id", productId)
-    .order("position");
+  const failure = await orderImages(
+    () =>
+      db.rpc("admin_remove_product_image", {
+        p_product_id: productId,
+        p_media_id: imageId,
+      }),
+    async () => {
+      // 0020 not applied: delete, then close the gap one row at a time.
+      const { error } = await db
+        .from("product_images")
+        .delete()
+        .eq("product_id", productId)
+        .eq("media_id", imageId);
+      if (error) return FAIL(error.message);
 
-  for (const [index, row] of (remaining ?? []).entries()) {
-    if (row.position !== index) {
-      await db.from("product_images").update({ position: index }).eq("id", row.id);
-    }
-  }
+      const { data: remaining } = await db
+        .from("product_images")
+        .select("id, position")
+        .eq("product_id", productId)
+        .order("position");
+
+      for (const [index, row] of (remaining ?? []).entries()) {
+        if (row.position !== index) {
+          await db.from("product_images").update({ position: index }).eq("id", row.id);
+        }
+      }
+      return OK("Image removed.");
+    },
+  );
+  if (failure && !failure.ok) return failure;
 
   revalidatePath(`/products/${productId}`);
   revalidatePath("/media");
@@ -231,39 +301,52 @@ export async function setThumbnail(formData: FormData): Promise<ActionResult> {
   if (!productId || !mediaId) return FAIL("Missing image.");
 
   const db = await sessionClient();
-  const { data: images, error } = await db
-    .from("product_images")
-    .select("id, media_id, position")
-    .eq("product_id", productId)
-    .order("position");
-  if (error) return FAIL(error.message);
 
-  const rows = images ?? [];
-  const index = rows.findIndex((image) => image.media_id === mediaId);
-  if (index < 0) return FAIL("That image is not on this product.");
-  if (index === 0) return OK("Already the thumbnail.");
+  const failure = await orderImages(
+    () =>
+      db.rpc("admin_set_product_thumbnail", {
+        p_product_id: productId,
+        p_media_id: mediaId,
+      }),
+    async () => {
+      // 0020 not applied: the parking-slot shuffle, with its old hazard that
+      // an interruption strands a row at -1.
+      const { data: images, error } = await db
+        .from("product_images")
+        .select("id, media_id, position")
+        .eq("product_id", productId)
+        .order("position");
+      if (error) return FAIL(error.message);
 
-  const chosen = rows[index];
-  const { error: parkError } = await db
-    .from("product_images")
-    .update({ position: -1 })
-    .eq("id", chosen.id);
-  if (parkError) return FAIL(parkError.message);
+      const rows = images ?? [];
+      const index = rows.findIndex((image) => image.media_id === mediaId);
+      if (index < 0) return FAIL("That image is not on this product.");
+      if (index === 0) return OK("Already the thumbnail.");
 
-  // Back to front, so each row moves into a slot that has just been vacated.
-  for (let i = index - 1; i >= 0; i -= 1) {
-    const { error: shiftError } = await db
-      .from("product_images")
-      .update({ position: i + 1 })
-      .eq("id", rows[i].id);
-    if (shiftError) return FAIL(shiftError.message);
-  }
+      const chosen = rows[index];
+      const { error: parkError } = await db
+        .from("product_images")
+        .update({ position: -1 })
+        .eq("id", chosen.id);
+      if (parkError) return FAIL(parkError.message);
 
-  const { error: placeError } = await db
-    .from("product_images")
-    .update({ position: 0 })
-    .eq("id", chosen.id);
-  if (placeError) return FAIL(placeError.message);
+      for (let i = index - 1; i >= 0; i -= 1) {
+        const { error: shiftError } = await db
+          .from("product_images")
+          .update({ position: i + 1 })
+          .eq("id", rows[i].id);
+        if (shiftError) return FAIL(shiftError.message);
+      }
+
+      const { error: placeError } = await db
+        .from("product_images")
+        .update({ position: 0 })
+        .eq("id", chosen.id);
+      if (placeError) return FAIL(placeError.message);
+      return OK("Now the thumbnail.");
+    },
+  );
+  if (failure && !failure.ok) return failure;
 
   revalidatePath(`/products/${productId}`);
   revalidatePath("/products");
@@ -284,40 +367,64 @@ export async function moveProductImage(formData: FormData): Promise<ActionResult
   }
 
   const db = await sessionClient();
-  const { data: images, error } = await db
+
+  // Needed only for the wording of the confirmation, so it is read before the
+  // move rather than trusted to decide it — the database works out the
+  // neighbour itself, under the lock.
+  const { data: before } = await db
     .from("product_images")
-    .select("id, media_id, position")
+    .select("media_id, position")
     .eq("product_id", productId)
     .order("position");
-  if (error) return FAIL(error.message);
+  const wasAt = (before ?? []).findIndex((image) => image.media_id === mediaId);
+  const landsAt = direction === "up" ? wasAt - 1 : wasAt + 1;
 
-  const index = (images ?? []).findIndex((image) => image.media_id === mediaId);
-  const targetIndex = direction === "up" ? index - 1 : index + 1;
-  if (index < 0 || targetIndex < 0 || targetIndex >= (images ?? []).length) {
-    return FAIL("That image is already at the edge.");
-  }
+  const failure = await orderImages(
+    () =>
+      db.rpc("admin_move_product_image", {
+        p_product_id: productId,
+        p_media_id: mediaId,
+        p_direction: direction,
+      }),
+    async () => {
+      // 0020 not applied: the three-step swap through position -1.
+      const rows = before ?? [];
+      if (wasAt < 0 || landsAt < 0 || landsAt >= rows.length) {
+        return FAIL("That image is already at the edge.");
+      }
+      const { data: full, error } = await db
+        .from("product_images")
+        .select("id, media_id, position")
+        .eq("product_id", productId)
+        .order("position");
+      if (error) return FAIL(error.message);
 
-  const current = images![index];
-  const target = images![targetIndex];
-  const temporaryPosition = -1;
-  const { error: temporaryError } = await db
-    .from("product_images")
-    .update({ position: temporaryPosition })
-    .eq("id", current.id);
-  if (temporaryError) return FAIL(temporaryError.message);
-  const { error: targetError } = await db
-    .from("product_images")
-    .update({ position: current.position })
-    .eq("id", target.id);
-  if (targetError) return FAIL(targetError.message);
-  const { error: currentError } = await db
-    .from("product_images")
-    .update({ position: target.position })
-    .eq("id", current.id);
-  if (currentError) return FAIL(currentError.message);
+      const current = full![wasAt];
+      const target = full![landsAt];
+      const { error: temporaryError } = await db
+        .from("product_images")
+        .update({ position: -1 })
+        .eq("id", current.id);
+      if (temporaryError) return FAIL(temporaryError.message);
+      const { error: targetError } = await db
+        .from("product_images")
+        .update({ position: current.position })
+        .eq("id", target.id);
+      if (targetError) return FAIL(targetError.message);
+      const { error: currentError } = await db
+        .from("product_images")
+        .update({ position: target.position })
+        .eq("id", current.id);
+      if (currentError) return FAIL(currentError.message);
+      return OK("Image order updated.");
+    },
+  );
+  if (failure && !failure.ok) return failure;
 
   revalidatePath(`/products/${productId}`);
-  return OK(targetIndex === 0 ? "Set as the storefront thumbnail." : "Image order updated.");
+  revalidatePath("/products");
+  revalidatePath("/");
+  return OK(landsAt === 0 ? "Set as the storefront thumbnail." : "Image order updated.");
 }
 
 /** Alt text and crop, editable without re-uploading the file. */

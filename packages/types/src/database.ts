@@ -1702,6 +1702,22 @@ export type Database = {
           state: string | null
         }[]
       }
+      admin_add_product_image: {
+        Args: { p_media_id: string; p_product_id: string }
+        Returns: number
+      }
+      admin_move_product_image: {
+        Args: { p_direction: string; p_media_id: string; p_product_id: string }
+        Returns: undefined
+      }
+      admin_remove_product_image: {
+        Args: { p_media_id: string; p_product_id: string }
+        Returns: undefined
+      }
+      admin_set_product_thumbnail: {
+        Args: { p_media_id: string; p_product_id: string }
+        Returns: undefined
+      }
       admin_set_stock: { Args: { p_changes: Json }; Returns: Json }
       admin_set_order_status: {
         Args: {
