@@ -240,3 +240,25 @@
 .order-track-link:hover { background: color-mix(in srgb, var(--berry) 6%, transparent); }
 .order-track-link svg { width: 0.95rem; }
 .order-panel code { padding: 0.1rem 0.35rem; background: var(--paper-warm, #f6f1ea); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82em; overflow-wrap: anywhere; }
+
+/* Asking for a return. The lines are the decision, so they are the biggest
+   thing on the form; the reason and note sit under them. */
+.return-form { display: grid; gap: 0.9rem; margin-top: 0.85rem; }
+.return-form-intro { margin: 0; color: var(--muted-foreground); font-size: 0.78rem; line-height: 1.6; }
+.return-lines { display: grid; gap: 0.45rem; margin: 0; padding: 0; border: 0; }
+.return-lines legend { padding: 0; margin-bottom: 0.3rem; font-size: 0.82rem; font-weight: 600; }
+.return-line { display: flex; align-items: center; gap: 0.7rem; padding: 0.65rem 0.8rem; border: 1px solid var(--border); background: var(--paper); cursor: pointer; }
+.return-line.is-on { border-color: var(--berry); background: color-mix(in srgb, var(--berry) 5%, var(--paper)); }
+.return-line input[type='checkbox'] { flex: none; accent-color: var(--berry); }
+.return-line-body { display: grid; min-width: 0; flex: 1; }
+.return-line-body strong { font-size: 0.85rem; font-weight: 600; }
+.return-line-body small { color: var(--muted-foreground); font-size: 0.72rem; }
+.return-qty { flex: none; padding: 0.35rem 0.5rem; border: 1px solid var(--input); background: var(--paper); font: inherit; font-size: 0.8rem; }
+.return-field { display: grid; gap: 0.35rem; }
+.return-field > span { color: var(--muted-foreground); font-size: 0.72rem; }
+.return-field select, .return-field textarea { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--input); background: var(--paper); color: inherit; font: inherit; font-size: 0.82rem; }
+.return-field textarea { resize: vertical; }
+.return-field select:focus-visible, .return-field textarea:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
+.return-status { display: grid; gap: 0.5rem; }
+.return-items { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; line-height: 1.7; }
+.order-payment-note.is-ok { border-color: #a8cbb3; background: #eef7f0; color: #2c6244; }

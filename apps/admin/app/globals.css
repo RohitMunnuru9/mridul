@@ -3583,3 +3583,51 @@ th.numeric {
 .activity-changes li {
   overflow-wrap: anywhere;
 }
+
+/* --- Returns ---------------------------------------------------------------- */
+
+.return-request {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.9rem 1.1rem;
+  border-top: 1px solid var(--line-soft);
+}
+.return-request-head {
+  display: grid;
+  gap: 0.15rem;
+}
+.return-request-head strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.return-request-head small {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+.return-items {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.return-note {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.return-note em {
+  color: var(--muted);
+  font-style: normal;
+}
+/* Approve is one tap; decline asks for a sentence first. Side by side on a
+   desk, stacked in a hand. */
+.return-decide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.8rem 1.4rem;
+}
+.return-decide .edit-form {
+  padding: 0;
+}

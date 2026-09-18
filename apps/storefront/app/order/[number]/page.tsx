@@ -10,13 +10,19 @@ import {
   MessageCircle,
   Package,
   Phone,
+  RotateCcw,
   Truck,
   Wallet,
 } from 'lucide-react';
 import {
   fetchOrderByNumber,
+  fetchReturnsForOrder,
   getSiteSettings,
   isPaidFor,
+  returnEligibility,
+  RETURN_REASON_LABEL,
+  RETURN_REASONS,
+  RETURN_STATUS_LABEL,
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
   type Order,
@@ -24,6 +30,7 @@ import {
 import { sessionClient } from '@mridul/supabase/server';
 import { ClearBagOnPaid } from './clear-bag';
 import { RetryPayment } from './retry-payment';
+import { RequestReturn } from './request-return';
 import {
   formatDateTime,
   formatPaise,
@@ -106,6 +113,19 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
     getSiteSettings(),
   ]);
   if (!order) notFound();
+
+  // Any return already on this order, and whether another may be asked for.
+  // The same rule the database applies, so the form is only drawn when it
+  // would not be refused.
+  const returns = await fetchReturnsForOrder(db, order.id);
+  const openReturn = returns.find((r) => r.status === 'requested' || r.status === 'approved');
+  const eligibility = returnEligibility({
+    status: order.status,
+    deliveredAt: order.shipment?.deliveredAt ?? (order.status === 'delivered' ? order.updatedAt : null),
+    windowDays: settings.returnWindowDays,
+    openRequest: Boolean(openReturn),
+  });
+  const latestReturn = returns[0];
 
   const cash = order.paymentMethod === 'cod';
   // The money is only real once it has been verified against the gateway —
@@ -337,6 +357,68 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
                 <p className="order-notes">
                   Delivered {formatDateTime(order.shipment.deliveredAt)}.
                 </p>
+              )}
+            </section>
+          )}
+
+          {(latestReturn || eligibility.ok) && (
+            <section className="order-panel" aria-label="Returns">
+              <h2>
+                <RotateCcw aria-hidden="true" /> Returns
+              </h2>
+
+              {latestReturn && (
+                <div className="return-status">
+                  <p className="order-payment">
+                    <strong>{RETURN_STATUS_LABEL[latestReturn.status]}</strong>
+                    <span>
+                      Asked {formatDateTime(latestReturn.requestedAt)} ·{' '}
+                      {RETURN_REASON_LABEL[latestReturn.reason]}
+                    </span>
+                  </p>
+                  <ul className="return-items">
+                    {latestReturn.items.map((item) => {
+                      const line = order.lines.find((l) => l.id === item.orderItemId);
+                      return (
+                        <li key={item.orderItemId}>
+                          {item.quantity} × {line?.name ?? 'a piece'}
+                          {line?.variantLabel ? ` · ${line.variantLabel}` : ''}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {latestReturn.status === 'approved' && (
+                    <p className="order-notes">
+                      Pack it as it came, tags on, and message us for where to send it.
+                    </p>
+                  )}
+                  {latestReturn.staffNote && (
+                    <p className="order-notes">
+                      <em>From the shop:</em> {latestReturn.staffNote}
+                    </p>
+                  )}
+                  {latestReturn.refundPaise !== null && (
+                    <p className="order-notes">
+                      Refunded {formatPaise(latestReturn.refundPaise)}
+                      {latestReturn.refundedAt ? ` on ${formatDateTime(latestReturn.refundedAt)}` : ''}.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {eligibility.ok && (
+                <RequestReturn
+                  daysLeft={eligibility.daysLeft}
+                  lines={order.lines.map((line) => ({
+                    id: line.id,
+                    name: line.name,
+                    variantLabel: line.variantLabel,
+                    quantity: line.quantity,
+                  }))}
+                  orderId={order.id}
+                  orderNumber={order.number}
+                  reasons={RETURN_REASONS}
+                />
               )}
             </section>
           )}

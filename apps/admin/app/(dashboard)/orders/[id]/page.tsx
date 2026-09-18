@@ -6,6 +6,7 @@ import {
   Mail,
   MapPin,
   Phone,
+  RotateCcw,
   Truck,
   UserRound,
   Wallet,
@@ -13,7 +14,10 @@ import {
 import {
   fetchOrderById,
   fetchPaymentReference,
+  fetchReturnsForOrder,
   isPaidFor,
+  RETURN_REASON_LABEL,
+  RETURN_STATUS_LABEL,
   ORDER_EXITS,
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
@@ -22,6 +26,7 @@ import {
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import { formatDateTime, formatPaise } from '@mridul/utils';
 import { COURIERS } from '@mridul/shipping';
+import { decideReturn } from '../../../actions/returns';
 import {
   markDelivered,
   recordDispatch,
@@ -44,9 +49,10 @@ export default async function OrderDetailPage({ params }: PageProps) {
   // Asked for on its own, because the column only exists from migration 0017
   // and a missing one would otherwise fail the whole order query. Null until
   // that is applied, which costs this page one line of small print.
-  const bankReference = order.payment
-    ? await fetchPaymentReference(db, order.id)
-    : null;
+  const [bankReference, returns] = await Promise.all([
+    order.payment ? fetchPaymentReference(db, order.id) : Promise.resolve(null),
+    fetchReturnsForOrder(db, order.id),
+  ]);
 
   const admin = await currentAdmin();
   const canEdit = can(admin, 'order_manager');
@@ -410,6 +416,97 @@ export default async function OrderDetailPage({ params }: PageProps) {
               )
             )}
           </section>
+
+          {returns.length > 0 && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>
+                  <RotateCcw aria-hidden="true" /> Returns
+                </h2>
+                <p>
+                  Approving puts only the returned pieces back into stock. The
+                  money moves by hand — cash back, or a refund in CCAvenue — and
+                  is written down here once it has.
+                </p>
+              </div>
+
+              {returns.map((request) => (
+                <div className="return-request" key={request.id}>
+                  <div className="return-request-head">
+                    <strong>{RETURN_STATUS_LABEL[request.status]}</strong>
+                    <small>
+                      Asked {formatDateTime(request.requestedAt)} ·{' '}
+                      {RETURN_REASON_LABEL[request.reason]}
+                    </small>
+                  </div>
+
+                  <ul className="return-items">
+                    {request.items.map((item) => {
+                      const line = order.lines.find((l) => l.id === item.orderItemId);
+                      return (
+                        <li key={item.orderItemId}>
+                          {item.quantity} × {line?.name ?? 'a piece'}
+                          {line?.variantLabel ? ` · ${line.variantLabel}` : ''}
+                          {line ? ` · ${formatPaise(line.unitPricePaise * item.quantity)}` : ''}
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {request.note && (
+                    <p className="return-note">
+                      <em>Customer:</em> {request.note}
+                    </p>
+                  )}
+                  {request.staffNote && (
+                    <p className="return-note">
+                      <em>You said:</em> {request.staffNote}
+                    </p>
+                  )}
+                  {request.refundPaise !== null && (
+                    <p className="return-note">
+                      Refunded {formatPaise(request.refundPaise)}.
+                    </p>
+                  )}
+
+                  {canEdit && request.status === 'requested' && (
+                    <div className="return-decide">
+                      <EditForm action={decideReturn} submitLabel="Approve" compact>
+                        <input name="request_id" type="hidden" value={request.id} />
+                        <input name="order_id" type="hidden" value={order.id} />
+                        <input name="decision" type="hidden" value="approve" />
+                      </EditForm>
+                      <EditForm action={decideReturn} submitLabel="Decline" compact danger>
+                        <input name="request_id" type="hidden" value={request.id} />
+                        <input name="order_id" type="hidden" value={order.id} />
+                        <input name="decision" type="hidden" value="decline" />
+                        <Field
+                          hint="The customer reads this."
+                          label="Why"
+                          name="staff_note"
+                          required
+                        />
+                      </EditForm>
+                    </div>
+                  )}
+
+                  {canEdit && request.status === 'approved' && (
+                    <EditForm action={decideReturn} submitLabel="Record the refund" compact>
+                      <input name="request_id" type="hidden" value={request.id} />
+                      <input name="order_id" type="hidden" value={order.id} />
+                      <input name="decision" type="hidden" value="refund" />
+                      <Field
+                        hint="In rupees, once the money has actually gone back."
+                        label="Amount refunded"
+                        name="refund"
+                        required
+                      />
+                    </EditForm>
+                  )}
+                </div>
+              ))}
+            </section>
+          )}
 
           <section className="panel">
             <div className="panel-head">
