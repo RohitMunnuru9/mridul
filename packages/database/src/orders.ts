@@ -160,6 +160,9 @@ export type Order = {
   /** 'cod', or a gateway name such as 'ccavenue'. */
   paymentMethod: string;
   placedAt: string;
+  /** Last change of any kind. For a delivered order with no shipment date,
+   *  the closest thing to when it arrived. */
+  updatedAt: string;
   confirmedAt: string | null;
   cancelledAt: string | null;
   email: string | null;
@@ -181,7 +184,7 @@ export type Order = {
 };
 
 const COLUMNS =
-  'id, order_number, customer_id, status, payment_method, placed_at, ' +
+  'id, order_number, customer_id, status, payment_method, placed_at, updated_at, ' +
   'confirmed_at, cancelled_at, email, phone, subtotal_paise, discount_paise, ' +
   'shipping_paise, total_paise, coupon_code, notes, staff_notes, ' +
   'shipping_address, ' +
@@ -246,6 +249,7 @@ function toOrder(row: any): Order {
     status: row.status as OrderStatus,
     paymentMethod: row.payment_method ?? 'cod',
     placedAt: row.placed_at,
+    updatedAt: row.updated_at ?? row.placed_at,
     confirmedAt: row.confirmed_at ?? null,
     cancelledAt: row.cancelled_at ?? null,
     email: row.email ?? null,

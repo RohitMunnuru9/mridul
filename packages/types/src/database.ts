@@ -1665,6 +1665,57 @@ export type Database = {
         }
         Relationships: []
       }
+      return_request_items: {
+        Row: { id: string; order_item_id: string; quantity: number; request_id: string }
+        Insert: { id?: string; order_item_id: string; quantity: number; request_id: string }
+        Update: { id?: string; order_item_id?: string; quantity?: number; request_id?: string }
+        Relationships: []
+      }
+      return_requests: {
+        Row: {
+          customer_id: string | null
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          note: string
+          order_id: string
+          reason: string
+          refund_paise: number | null
+          refunded_at: string | null
+          requested_at: string
+          staff_note: string
+          status: Database["public"]["Enums"]["return_status"]
+        }
+        Insert: {
+          customer_id?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          note?: string
+          order_id: string
+          reason: string
+          refund_paise?: number | null
+          refunded_at?: string | null
+          requested_at?: string
+          staff_note?: string
+          status?: Database["public"]["Enums"]["return_status"]
+        }
+        Update: {
+          customer_id?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          note?: string
+          order_id?: string
+          reason?: string
+          refund_paise?: number | null
+          refunded_at?: string | null
+          requested_at?: string
+          staff_note?: string
+          status?: Database["public"]["Enums"]["return_status"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       media_usage: {
@@ -1713,6 +1764,15 @@ export type Database = {
           entity_id: string
           id: string
         }[]
+      }
+      admin_decide_return: {
+        Args: {
+          p_decision: string
+          p_refund?: number | null
+          p_request_id: string
+          p_staff_note?: string | null
+        }
+        Returns: Json
       }
       admin_add_product_image: {
         Args: { p_media_id: string; p_product_id: string }
@@ -1772,6 +1832,15 @@ export type Database = {
         Returns: Json
       }
       my_unpaid_order: { Args: { p_order_id?: string | null }; Returns: Json }
+      request_return: {
+        Args: {
+          p_items: Json
+          p_note?: string | null
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: Json
+      }
       record_admin_action: {
         Args: {
           p_action: string
@@ -1839,6 +1908,7 @@ export type Database = {
         | "cancelled"
         | "returned"
         | "refunded"
+      return_status: "requested" | "approved" | "declined" | "refunded"
       payment_status:
         | "pending"
         | "authorized"
