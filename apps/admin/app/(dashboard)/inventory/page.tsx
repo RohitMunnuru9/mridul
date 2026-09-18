@@ -62,6 +62,10 @@ export default async function InventoryPage() {
                 <td>
                   <EditForm action={updateStock} submitLabel="Save" compact>
                     <input name="variant_id" type="hidden" value={row.variantId} />
+                    {/* The count this row was drawn with. Sent back so the
+                        save can refuse if a sale moved it in the meantime,
+                        rather than quietly writing over the sale. */}
+                    <input name="on_hand_was" type="hidden" value={row.stock} />
                     <input
                       aria-label={`Stock for ${row.productName} ${row.variantLabel}`}
                       className="stock-input"
