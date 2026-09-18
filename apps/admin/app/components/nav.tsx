@@ -30,6 +30,7 @@ import {
   Layers,
   Package,
   Receipt,
+  KeyRound,
   Settings,
   Tags,
   TicketPercent,
@@ -51,6 +52,7 @@ const SECTIONS: Section[] = [
   { href: "/media", label: "Photos", icon: Images, group: "Occasional" },
   { href: "/homepage", label: "Homepage", icon: Home, group: "Occasional" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Occasional" },
+  { href: "/staff", label: "Who has access", icon: KeyRound, group: "Occasional" },
 ];
 
 const GROUPS = ["Everyday", "Occasional"];

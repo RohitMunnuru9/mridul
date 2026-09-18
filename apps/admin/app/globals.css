@@ -3474,3 +3474,61 @@ th.numeric {
     gap: 0.6rem;
   }
 }
+
+/* --- Who has access ------------------------------------------------------- */
+
+/* One row per role held. Taking away "Orders" and taking away "Owner" are
+   different decisions, so they get different rows and different buttons
+   rather than one control that means both. */
+.staff-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid var(--line-soft);
+}
+.staff-role-row > span {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.staff-role-row strong {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.staff-role-row small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+.staff-role-row .edit-form {
+  flex: none;
+  padding: 0;
+}
+
+/* Where a Remove button would be, saying why there is not one. */
+.staff-role-locked {
+  flex: none;
+  max-width: 11rem;
+  color: var(--faint);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.order-facts .pill + .pill {
+  margin-left: 0.35rem;
+}
+
+@media (width <= 560px) {
+  .staff-role-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .staff-role-locked {
+    max-width: none;
+    text-align: left;
+  }
+}
