@@ -1,23 +1,109 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, PackagePlus, PencilLine, Tags } from "lucide-react";
-import { getAllProducts } from "@mridul/database";
-import { sessionClient } from "@mridul/supabase/server";
-import { PageHead, Pill } from "../components/ui";
+/**
+ * Start: what needs doing today.
+ *
+ * This used to be two buttons — edit a product, add a product — and four
+ * catalogue counts. That was the whole admin once. It is not any more: an
+ * order can be unpaid and holding a saree, a return can be waiting for a
+ * reply, a parcel can have been out a fortnight, and until now none of that
+ * was visible anywhere but the page it lives on.
+ *
+ * So the first thing here is the list of what is waiting, ranked, each line
+ * linking to where it is dealt with. The product shortcuts stay underneath,
+ * because they are still what the owner reaches for most.
+ *
+ * Every read is under the signed-in person's own session, so an editor who
+ * cannot see orders simply gets no order lines — row-level security decides,
+ * not this page. A read that fails is treated as "nothing to report" rather
+ * than an error page, because a Start page that will not start is the worst
+ * kind.
+ */
 
-export const metadata: Metadata = { title: "Start | Mridul Admin" };
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowRight, CheckCircle2, PackagePlus, PencilLine, Tags } from 'lucide-react';
+import {
+  attentionItems,
+  fetchCoupons,
+  fetchOpenReturns,
+  fetchOrders,
+  getAllProducts,
+  getInventoryRows,
+  getJournalPosts,
+  type Attention,
+} from '@mridul/database';
+import { currentAdmin, sessionClient } from '@mridul/supabase/server';
+import { PageHead, Pill } from '../components/ui';
+
+export const metadata: Metadata = { title: 'Start | Mridul Admin' };
+
+/** A failed read is an empty list, never a broken page. */
+async function quiet<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await promise;
+  } catch {
+    return fallback;
+  }
+}
 
 export default async function Dashboard() {
-  const products = await getAllProducts(await sessionClient());
+  const db = await sessionClient();
+  const admin = await currentAdmin();
+
+  const [orders, returns, stock, posts, coupons, products] = await Promise.all([
+    quiet(fetchOrders(db, { limit: 500 }), []),
+    quiet(fetchOpenReturns(db), []),
+    quiet(getInventoryRows(db), []),
+    quiet(getJournalPosts(true, db), []),
+    quiet(fetchCoupons(db), []),
+    quiet(getAllProducts(db), []),
+  ]);
+
+  const items = attentionItems({ orders, returns, stock, posts, coupons, products });
+  const urgent = items.filter((item) => item.tone === 'urgent').length;
+
   const hidden = products.filter((product) => !product.isActive).length;
   const outOfStock = products.filter((product) => product.stockTotal === 0).length;
 
   return (
     <>
       <PageHead
-        title="What would you like to do?"
-        subtitle="Products are managed in one place. Nothing is permanently deleted."
+        title={
+          urgent > 0
+            ? `${urgent} ${urgent === 1 ? 'thing needs' : 'things need'} you today`
+            : items.length > 0
+              ? 'Nothing urgent'
+              : 'All quiet'
+        }
+        subtitle={
+          admin?.email
+            ? `Signed in as ${admin.email}. Everything below links to where it is dealt with.`
+            : 'Everything below links to where it is dealt with.'
+        }
       />
+
+      {items.length === 0 ? (
+        <p className="attention-clear">
+          <CheckCircle2 aria-hidden="true" />
+          Nothing is waiting on you. No unpaid orders, nothing to pack, no returns to answer.
+        </p>
+      ) : (
+        <ul className="attention-list" aria-label="What needs attention">
+          {items.map((item: Attention) => (
+            <li className={`attention-item is-${item.tone}`} key={item.key}>
+              <Link href={item.href}>
+                <span className="attention-count" aria-hidden="true">
+                  {item.count}
+                </span>
+                <span className="attention-body">
+                  <strong>{item.title}</strong>
+                  <small>{item.detail}</small>
+                </span>
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="admin-choice-grid">
         <Link className="admin-choice" href="/products#existing-products">
@@ -25,7 +111,7 @@ export default async function Dashboard() {
             <PencilLine aria-hidden="true" />
           </span>
           <span>
-            <small>Option 1</small>
+            <small>Products</small>
             <strong>Edit existing products</strong>
             <span>Change photos, details, price, category, stock, or storefront visibility.</span>
           </span>
@@ -37,7 +123,7 @@ export default async function Dashboard() {
             <PackagePlus aria-hidden="true" />
           </span>
           <span>
-            <small>Option 2</small>
+            <small>Products</small>
             <strong>Add a new product</strong>
             <span>Create a safe hidden draft, then add every detail before publishing it.</span>
           </span>
@@ -79,4 +165,3 @@ export default async function Dashboard() {
     </>
   );
 }
-
