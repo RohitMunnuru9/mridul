@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Package,
   Phone,
+  Truck,
   Wallet,
 } from 'lucide-react';
 import {
@@ -307,12 +308,49 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
             )}
           </section>
 
+          {order.shipment && (
+            <section className="order-panel" aria-label="Tracking">
+              <h2>
+                <Truck aria-hidden="true" /> On its way
+              </h2>
+              <p className="order-payment">
+                <strong>{order.shipment.provider}</strong>
+                <span>
+                  Tracking number <code>{order.shipment.awb}</code>
+                  {order.shipment.shippedAt
+                    ? ` · handed over ${formatDateTime(order.shipment.shippedAt)}`
+                    : ''}
+                </span>
+              </p>
+              {order.shipment.trackingUrl && (
+                <a
+                  className="order-track-link"
+                  href={order.shipment.trackingUrl}
+                  rel="noreferrer noopener"
+                  target="_blank"
+                >
+                  Track this parcel
+                  <ArrowRight aria-hidden="true" />
+                </a>
+              )}
+              {order.shipment.deliveredAt && (
+                <p className="order-notes">
+                  Delivered {formatDateTime(order.shipment.deliveredAt)}.
+                </p>
+              )}
+            </section>
+          )}
+
           <section className="order-panel" aria-label="What happens next">
             <h2>What happens next</h2>
             <ol className="order-next">
               {unpaid && <li>Complete the payment above — nothing starts until then.</li>}
               <li>We check the piece, press it and pack it by hand.</li>
-              <li>You get a message with the courier and tracking number.</li>
+              <li>
+                {order.shipment
+                  ? `Handed to ${order.shipment.provider} — the tracking number is above.`
+                  : 'You get a message with the courier and tracking number.'}
+              </li>
               <li>
                 {cash
                   ? 'Pay the delivery partner when it arrives.'

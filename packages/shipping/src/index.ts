@@ -107,3 +107,49 @@ export function amountToFreeShipping(
 ): Money {
   return Math.max(0, rates.freeShippingThresholdPaise - subtotalPaise);
 }
+
+
+/* ---------------------------------------------------------------------------
+ * Couriers, and where their tracking pages live
+ *
+ * Only a convenience: the shop types the courier and the tracking number, and
+ * this builds the link so nobody has to paste a URL off a courier's website
+ * while holding a parcel.
+ *
+ * Best effort, deliberately. Couriers change these pages, and a link that has
+ * gone stale is worse than no link — so anything built here is only ever a
+ * suggestion, the shop can always paste an exact link instead, and a courier
+ * that is not on this list simply gets no link rather than a guessed one.
+ * ------------------------------------------------------------------------- */
+
+export type Courier = {
+  /** As the shop would say it. */
+  name: string;
+  /** `{awb}` is replaced with the tracking number. */
+  trackingUrl?: string;
+};
+
+export const COURIERS: Courier[] = [
+  { name: 'Delhivery', trackingUrl: 'https://www.delhivery.com/track/package/{awb}' },
+  { name: 'Blue Dart', trackingUrl: 'https://www.bluedart.com/tracking/{awb}' },
+  { name: 'DTDC', trackingUrl: 'https://www.dtdc.in/tracking/{awb}' },
+  { name: 'India Post', trackingUrl: 'https://www.indiapost.gov.in/_layouts/15/DOP.Portal.Tracking/TrackConsignment.aspx' },
+  { name: 'Xpressbees', trackingUrl: 'https://www.xpressbees.com/shipment/tracking?awb={awb}' },
+  { name: 'Ekart', trackingUrl: 'https://ekartlogistics.com/shipmenttrack/{awb}' },
+  { name: 'Shadowfax' },
+  { name: 'Professional Couriers' },
+  { name: 'Hand delivered' },
+];
+
+/**
+ * A tracking link for this courier and number, or null.
+ *
+ * Null rather than a guess: an order page showing a link that goes nowhere
+ * teaches the customer not to trust the next one.
+ */
+export function trackingUrlFor(courier: string, awb: string): string | null {
+  const wanted = courier.trim().toLowerCase();
+  const known = COURIERS.find((entry) => entry.name.toLowerCase() === wanted);
+  if (!known?.trackingUrl) return null;
+  return known.trackingUrl.replace('{awb}', encodeURIComponent(awb.trim()));
+}
