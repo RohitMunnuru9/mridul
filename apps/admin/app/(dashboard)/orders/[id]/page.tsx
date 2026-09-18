@@ -4,9 +4,11 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, Mail, MapPin, Phone, UserRound, Wallet } from 'lucide-react';
 import {
   fetchOrderById,
+  isPaidFor,
   ORDER_EXITS,
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
+  paymentMethodLabel,
 } from '@mridul/database';
 import { can, currentAdmin, sessionClient } from '@mridul/supabase/server';
 import { formatDateTime, formatPaise } from '@mridul/utils';
@@ -28,7 +30,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const canEdit = can(admin, 'order_manager');
   const closed = ['cancelled', 'returned', 'refunded'].includes(order.status);
   const cash = order.paymentMethod === 'cod';
-  const collected = order.payment?.status === 'paid';
+  // Not `payment.status === 'paid'`. For anything paid online the money is
+  // only real once it has been verified against the gateway, and that is the
+  // same test the database applies before it will let this order be
+  // dispatched — so the screen and the rule agree.
+  const collected = isPaidFor(order);
+  const awaitingPayment = !cash && order.status === 'pending_payment';
 
   return (
     <>
@@ -219,19 +226,62 @@ export default async function OrderDetailPage({ params }: PageProps) {
             </div>
             <ul className="order-facts">
               <li>
-                <strong>{cash ? 'Cash on delivery' : 'Online (Razorpay)'}</strong>
+                <strong>{paymentMethodLabel(order.paymentMethod)}</strong>
               </li>
               <li>
                 {collected
-                  ? `${formatPaise(order.totalPaise)} collected`
+                  ? `${formatPaise(order.totalPaise)} received`
                   : `${formatPaise(order.totalPaise)} still to collect`}
               </li>
+              {order.payment?.verifiedAt && (
+                <li>Verified with the gateway {formatDateTime(order.payment.verifiedAt)}</li>
+              )}
               {order.confirmedAt && <li>Confirmed {formatDateTime(order.confirmedAt)}</li>}
               {order.cancelledAt && <li>Cancelled {formatDateTime(order.cancelledAt)}</li>}
             </ul>
+
+            {/* The gateway's own references. Not a gate on anything — they are
+                here so a disputed payment can be looked up in CCAvenue's
+                dashboard months later without going through the database. */}
+            {!cash && (order.payment?.providerPaymentId || order.payment?.providerReference) && (
+              <dl className="order-refs">
+                {order.payment?.providerPaymentId && (
+                  <div>
+                    <dt>Gateway reference</dt>
+                    <dd>
+                      <code>{order.payment.providerPaymentId}</code>
+                    </dd>
+                  </div>
+                )}
+                {order.payment?.providerReference && (
+                  <div>
+                    <dt>Bank reference</dt>
+                    <dd>
+                      <code>{order.payment.providerReference}</code>
+                    </dd>
+                  </div>
+                )}
+                {order.payment?.method && (
+                  <div>
+                    <dt>Paid by</dt>
+                    <dd>{order.payment.method}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+
             {cash && !collected && (
               <p className="panel-note">
                 Marking this order delivered records the cash as collected.
+              </p>
+            )}
+
+            {awaitingPayment && (
+              <p className="panel-note is-warning">
+                <strong>No money has been received for this order.</strong> The
+                pieces on it are being held out of stock while it waits. If the
+                customer is not going to pay, cancel it — that puts everything
+                back on the shelf straight away.
               </p>
             )}
           </section>
@@ -248,13 +298,23 @@ export default async function OrderDetailPage({ params }: PageProps) {
                   defaultValue={order.status}
                   label="Status"
                   name="status"
-                  options={[...ORDER_PIPELINE.filter((step) => step !== 'pending_payment'), ...ORDER_EXITS].map(
-                    (step) => ({ value: step, label: ORDER_STATUS_LABEL[step] }),
-                  )}
+                  // An order still waiting to be paid for online can only be
+                  // left alone or cancelled. Offering "Shipped" here would be
+                  // offering to send a saree nobody has paid for — the
+                  // database refuses it anyway, and a menu that leads only to
+                  // an error message is a worse way to learn that.
+                  options={(awaitingPayment
+                    ? ['pending_payment' as const, ...ORDER_EXITS]
+                    : [
+                        ...ORDER_PIPELINE.filter((step) => step !== 'pending_payment'),
+                        ...ORDER_EXITS,
+                      ]
+                  ).map((step) => ({ value: step, label: ORDER_STATUS_LABEL[step] }))}
                 />
                 <p className="panel-note">
-                  Cancelling, returning or refunding puts every piece on this
-                  order back into stock.
+                  {awaitingPayment
+                    ? 'This order cannot move on until its payment is confirmed. Cancelling it returns every piece to stock.'
+                    : 'Cancelling, returning or refunding puts every piece on this order back into stock.'}
                 </p>
               </EditForm>
             ) : (

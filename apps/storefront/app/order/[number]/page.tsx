@@ -15,12 +15,14 @@ import {
 import {
   fetchOrderByNumber,
   getSiteSettings,
+  isPaidFor,
   ORDER_PIPELINE,
   ORDER_STATUS_LABEL,
   type Order,
 } from '@mridul/database';
 import { sessionClient } from '@mridul/supabase/server';
 import { ClearBagOnPaid } from './clear-bag';
+import { RetryPayment } from './retry-payment';
 import {
   formatDateTime,
   formatPaise,
@@ -54,8 +56,19 @@ function Progress({ order }: { order: Order }) {
     );
   }
 
-  // "Awaiting payment" never applies to a cash order, so the track a customer
-  // sees starts at Confirmed.
+  // An order that has not been paid for has not started. Drawing the track
+  // with "Confirmed" lit would tell somebody whose card was declined that
+  // their saree is being packed.
+  if (order.status === 'pending_payment') {
+    return (
+      <p className="order-exit">
+        This order has not been paid for yet, so nothing has started on it.
+      </p>
+    );
+  }
+
+  // "Awaiting payment" is handled above, so the track a customer sees starts
+  // at Confirmed.
   const steps = ORDER_PIPELINE.slice(1);
   const reached = Math.max(0, index - 1);
 
@@ -94,6 +107,11 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
   if (!order) notFound();
 
   const cash = order.paymentMethod === 'cod';
+  // The money is only real once it has been verified against the gateway —
+  // the same test the admin and the database use. Saying "Paid online" on an
+  // order whose card was declined is the one thing this page must not do.
+  const paid = isPaidFor(order);
+  const unpaid = !cash && order.status === 'pending_payment';
   // Null while the shop's number is still the seed value, so the order page
   // never offers a chat with a number that does not exist.
   const askHref = whatsappLink(
@@ -263,13 +281,25 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
               <Wallet aria-hidden="true" /> Payment
             </h2>
             <p className="order-payment">
-              <strong>{cash ? 'Cash on delivery' : 'Paid online'}</strong>
+              <strong>
+                {cash
+                  ? 'Cash on delivery'
+                  : paid
+                    ? 'Paid online'
+                    : 'Not paid yet'}
+              </strong>
               <span>
                 {cash
                   ? `Please keep ${formatPaise(order.totalPaise)} ready for the delivery partner.`
-                  : 'Received in full.'}
+                  : paid
+                    ? 'Received in full.'
+                    : 'We are holding these pieces for you. Complete the payment and your order is on its way.'}
               </span>
             </p>
+
+            {unpaid && (
+              <RetryPayment amount={formatPaise(order.totalPaise)} orderId={order.id} />
+            )}
             {order.notes && (
               <p className="order-notes">
                 <em>Your note:</em> {order.notes}
@@ -280,6 +310,7 @@ export default async function OrderPage({ params, searchParams }: PageProps) {
           <section className="order-panel" aria-label="What happens next">
             <h2>What happens next</h2>
             <ol className="order-next">
+              {unpaid && <li>Complete the payment above — nothing starts until then.</li>}
               <li>We check the piece, press it and pack it by hand.</li>
               <li>You get a message with the courier and tracking number.</li>
               <li>

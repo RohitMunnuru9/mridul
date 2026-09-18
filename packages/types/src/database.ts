@@ -1732,6 +1732,7 @@ export type Database = {
         Args: { p_order_id: string; p_reason?: string | null }
         Returns: Json
       }
+      my_unpaid_order: { Args: { p_order_id?: string | null }; Returns: Json }
       place_order: {
         Args: {
           p_address: Json

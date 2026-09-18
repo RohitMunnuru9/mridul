@@ -1461,7 +1461,10 @@ th.numeric {
 }
 .admin-summary {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Four tiles normally, five when there are unpaid orders holding stock.
+     auto-fit rather than a fixed count, so neither case leaves a gap or
+     pushes a tile onto a row of its own. */
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   margin-bottom: 1rem;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -3108,4 +3111,58 @@ th.numeric {
   .collection-column {
     transition: none;
   }
+}
+
+/* An order sitting unpaid is holding a saree off the shelf, so it is worth a
+   tile that does not look like the others. Amber, not red: nothing has gone
+   wrong, something is waiting. */
+.admin-summary div.is-warning strong {
+  color: #8a5a00;
+}
+.admin-summary div.is-warning {
+  background: #fdf6e7;
+}
+
+/* The gateway's own references. A definition list rather than more facts in
+   the list above: these are looked up and copied, not read. */
+.order-refs {
+  margin: 0;
+  padding: 0 1.1rem 0.9rem;
+  display: grid;
+  gap: 0.45rem;
+}
+.order-refs div {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: baseline;
+}
+.order-refs dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.order-refs dd {
+  margin: 0;
+  font-size: 0.78rem;
+  /* These get pasted into CCAvenue's dashboard, so they must be selectable in
+     one piece and must not be quietly truncated. */
+  overflow-wrap: anywhere;
+}
+.order-refs code {
+  font-size: 0.74rem;
+}
+@media (max-width: 560px) {
+  .order-refs div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+}
+
+.panel-note.is-warning {
+  color: #7a5810;
+}
+.panel-note.is-warning strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: #6b4a08;
 }
